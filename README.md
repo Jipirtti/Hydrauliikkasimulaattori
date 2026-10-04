@@ -1,0 +1,66 @@
+# Hydrauliikkasimulaattori
+
+[![Validointi](../../actions/workflows/validointi.yml/badge.svg)](../../actions/workflows/validointi.yml)
+
+Selaimessa toimiva hydrauliikan perusteiden opetussimulaattori. Piiri rakennetaan ISO 1219 -tyyppisistä piirrosmerkeistä vetämällä, liitännät kytketään letkuilla, ja paine, tilavuusvirta, voima ja nopeus näkyvät reaaliajassa antureilla, letkujen väreillä ja käyrinä. Jokaisen komponentin voi mitoittaa.
+
+**Kokeile:** julkaistu versio GitHub Pagesissa (osoite näkyy repositorion About-kohdassa) tai avaa `index.html` suoraan selaimessa. Asennusta tai palvelinta ei tarvita.
+
+Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026. Lisenssi: [CC BY 4.0](LICENSE).
+
+## Ominaisuudet
+
+- 13 komponenttia: vakiotilavuus- ja painesäädetty pumppu, öljysäiliö, 4/3- ja 4/2-suuntaventtiili, paineenrajoitus-, vasta-, kuristus- ja vastusventtiili, kaksi- ja yksitoiminen sylinteri, hydraulimoottori, paine- ja virtausmittari.
+- Paine-, virtaus-, voima- ja nopeusanturit, joiden lukemat piirtyvät 10 sekunnin käyriksi.
+- Mitoitusparametrit, lasketut arvot ja käänteinen mitoitusapu jokaiselle komponentille.
+- Aikatason laskenta: öljyn kokoonpuristuvuus, sylinterin massa ja kitka, moottorin hitausmomentti. Painepiikit, kavitaatio ja ryntäävä kuorma näkyvät.
+- Neljä esimerkkipiiriä ja harjoitustehtävät käyttöohjeessa.
+
+## Dokumentaatio
+
+| Tiedosto | Sisältö |
+| --- | --- |
+| [docs/kayttoohje.md](docs/kayttoohje.md) | Käyttöohje, esimerkkikaavio vaiheittain ja harjoitustehtävät |
+| [VALIDOINTI.md](VALIDOINTI.md) | Validoitavat ilmiöt, käsinlaskukaavat ja opettajan validoinnin tila |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Kehitysohjeet, testien ajaminen ja palautteen antaminen |
+| [CHANGELOG.md](CHANGELOG.md) | Versiohistoria |
+
+## Validointi
+
+Simulaattorin ilmiöt validoidaan kahdella tasolla, ks. [VALIDOINTI.md](VALIDOINTI.md):
+
+- **Automaattisesti:** 17 testiä vertaa simulaattorin tuloksia käsinlaskukaavoihin (esim. v = Q/A, F = p·A, massatase, moottorin vääntö). GitHub Actions ajaa ne jokaisesta muutoksesta ja maanantaisin ajastetusti. Jos ajastettu ajo epäonnistuu, siitä avautuu automaattisesti issue. Raportti näkyy ajon yhteenvedossa.
+- **Opettajan validointi:** jokainen ilmiö tarkistetaan käsinlaskulla, kirjallisuudesta tai laboratoriomittauksella ja kirjataan validoiduksi. Validointikierros avautuu issueksi automaattisesti 15.1. ja 15.8.
+
+Testien ajaminen omalla koneella:
+
+```bash
+pip install -r requirements-test.txt
+python -m playwright install chromium
+python -m pytest tests -v
+```
+
+## Palaute
+
+Palaute on tervetullutta, ja sitä käytetään simulaattorin parantamiseen:
+
+- **Fysiikka ei vastaa odotusta:** avaa issue mallilla *Fysiikka ei vastaa odotusta* ja liitä piiri JSON-muodossa (simulaattorin Tallenna / lataa).
+- **Virhe käyttöliittymässä:** mallilla *Virheilmoitus*.
+- **Ideat ja kysymykset:** Discussions-osio tai malli *Kehitysehdotus*.
+
+## Rakenne
+
+```
+index.html                  Simulaattori (yksi tiedosto, ei riippuvuuksia eikä käännösvaihetta)
+docs/                       Käyttöohje ja kuvat
+tests/                      Validointitestit (pytest + Playwright)
+VALIDOINTI.md               Validointisuunnitelma ja -tila
+.github/workflows/          Validointi, validointikierros ja GitHub Pages -julkaisu
+.github/ISSUE_TEMPLATE/     Palautelomakkeet
+```
+
+## Lisenssi
+
+Simulaattori ja käyttöohje on lisensoitu [Creative Commons Nimeä 4.0 Kansainvälinen -lisenssillä (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.fi). Saat kopioida, jakaa ja muokata aineistoa mihin tahansa tarkoitukseen, kunhan mainitset tekijän ja oppilaitoksen, merkitset lisenssin ja kerrot tekemistäsi muutoksista.
+
+Suositeltu viittaus: Pirttilahti, J. (2026). *Hydrauliikkasimulaattori ja käyttöohje.* Seinäjoen ammattikorkeakoulu. CC BY 4.0.

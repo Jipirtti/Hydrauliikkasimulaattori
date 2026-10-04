@@ -1,0 +1,48 @@
+# Opettajan validointikierros: avaa lukukauden alussa issuen, jossa on jokainen validoitava ilmiö.
+name: Validointikierros
+
+on:
+  schedule:
+    - cron: "0 6 15 1,8 *"   # 15.1. ja 15.8. klo 06.00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  kierros:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Avaa validointikierroksen issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const rows = fs.readFileSync('VALIDOINTI.md', 'utf8').split('\n')
+              .filter(l => /^\| (V|L)\d\d \|/.test(l))
+              .map(l => l.split('|').map(s => s.trim()))
+              .map(c => `- [ ] **${c[1]}** ${c[2]}`);
+            const d = new Date();
+            const kausi = (d.getMonth() < 6 ? 'kevät ' : 'syksy ') + d.getFullYear();
+            const title = `Opettajan validointikierros, ${kausi}`;
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'validointikierros'
+            });
+            if (open.some(i => i.title === title)) return;
+            const body = [
+              'Lukukauden validointikierros. Käy jokainen ilmiö läpi simulaattorissa ja merkitse tila VALIDOINTI.md-tiedostoon (päivämäärä, validoija, menetelmä).',
+              '',
+              'Tarkista myös:',
+              '- [ ] Käyttöohjeen (docs/kayttoohje.md) lukuarvot ja kuvakaappaukset vastaavat nykyistä versiota',
+              '- [ ] Edellisen kierroksen jälkeen tulleet palautteet ja fysiikka-issuet on käsitelty',
+              '- [ ] Viimeisin ajastettu validointiajo on onnistunut',
+              '',
+              '### Ilmiöt',
+              ...rows
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo, title, body, labels: ['validointikierros']
+            });

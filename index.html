@@ -1,0 +1,1142 @@
+<!doctype html>
+<!--
+  Hydrauliikkasimulaattori
+  Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026.
+  Lisenssi: Creative Commons Nimeä 4.0 Kansainvälinen (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/deed.fi
+  Saat kopioida, jakaa ja muokata ohjelmaa mihin tahansa tarkoitukseen, kunhan mainitset
+  tekijän ja oppilaitoksen, merkitset lisenssin ja kerrot tekemistäsi muutoksista.
+-->
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hydrauliikkasimulaattori</title>
+<meta name="author" content="Juho Pirttilahti, Seinäjoen ammattikorkeakoulu Oy">
+<meta name="copyright" content="Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026. CC BY 4.0">
+<link rel="license" href="https://creativecommons.org/licenses/by/4.0/deed.fi">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#DCE3E9; --paper:#F7F9FA; --grid:#E2E8ED; --grid2:#D3DBE2; --panel:#EDF1F4; --ink:#17212B; --muted:#56636F;
+  --line:#C2CBD3; --acc:#E39B17; --acc-ink:#7A4F00; --sel:#1E5DBA; --ok:#2E8B57; --warn:#C0392B; --oil:#E3A93A;
+  --tint:rgba(227,155,23,.13);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1419; --paper:#131A20; --grid:#1A232B; --grid2:#222D36; --panel:#161F26; --ink:#E2E8EE; --muted:#93A0AC;
+    --line:#2A3540; --acc:#F0A82A; --acc-ink:#F6C268; --sel:#6FA7FF; --ok:#4CC38A; --warn:#FF6B5B; --oil:#C98E25;
+    --tint:rgba(240,168,42,.12);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1419; --paper:#131A20; --grid:#1A232B; --grid2:#222D36; --panel:#161F26; --ink:#E2E8EE; --muted:#93A0AC;
+  --line:#2A3540; --acc:#F0A82A; --acc-ink:#F6C268; --sel:#6FA7FF; --ok:#4CC38A; --warn:#FF6B5B; --oil:#C98E25;
+  --tint:rgba(240,168,42,.12);
+}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.4;-webkit-text-size-adjust:100%}
+button,select,input{font:inherit;color:inherit}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--sel);outline-offset:1px}
+
+.app{height:100%;display:grid;grid-template-columns:222px minmax(0,1fr) 316px;grid-template-rows:auto minmax(0,1fr) 210px;
+  grid-template-areas:"bar bar bar" "pal stage insp" "pal scope insp"}
+.bar{grid-area:bar;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;flex-direction:column;line-height:1.1;margin-right:6px}
+.brand strong{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:24px;font-weight:600}
+.brand span{font-size:13px;color:var(--muted)}
+.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:34px}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--ink);color:var(--paper);border-color:var(--ink);min-width:118px}
+.btn.on{background:var(--acc);border-color:var(--acc);color:#1E1404}
+.btn.danger{color:var(--warn)}
+select{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-height:34px}
+.mini{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.time{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:20px;font-variant-numeric:tabular-nums;min-width:96px}
+
+.pal{grid-area:pal;overflow:auto;border-right:1px solid var(--line);background:var(--panel);padding:8px 8px 20px}
+.pal h3{font-size:13px;font-weight:600;color:var(--muted);margin:12px 4px 6px}
+.pal h3:first-child{margin-top:2px}
+.copy a,.mcopy a{color:inherit}
+.copy{font-size:11.5px;line-height:1.35;color:var(--muted);margin:14px 4px 0;padding-top:10px;border-top:1px solid var(--line)}
+.mcopy{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:14px}
+.pitem{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:var(--paper);border:1px solid var(--line);
+  border-radius:8px;padding:4px 8px 4px 4px;margin:0 0 5px;cursor:grab;touch-action:none;user-select:none;font-size:14px;line-height:1.15}
+.pitem:hover{border-color:var(--acc)}
+.pitem svg{width:46px;height:34px;flex:none;color:var(--ink)}
+.ghost{position:fixed;pointer-events:none;z-index:50;background:var(--paper);border:1px solid var(--acc);border-radius:8px;padding:4px 10px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+
+.stage{grid-area:stage;position:relative;overflow:hidden;background:var(--paper)}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;color:var(--ink);user-select:none;-webkit-user-select:none}
+.tools{position:absolute;left:10px;top:10px;z-index:5;display:flex;flex-wrap:wrap;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px;max-width:calc(100% - 20px)}
+.tools button{border:0;background:transparent;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:6px}
+.tools button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.tools .sw{width:10px;height:10px;border-radius:50%;display:inline-block}
+.tools label{display:flex;align-items:center;gap:5px;font-size:14px;padding:0 8px;color:var(--muted)}
+.status{position:absolute;left:10px;right:10px;bottom:8px;z-index:5;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:flex-end;pointer-events:none}
+.legendp{pointer-events:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.legendp .grad{width:120px;height:9px;border-radius:5px;background:linear-gradient(90deg,#4A7FD0,#38AA96 30%,#E2BA2E 55%,#E87A2E 78%,#D23B2E)}
+.legendp select{min-height:26px;padding:1px 4px;font-size:13px}
+.warns{pointer-events:auto;font-size:13px;display:flex;flex-direction:column;gap:3px;max-width:520px}
+.warns div{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:6px;padding:3px 8px}
+.warns div.info{border-left-color:var(--sel)}
+.tip{position:absolute;z-index:20;pointer-events:none;background:var(--ink);color:var(--paper);font-size:13px;padding:4px 8px;border-radius:6px;white-space:nowrap;display:none;font-variant-numeric:tabular-nums}
+
+.insp{grid-area:insp;overflow:auto;border-left:1px solid var(--line);background:var(--panel);padding:12px 14px 30px}
+.insp h2{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:22px;font-weight:600;margin:0 0 2px}
+.insp h3{font-size:14px;font-weight:600;margin:16px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
+.insp p{margin:0 0 8px;color:var(--muted)}
+.ih{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.ih input{width:86px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:22px;font-weight:600;background:transparent;border:1px solid transparent;border-radius:6px;padding:0 4px}
+.ih input:hover,.ih input:focus{border-color:var(--line);background:var(--paper)}
+.tn{color:var(--muted);font-size:14px}
+.fld{display:grid;grid-template-columns:1fr 128px;gap:8px;align-items:center;margin:0 0 6px;font-size:14px}
+.fld .inp{display:flex;align-items:center;gap:4px}
+.fld input,.fld select{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px 6px;min-height:30px;font-variant-numeric:tabular-nums}
+.fld em{font-style:normal;color:var(--muted);font-size:12.5px;min-width:34px}
+.der{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:0;font-size:14px}
+.der dt{color:var(--muted)}
+.der dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.seg3{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg3 button{border:0;background:var(--paper);padding:6px 14px;cursor:pointer;min-width:44px}
+.seg3 button+button{border-left:1px solid var(--line)}
+.seg3 button[aria-pressed="true"]{background:var(--acc);color:#1E1404;font-weight:600}
+.ctl{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0}
+.rng{width:100%;accent-color:var(--acc)}
+.help .res{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:8px 10px;margin:6px 0;font-size:14px;font-variant-numeric:tabular-nums}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.kbd{font-size:12.5px;color:var(--muted)}
+
+.scope{grid-area:scope;border-top:1px solid var(--line);background:var(--panel);overflow:auto;padding:8px 12px}
+.scope .sh{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.scope .sh strong{font-size:15px}
+.scope .sh span{font-size:13px;color:var(--muted)}
+.prow{display:grid;grid-template-columns:150px minmax(0,1fr) 28px;gap:10px;align-items:center;margin-bottom:6px}
+.prow .pl{font-size:13px;line-height:1.2}
+.prow .pl b{display:block;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:21px;font-weight:600;font-variant-numeric:tabular-nums}
+.prow canvas{width:100%;height:50px;display:block;background:var(--paper);border:1px solid var(--line);border-radius:6px}
+.prow button{border:1px solid var(--line);background:var(--paper);border-radius:6px;cursor:pointer;height:28px}
+.empty{color:var(--muted);font-size:14px;margin:4px 0}
+
+.modal{position:fixed;inset:0;background:rgba(10,15,20,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal.open{display:flex}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:720px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
+.mbox h2{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:26px;margin:0 0 8px}
+.mbox h3{font-size:15px;margin:14px 0 4px}
+.mbox p{margin:0 0 8px;max-width:70ch}
+.mbox textarea{width:100%;height:220px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px}
+.mrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:flex-end}
+
+/* SVG */
+.sy{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.syf{fill:var(--paper);stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.fi{fill:currentColor}
+.dash{stroke-dasharray:4 3}
+.solon{fill:var(--acc);stroke:currentColor;stroke-width:1.8}
+.spin{fill:none;stroke:var(--acc);stroke-width:2.4;stroke-dasharray:5 5}
+.oil{fill:var(--oil);opacity:.55}
+.ndl{stroke:var(--warn);stroke-width:2;stroke-linecap:round}
+.ldb{fill:var(--grid2);stroke:currentColor;stroke-width:1.6}
+.ldf{stroke:var(--sel);stroke-width:2.2;fill:none}
+.ldfh{fill:var(--sel)}
+.sym{fill:currentColor;font:600 14px "Barlow",system-ui,sans-serif}
+.hit{fill:transparent;stroke:none}
+.comp{cursor:move}
+.wh{fill:none;stroke:transparent;stroke-width:12;cursor:pointer}
+.wb{fill:none;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
+.wf{fill:none;stroke:rgba(255,255,255,.9);stroke-width:1.8;stroke-dasharray:6 10;stroke-linecap:round}
+.wire.selw .wb{stroke-width:6}
+.selr{fill:none;stroke:var(--sel);stroke-width:1.5;stroke-dasharray:5 4}
+.port{fill:var(--paper);stroke:currentColor;stroke-width:1.5;cursor:crosshair}
+.port.con{fill:currentColor}
+.port:hover{stroke:var(--sel);stroke-width:3}
+.pt{fill:var(--muted);font:500 10px "Barlow",system-ui,sans-serif;pointer-events:none}
+.lt{fill:currentColor;font:600 12.5px "Barlow",system-ui,sans-serif;pointer-events:none}
+.rt{fill:var(--muted);font:500 12px "Barlow",system-ui,sans-serif;pointer-events:none;font-variant-numeric:tabular-nums}
+.probe{cursor:grab}
+.probe rect{fill:var(--paper);stroke-width:1.8}
+.probe text{font:600 12.5px "Barlow",system-ui,sans-serif;fill:currentColor;font-variant-numeric:tabular-nums}
+.probe line{stroke-width:1.3;stroke-dasharray:3 2}
+#tmpWire{fill:none;stroke:var(--sel);stroke-width:2;stroke-dasharray:5 4;pointer-events:none}
+
+@media (max-width:900px){
+  .app{height:auto;grid-template-columns:1fr;grid-template-rows:auto auto 64vh auto auto;
+    grid-template-areas:"bar" "pal" "stage" "scope" "insp"}
+  .pal{display:flex;gap:6px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px}
+  .pal h3,.pal .copy{display:none}
+  .pitem{width:auto;flex:none;margin:0;touch-action:pan-x}
+  .insp{border-left:0;border-top:1px solid var(--line)}
+  .scope{max-height:none}
+}
+@media (prefers-reduced-motion:reduce){.wf{stroke-dasharray:none;opacity:.35}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="brand"><strong>Hydrauliikkasimulaattori</strong><span>Juho Pirttilahti, SeAMK 2026, CC BY 4.0</span></div>
+    <div class="grp">
+      <button class="btn pri" id="runBtn" type="button">Pysäytä</button>
+      <button class="btn" id="resetBtn" type="button" title="Paineet nollaan, sylinterit alkuasemaan">Nollaa tila</button>
+      <label class="mini">Nopeus
+        <select id="speed"><option value="1">1×</option><option value="0.5">0,5×</option><option value="0.2">0,2×</option><option value="0.1">0,1×</option></select>
+      </label>
+      <span class="time" id="simTime">t = 0,00 s</span>
+    </div>
+    <div class="grp">
+      <select id="exSel" aria-label="Esimerkkipiirit">
+        <option value="">Esimerkkipiirit…</option>
+        <option value="ex1">1. Kaksitoiminen sylinteri, 4/3-venttiili</option>
+        <option value="ex2">2. Nopeudensäätö poistopuolelta (meter-out)</option>
+        <option value="ex3">3. Hydraulimoottori ja virtausmittari</option>
+        <option value="ex4">4. Yksitoiminen pystysylinteri, hallittu lasku</option>
+      </select>
+      <button class="btn" id="undoBtn" type="button" title="Ctrl+Z">Kumoa</button>
+      <button class="btn" id="ioBtn" type="button">Tallenna / lataa</button>
+      <button class="btn" id="fitBtn" type="button">Sovita näkymä</button>
+      <button class="btn danger" id="clearBtn" type="button">Tyhjennä</button>
+      <button class="btn" id="helpBtn" type="button">Ohje</button>
+    </div>
+  </header>
+
+  <aside class="pal" id="pal" aria-label="Komponentit"></aside>
+
+  <main class="stage" id="stage">
+    <div class="tools" role="toolbar" aria-label="Työkalut">
+      <button type="button" data-tool="sel" aria-pressed="true" title="V">Valitse ja kytke</button>
+      <button type="button" data-tool="p" aria-pressed="false" title="Klikkaa liitäntää"><i class="sw" style="background:#D23B2E"></i>Paine</button>
+      <button type="button" data-tool="q" aria-pressed="false" title="Klikkaa liitäntää"><i class="sw" style="background:#2E8B57"></i>Virtaus</button>
+      <button type="button" data-tool="F" aria-pressed="false" title="Klikkaa sylinteriä tai moottoria"><i class="sw" style="background:#1E5DBA"></i>Voima</button>
+      <button type="button" data-tool="v" aria-pressed="false" title="Klikkaa sylinteriä tai moottoria"><i class="sw" style="background:#8E5BD0"></i>Nopeus</button>
+      <label><input type="checkbox" id="showRead" checked> Lukemat</label>
+    </div>
+    <svg id="cv" aria-label="Piirtoalusta">
+      <defs>
+        <pattern id="gridPat" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M20 0H0V20" fill="none" stroke="var(--grid)" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect id="gridRect" width="100%" height="100%" fill="url(#gridPat)"/>
+      <g id="world">
+        <g id="lWires"></g><g id="lComps"></g><g id="lSel"></g><g id="lPorts"></g><g id="lLabels"></g><g id="lProbes"></g>
+        <path id="tmpWire" d=""/>
+      </g>
+    </svg>
+    <div class="status">
+      <div class="legendp"><span>Paine</span><span>0</span><span class="grad"></span>
+        <select id="pScale" aria-label="Väriasteikon maksimi"><option>100</option><option selected>160</option><option>250</option><option>400</option></select><span>bar</span></div>
+      <div class="warns" id="warns"></div>
+    </div>
+    <div class="tip" id="tip"></div>
+  </main>
+
+  <aside class="insp" id="insp" aria-label="Ominaisuudet ja mitoitus"></aside>
+
+  <section class="scope" aria-label="Mittaukset">
+    <div class="sh"><strong>Mittaukset</strong><span id="scopeHint">Valitse anturityökalu ja klikkaa liitäntää tai toimilaitetta. Käyrät näyttävät 10 s historian.</span></div>
+    <div id="probeRows"></div>
+  </section>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="mbox" id="mbox"></div></div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+/* ---------- physics constants (SI) ---------- */
+const BETA=1.2e9, RHO=870, CD=0.65, DEL=3e4, VPORT=0.05e-3, GT=1e-6, PFLOOR=-0.95e5, G=9.81, DT=1e-3;
+const clamp=(x,a,b)=>x<a?a:x>b?b:x, c01=x=>clamp(x,0,1);
+const sp=x=>x>30?x:(x<-30?Math.exp(x):Math.log1p(Math.exp(x)));
+const sig=x=>1/(1+Math.exp(-clamp(x,-60,60)));
+const orif=(dp,A)=>CD*A*Math.sqrt(2/RHO)*dp/Math.pow(dp*dp+DEL*DEL,0.25);
+const areaFor=(Qn,dpn)=>(Qn/60000)/(CD*Math.sqrt(2*dpn*1e5/RHO));
+const LPM=q=>q*60000, BAR=p=>p/1e5;
+const nf=(x,d=1)=>Number.isFinite(x)?(Math.abs(x)<0.5*Math.pow(10,-d)?0:x).toLocaleString('fi-FI',{minimumFractionDigits:d,maximumFractionDigits:d,useGrouping:false}):'–';
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+
+/* ---------- symbol helpers ---------- */
+const r1=v=>Math.round(v*10)/10;
+const L=(x1,y1,x2,y2,c='sy')=>`<line x1="${r1(x1)}" y1="${r1(y1)}" x2="${r1(x2)}" y2="${r1(y2)}" class="${c}"/>`;
+function ARW(x1,y1,x2,y2,c='sy',fc='fi'){const a=Math.atan2(y2-y1,x2-x1),h=6.5,w=3.4,bx=x2-h*Math.cos(a),by=y2-h*Math.sin(a),px=-Math.sin(a)*w,py=Math.cos(a)*w;
+  return L(x1,y1,bx,by,c)+`<polygon class="${fc}" points="${r1(x2)},${r1(y2)} ${r1(bx+px)},${r1(by+py)} ${r1(bx-px)},${r1(by-py)}"/>`;}
+function ZZ(x1,x2,y,a=6,n=4,c='sy'){let p=`${r1(x1)},${r1(y)}`;for(let i=0;i<n;i++){const x=x1+(x2-x1)*(i+0.5)/n;p+=` ${r1(x)},${r1(y+(i%2?a:-a))}`;}return `<polyline class="${c}" points="${p} ${r1(x2)},${r1(y)}"/>`;}
+const BOX=bx=>`<rect x="${bx-20}" y="-20" width="40" height="40" class="syf"/>`;
+const BLKT=x=>L(x,-20,x,-13)+L(x-4.5,-13,x+4.5,-13);
+const BLKB=x=>L(x,20,x,13)+L(x-4.5,13,x+4.5,13);
+const PAR=bx=>ARW(bx-10,17,bx-10,-17)+ARW(bx+10,-17,bx+10,17);
+const CRS=bx=>ARW(bx-10,17,bx+10,-17)+ARW(bx-10,-17,bx+10,17);
+function CEN(bx,t){
+  if(t==='suljettu')return BLKT(bx-10)+BLKT(bx+10)+BLKB(bx-10)+BLKB(bx+10);
+  if(t==='tandem')return BLKT(bx-10)+BLKT(bx+10)+`<path class="sy" d="M${bx-10},20V8H${bx+10}V20"/>`;
+  if(t==='avoin')return `<path class="sy" d="M${bx-10},-20V0H${bx+10}V-20M${bx-10},20V0M${bx+10},0V20"/>`;
+  return BLKB(bx-10)+`<path class="sy" d="M${bx-10},-20V-4H${bx+10}M${bx+10},-20V20"/>`;
+}
+const SOL=(x,on)=>`<rect x="${x}" y="-11" width="18" height="22" class="${on?'solon':'syf'}"/>`+L(x,11,x+18,-11);
+const STUBS4=L(-10,-20,-10,-34)+L(10,-20,10,-34)+L(-10,20,-10,34)+L(10,20,10,34);
+
+/* pressure colour scale */
+let pScale=160;
+const PST=[[0,[74,127,208]],[0.3,[56,170,150]],[0.55,[226,186,46]],[0.78,[232,122,46]],[1,[210,59,46]]];
+function pcol(p){const b=p/1e5;if(b<-0.3)return '#8E5BD0';const f=c01(b/pScale);
+  for(let i=1;i<PST.length;i++){if(f<=PST[i][0]){const[a0,c0]=PST[i-1],[a1,c1]=PST[i],t=(f-a0)/(a1-a0);
+    return `rgb(${Math.round(c0[0]+(c1[0]-c0[0])*t)},${Math.round(c0[1]+(c1[1]-c0[1])*t)},${Math.round(c0[2]+(c1[2]-c0[2])*t)})`;}}
+  return 'rgb(210,59,46)';}
+
+/* ---------- model state ---------- */
+let comps=[],wires=[],probes=[],byId={},nextId=1,simT=0,running=true,speed=1,showRead=true,tool='sel',sel=null;
+let M={nets:[],nU:0};
+let portP={};
+const view={tx:0,ty:0,k:1};
+const np=(c,pn)=>{const i=c.nets?c.nets[pn]:undefined;return (i!==undefined&&M.nets[i])?M.nets[i].p:0;};
+const qf=(c,pn)=>(c.q&&c.q[pn])||0;
+const cylA=c=>{const AA=Math.PI/4*(c.p.D/1000)**2;const AB=c.type==='cyl'?AA-Math.PI/4*(c.p.d/1000)**2:0;return[AA,AB];};
+const pumpQsum=()=>comps.filter(c=>c.type==='pump').reduce((s,c)=>s+c.p.Vg*c.p.n/1000*c.p.etav,0);
+const lossW=c=>c.pn.reduce((s,pn)=>s+np(c,pn)*qf(c,pn),0);
+
+/* ---------- component types ---------- */
+const STD_D=[25,32,40,50,63,80,100,125,160,200,250];
+const STD_ROD={25:12,32:18,40:22,50:28,63:36,80:45,100:56,125:70,160:90,200:110,250:140};
+const TY={
+tank:{name:()=>'Öljysäiliö',px:'S',bb:[-27,-30,27,15],
+  ports:[{n:'T',x:0,y:-30,d:[0,-1]}],
+  prm:[{k:'V',l:'Säiliön tilavuus',u:'L',min:1,max:5000,st:1},{k:'L0',l:'Öljymäärä alussa',u:'L',min:0,max:5000,st:1}],
+  def:{V:40,L0:30}, init:c=>({lvl:c.p.L0}),
+  fl:(c,P)=>({T:GT*P('T')}),
+  post:(c,dt)=>{c.st.lvl+=qf(c,'T')*dt*1000;},
+  draw:()=>L(0,-30,0,6)+`<path class="sy" d="M-26,-12V14H26V-12"/>`,
+  dyn:c=>{const h=25*c01(c.st.lvl/c.p.V);return `<rect x="-25" y="${r1(13-h)}" width="50" height="${r1(h)}" class="oil"/>`;},
+  read:c=>nf(c.st.lvl,1)+' L',
+  der:c=>[['Öljymäärä',nf(c.st.lvl,1)+' L'],['Täyttöaste',nf(100*c.st.lvl/c.p.V,0)+' %'],['Virtaus säiliöön',nf(LPM(qf(c,'T')),1)+' L/min'],['Paluulinjan paine',nf(BAR(np(c,'T')),2)+' bar']]
+},
+pump:{name:c=>c.p.kind==='saato'?'Pumppu, painesäädetty':'Pumppu, vakiotilavuus',px:'P',bb:[-63,-34,22,34],
+  ports:[{n:'P',x:0,y:-34,d:[0,-1]},{n:'S',x:0,y:34,d:[0,1]}],
+  prm:[{k:'kind',l:'Tyyppi',sel:[['vakio','Vakiotilavuus'],['saato','Painesäädetty']]},
+       {k:'Vg',l:'Kierrostilavuus Vg',u:'cm³/r',min:0.5,max:500,st:0.1},
+       {k:'n',l:'Pyörimisnopeus n',u:'r/min',min:100,max:4000,st:10},
+       {k:'pc',l:'Säätöpaine',u:'bar',min:5,max:700,st:5,show:c=>c.p.kind==='saato'},
+       {k:'pr',l:'Nimellispaine',u:'bar',min:10,max:700,st:5},
+       {k:'etav',l:'Vol. hyötysuhde ηv (nimellispaineessa)',u:'',min:0.5,max:1,st:0.01},
+       {k:'etahm',l:'Hydromek. hyötysuhde ηhm',u:'',min:0.5,max:1,st:0.01}],
+  def:{kind:'vakio',Vg:10,n:1450,pc:160,pr:250,etav:0.95,etahm:0.9},
+  init:()=>({on:true,nA:0,th:0}),
+  pre:(c,dt)=>{const tg=c.st.on?c.p.n:0;c.st.nA+=(tg-c.st.nA)*Math.min(1,dt/0.12);},
+  fl:(c,P)=>{const pP=P('P'),pS=P('S');const Qg=c.p.Vg*1e-6*c.st.nA/60;
+    const f=c.p.kind==='saato'?sig((c.p.pc*1e5-2e5-pP)/1e5):1;
+    const fs=sig((pS+0.6e5)/0.08e5);
+    const Gl=(c.p.Vg*1e-6*c.p.n/60)*(1-c.p.etav)/(c.p.pr*1e5);
+    const q=Qg*f*fs-Gl*(pP-pS);return {P:-q,S:q};},
+  post:(c,dt)=>{c.st.th=(c.st.th+c.st.nA/60*360*dt*0.08)%360;},
+  draw:c=>`<circle r="20" class="syf"/><polygon class="fi" points="0,-20 -7,-9 7,-9"/>`+L(0,-20,0,-34)+L(0,20,0,34)+L(-20,-2.5,-34,-2.5)+L(-20,2.5,-34,2.5)+
+    `<circle cx="-48" r="14" class="syf"/><text x="-48" y="5" text-anchor="middle" class="sym">M</text>`+
+    (c.p.kind==='saato'?ARW(-17,15,17,-15)+L(14,10,22,18,'sy dash'):''),
+  dyn:c=>c.st.on?`<circle cx="-48" cy="0" r="17.5" class="spin" transform="rotate(${r1(c.st.th)} -48 0)"/>`:'',
+  hit:(c,lx)=>lx<-32?'motor':null,
+  click:(c,h)=>{if(h==='motor'){c.st.on=!c.st.on;buildInsp();}},
+  read:c=>c.st.on?`${nf(LPM(-qf(c,'P')),1)} L/min`:'pysäytetty',
+  der:c=>{const dp=BAR(np(c,'P')-np(c,'S')),Q=LPM(-qf(c,'P')),Qth=c.p.Vg*c.p.n/1000;
+    return [['Teoreettinen tuotto',nf(Qth,1)+' L/min'],['Todellinen tuotto',nf(Q,1)+' L/min'],['Painetaso',nf(BAR(np(c,'P')),1)+' bar'],
+      ['Hydraulinen teho',nf(Math.max(0,dp)*Q/600,2)+' kW'],['Akselin ottoteho',nf(Math.max(0,dp)*Qth*(c.st.nA/c.p.n)/600/c.p.etahm,2)+' kW'],
+      ['Akselin vääntö',nf(c.p.Vg*Math.max(0,dp)/(20*Math.PI*c.p.etahm),1)+' Nm']];},
+  help:c=>`<div class="fld"><span>Tarvittava tuotto</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>{const Vg=v.Q*1000/(c.p.n*c.p.etav);return {html:`Vg = Q·1000 / (n·ηv) = <b>${nf(Vg,1)} cm³/r</b>`,apply:{Vg:Math.round(Vg*10)/10},lab:`Käytä Vg = ${nf(Vg,1)} cm³/r`};}
+},
+prv:{name:()=>'Paineenrajoitusventtiili',px:'PRV',bb:[-26,-40,34,40],
+  ports:[{n:'P',x:0,y:-40,d:[0,-1]},{n:'T',x:0,y:40,d:[0,1]}],
+  prm:[{k:'ps',l:'Asetuspaine',u:'bar',min:5,max:600,st:5},{k:'Qn',l:'Nimellisvirtaus Qn',u:'L/min',min:1,max:1000,st:1},
+       {k:'dpo',l:'Paineen nousu Qn:llä',u:'bar',min:1,max:50,st:1},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{ps:100,Qn:40,dpo:8,pmax:315}, init:()=>({}),
+  fl:(c,P)=>{const dp=P('P')-P('T');const k=(c.p.Qn/60000)/(c.p.dpo*1e5),s=0.5e5;const q=k*s*sp((dp-c.p.ps*1e5)/s)+1e-14*dp;return {P:q,T:-q};},
+  draw:()=>`<rect x="-14" y="-24" width="28" height="48" class="syf"/>`+L(0,-40,0,-24)+L(0,24,0,40)+`<path class="sy dash" d="M0,-32H-24V0H-14"/>`+ZZ(14,32,0,6,4)+ARW(15,10,31,-10),
+  dyn:c=>{const o=c01(LPM(qf(c,'P'))/c.p.Qn*3);return ARW(7*(1-o),-16,7*(1-o),16);},
+  read:c=>LPM(qf(c,'P'))>0.05?`${nf(LPM(qf(c,'P')),1)} L/min`:`${c.p.ps} bar`,
+  der:c=>[['Virtaus säiliöön',nf(LPM(qf(c,'P')),1)+' L/min'],['Paine-ero',nf(BAR(np(c,'P')-np(c,'T')),1)+' bar'],['Tehohäviö (lämmöksi)',nf(lossW(c)/1000,2)+' kW']]
+},
+check:{name:()=>'Vastaventtiili',px:'VV',bb:[-30,-12,30,12],
+  ports:[{n:'A',x:-30,y:0,d:[-1,0]},{n:'B',x:30,y:0,d:[1,0]}],
+  prm:[{k:'pc',l:'Avautumispaine',u:'bar',min:0,max:20,st:0.1},{k:'Qn',l:'Nimellisvirtaus Qn',u:'L/min',min:1,max:1000,st:1},
+       {k:'dpn',l:'Paine-ero Qn:llä',u:'bar',min:0.5,max:30,st:0.5},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{pc:0.5,Qn:40,dpn:3,pmax:315}, init:()=>({}),
+  fl:(c,P)=>{const dp=P('A')-P('B');const k=(c.p.Qn/60000)/(c.p.dpn*1e5),s=0.2e5;const q=k*s*sp((dp-c.p.pc*1e5)/s)+1e-14*dp;return {A:q,B:-q};},
+  draw:()=>L(-30,0,-6,0)+`<path class="sy" d="M6,-10L-6,0L6,10"/>`+L(10,0,30,0),
+  dyn:c=>`<circle cx="${r1(4+4*c01(LPM(qf(c,'A'))/c.p.Qn*3))}" r="6" class="syf"/>`,
+  read:c=>`${nf(LPM(qf(c,'A')),1)} L/min`,
+  der:c=>[['Virtaus A→B',nf(LPM(qf(c,'A')),1)+' L/min'],['Paine-ero A−B',nf(BAR(np(c,'A')-np(c,'B')),1)+' bar']]
+},
+throttle:{name:()=>'Kuristusventtiili',px:'KV',bb:[-30,-14,30,14],
+  ports:[{n:'A',x:-30,y:0,d:[-1,0]},{n:'B',x:30,y:0,d:[1,0]}],
+  prm:[{k:'open',l:'Avaus',u:'%',min:0,max:100,st:1},{k:'Qn',l:'Qn täysin auki',u:'L/min',min:1,max:1000,st:1},
+       {k:'dpn',l:'Paine-ero Qn:llä',u:'bar',min:1,max:100,st:1},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{open:40,Qn:30,dpn:10,pmax:315}, init:()=>({}),
+  fl:(c,P)=>{const dp=P('A')-P('B');const q=orif(dp,areaFor(c.p.Qn,c.p.dpn)*c.p.open/100)+1e-14*dp;return {A:q,B:-q};},
+  draw:()=>L(-30,0,30,0)+`<path class="sy" d="M-10,-9Q0,-1 10,-9M-10,9Q0,1 10,9"/>`+ARW(-13,13,13,-13),
+  read:c=>`${c.p.open} %`,
+  der:c=>[['Virtausaukko',nf(areaFor(c.p.Qn,c.p.dpn)*c.p.open/100*1e6,2)+' mm²'],['Virtaus A→B',nf(LPM(qf(c,'A')),2)+' L/min'],
+    ['Paine-ero A−B',nf(BAR(np(c,'A')-np(c,'B')),1)+' bar'],['Tehohäviö',nf(lossW(c)/1000,2)+' kW']],
+  help:()=>`<div class="fld"><span>Haluttu virtaus</span><span class="inp"><input type="number" data-h="Q" value="5" step="0.5"><em>L/min</em></span></div><div class="fld"><span>Paine-ero</span><span class="inp"><input type="number" data-h="dp" value="20" step="1"><em>bar</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>{const A=areaFor(v.Q,v.dp),o=100*A/areaFor(c.p.Qn,c.p.dpn);
+    return {html:`Tarvittava aukko ${nf(A*1e6,2)} mm², eli avaus <b>${nf(o,0)} %</b>${o>100?' (venttiili liian pieni)':''}`,apply:o<=100?{open:Math.round(o)}:null,lab:`Käytä avausta ${nf(Math.min(o,100),0)} %`};}
+},
+owfc:{name:()=>'Vastusventtiili (kuristus + vasta)',px:'VKV',bb:[-40,-24,40,24],
+  ports:[{n:'A',x:-40,y:0,d:[-1,0]},{n:'B',x:40,y:0,d:[1,0]}],
+  prm:[{k:'open',l:'Avaus',u:'%',min:0,max:100,st:1},{k:'Qn',l:'Kuristus Qn täysin auki',u:'L/min',min:1,max:1000,st:1},
+       {k:'dpn',l:'Paine-ero Qn:llä',u:'bar',min:1,max:100,st:1},{k:'pc',l:'Vastaventtiilin avautumispaine',u:'bar',min:0,max:10,st:0.1},
+       {k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{open:30,Qn:30,dpn:10,pc:0.5,pmax:315}, init:()=>({}),
+  fl:(c,P)=>{const dp=P('A')-P('B');const q1=orif(dp,areaFor(c.p.Qn,c.p.dpn)*c.p.open/100);
+    const k=(40/60000)/(3e5),s=0.2e5;const q2=k*s*sp((-dp-c.p.pc*1e5)/s);const q=q1-q2+1e-14*dp;return {A:q,B:-q};},
+  draw:()=>L(-40,0,-20,0)+L(20,0,40,0)+L(-20,-11,-20,11)+L(20,-11,20,11)+L(-20,-11,20,-11)+`<path class="sy" d="M-8,-17Q0,-12 8,-17M-8,-5Q0,-10 8,-5"/>`+
+    ARW(-11,-1,11,-21)+L(-20,11,-5,11)+`<path class="sy" d="M-2,3L8,11L-2,19"/><circle cx="0" cy="11" r="4.5" class="syf"/>`+L(8,11,20,11)+`<rect x="-28" y="-24" width="56" height="48" class="sy dash"/>`,
+  read:c=>`${c.p.open} %`,
+  der:c=>[['Virtaus A→B (kuristettu)',nf(LPM(qf(c,'A')),2)+' L/min'],['Paine-ero A−B',nf(BAR(np(c,'A')-np(c,'B')),1)+' bar'],['Tehohäviö',nf(lossW(c)/1000,2)+' kW']]
+},
+dcv43:{name:()=>'4/3-suuntaventtiili',px:'SV',bb:[-88,-34,88,34],
+  ports:[{n:'A',x:-10,y:-34,d:[0,-1]},{n:'B',x:10,y:-34,d:[0,-1]},{n:'P',x:-10,y:34,d:[0,1]},{n:'T',x:10,y:34,d:[0,1]}],
+  prm:[{k:'center',l:'Keskiasento',sel:[['suljettu','Suljettu'],['tandem','Tandem (P→T)'],['avoin','Avoin'],['kelluva','Kelluva (A,B→T)']]},
+       {k:'mode',l:'Ohjaus',sel:[['lukittuva','Lukittuva (klikkaus)'],['jousi','Jousipalautteinen (pidä painettuna)']]},
+       {k:'Qn',l:'Nimellisvirtaus Qn',u:'L/min',min:1,max:1000,st:1},{k:'dpn',l:'Paine-ero Qn:llä / tie',u:'bar',min:1,max:50,st:0.5},
+       {k:'leak',l:'Vuoto 100 barissa',u:'L/min',min:0,max:5,st:0.01},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{center:'suljettu',mode:'lukittuva',Qn:30,dpn:5,leak:0.02,pmax:315},
+  init:()=>({s:0,tg:0}),
+  pre:(c,dt)=>{c.st.s+=clamp(c.st.tg-c.st.s,-25*dt,25*dt);},
+  fl:(c,P)=>dcvFl(c,P,true),
+  draw:()=>STUBS4,
+  dyn:c=>{const tx=40*c.st.s;return `<g transform="translate(${r1(tx)},0)">${BOX(-40)+PAR(-40)+BOX(0)+CEN(0,c.p.center)+BOX(40)+CRS(40)}${ZZ(-60,-70,0,6,3)}${SOL(-88,c.st.tg>0)}${ZZ(60,70,0,6,3)}${SOL(70,c.st.tg<0)}</g>`;},
+  hit:(c,lx)=>{const tx=40*c.st.s;return lx<tx-62?'a':(lx>tx+62?'b':null);},
+  click:(c,h)=>{if(h==='a')setValve(c,c.st.tg===1?0:1);if(h==='b')setValve(c,c.st.tg===-1?0:-1);},
+  press:(c,h)=>setValve(c,h==='a'?1:-1), release:c=>setValve(c,0),
+  read:c=>'asento '+(c.st.tg>0?'a':c.st.tg<0?'b':'0'),
+  der:c=>dcvDer(c),
+  help:()=>`<div class="fld"><span>Virtaus tien läpi</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>({html:`Painehäviö yhdellä tiellä Δp = Δpn·(Q/Qn)² = <b>${nf(c.p.dpn*(v.Q/c.p.Qn)**2,1)} bar</b>`})
+},
+dcv42:{name:()=>'4/2-suuntaventtiili',px:'SV',bb:[-80,-34,38,34],
+  ports:[{n:'A',x:-10,y:-34,d:[0,-1]},{n:'B',x:10,y:-34,d:[0,-1]},{n:'P',x:-10,y:34,d:[0,1]},{n:'T',x:10,y:34,d:[0,1]}],
+  prm:[{k:'mode',l:'Ohjaus',sel:[['lukittuva','Lukittuva (klikkaus)'],['jousi','Jousipalautteinen (pidä painettuna)']]},
+       {k:'Qn',l:'Nimellisvirtaus Qn',u:'L/min',min:1,max:1000,st:1},{k:'dpn',l:'Paine-ero Qn:llä / tie',u:'bar',min:1,max:50,st:0.5},
+       {k:'leak',l:'Vuoto 100 barissa',u:'L/min',min:0,max:5,st:0.01},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{mode:'lukittuva',Qn:30,dpn:5,leak:0.02,pmax:315},
+  init:()=>({s:-1,tg:-1}),
+  pre:(c,dt)=>{c.st.s+=clamp(c.st.tg-c.st.s,-25*dt,25*dt);},
+  fl:(c,P)=>dcvFl(c,P,false),
+  draw:()=>STUBS4,
+  dyn:c=>{const tx=40*(c.st.s+1)/2;return `<g transform="translate(${r1(tx)},0)">${BOX(-40)+PAR(-40)+BOX(0)+CRS(0)}${SOL(-78,c.st.tg>0)}${ZZ(20,36,0,6,3)}${L(36,-9,36,9)}</g>`;},
+  hit:(c,lx)=>{const tx=40*(c.st.s+1)/2;return lx<tx-58?'a':null;},
+  click:(c,h)=>{if(h==='a')setValve(c,c.st.tg===1?-1:1);},
+  press:c=>setValve(c,1), release:c=>setValve(c,-1),
+  read:c=>'asento '+(c.st.tg>0?'a':'b'),
+  der:c=>dcvDer(c),
+  help:()=>`<div class="fld"><span>Virtaus tien läpi</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>({html:`Painehäviö yhdellä tiellä Δp = Δpn·(Q/Qn)² = <b>${nf(c.p.dpn*(v.Q/c.p.Qn)**2,1)} bar</b>`})
+},
+cyl:{name:()=>'Kaksitoiminen sylinteri',px:'SYL',bb:[-70,-18,100,34],mech:'lin',
+  ports:[{n:'A',x:-56,y:34,d:[0,1]},{n:'B',x:56,y:34,d:[0,1]}],
+  prm:[{k:'D',l:'Männän halkaisija D',u:'mm',min:10,max:400,st:1},{k:'d',l:'Männänvarren halkaisija d',u:'mm',min:5,max:380,st:1},
+       {k:'L',l:'Iskunpituus',u:'mm',min:10,max:3000,st:10},{k:'m',l:'Liikkuva massa',u:'kg',min:0.1,max:50000,st:1},
+       {k:'F',l:'Ulkoinen kuorma F',u:'N',min:-1e6,max:1e6,st:100},{k:'Ft',l:'Kuorman tyyppi',sel:[['vastus','Vastustaa liikettä (kitkamainen)'],['aktiivi','Vakiovoima, vastustaa ulosajoa']]},{k:'ori',l:'Asento',sel:[['vaaka','Vaaka'],['pysty','Pysty, ulosajo ylös']]},
+       {k:'Fc',l:'Kitkavoima',u:'N',min:0,max:1e5,st:10},{k:'cv',l:'Viskoosi vaimennus',u:'N·s/m',min:0,max:1e6,st:100},
+       {k:'x0',l:'Alkuasema',u:'mm',min:0,max:3000,st:10},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{D:50,d:28,L:300,m:50,F:0,Ft:'vastus',ori:'vaaka',Fc:150,cv:800,x0:0,pmax:250},
+  init:c=>({x:Math.min(c.p.x0,c.p.L)/1000,v:0,lock:true,v0:0}),
+  vol:(c,pn)=>{const[AA,AB]=cylA(c);return pn==='A'?AA*c.st.x+0.02e-3:AB*(c.p.L/1000-c.st.x)+0.02e-3;},
+  pre:(c)=>cylPre(c),
+  fl:(c,P,V)=>{const[AA,AB]=cylA(c);return {A:AA*V(),B:-AB*V()};},
+  mr:(c,P,V,dt)=>cylMr(c,P,V,dt),
+  post:(c,dt)=>cylPost(c,dt),
+  draw:()=>`<rect x="-70" y="-18" width="140" height="36" class="syf"/>`+L(-56,18,-56,34)+L(56,18,56,34),
+  dyn:c=>cylDyn(c,false),
+  read:c=>`x ${nf(c.st.x*1000,0)} mm, v ${nf(c.st.v*1000,0)} mm/s`,
+  der:c=>cylDer(c),
+  help:c=>cylHelp(c), helpCalc:(c,v)=>cylHelpCalc(c,v)
+},
+scyl:{name:()=>'Yksitoiminen sylinteri (jousipalautus)',px:'SYL',bb:[-70,-28,100,34],mech:'lin',
+  ports:[{n:'A',x:-56,y:34,d:[0,1]}],
+  prm:[{k:'D',l:'Männän halkaisija D',u:'mm',min:10,max:400,st:1},{k:'L',l:'Iskunpituus',u:'mm',min:10,max:3000,st:10},
+       {k:'m',l:'Liikkuva massa',u:'kg',min:0.1,max:50000,st:1},{k:'F',l:'Ulkoinen kuorma F',u:'N',min:-1e6,max:1e6,st:100},{k:'Ft',l:'Kuorman tyyppi',sel:[['vastus','Vastustaa liikettä (kitkamainen)'],['aktiivi','Vakiovoima, vastustaa ulosajoa']]},
+       {k:'ori',l:'Asento',sel:[['vaaka','Vaaka'],['pysty','Pysty, ulosajo ylös']]},
+       {k:'F0',l:'Jousen esijännitys',u:'N',min:0,max:1e5,st:10},{k:'k',l:'Jousivakio',u:'N/mm',min:0,max:1000,st:0.1},
+       {k:'Fc',l:'Kitkavoima',u:'N',min:0,max:1e5,st:10},{k:'cv',l:'Viskoosi vaimennus',u:'N·s/m',min:0,max:1e6,st:100},
+       {k:'x0',l:'Alkuasema',u:'mm',min:0,max:3000,st:10},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{D:40,L:200,m:150,F:0,Ft:'vastus',ori:'pysty',F0:50,k:0.5,Fc:80,cv:800,x0:0,pmax:250},
+  init:c=>({x:Math.min(c.p.x0,c.p.L)/1000,v:0,lock:true,v0:0}),
+  vol:(c)=>cylA(c)[0]*c.st.x+0.02e-3,
+  pre:(c)=>cylPre(c),
+  fl:(c,P,V)=>({A:cylA(c)[0]*V()}),
+  mr:(c,P,V,dt)=>cylMr(c,P,V,dt),
+  post:(c,dt)=>cylPost(c,dt),
+  draw:()=>`<rect x="-70" y="-18" width="140" height="36" class="syf"/>`+L(-56,18,-56,34)+L(58,-18,58,-27)+L(53,-27,63,-27),
+  dyn:c=>cylDyn(c,true),
+  read:c=>`x ${nf(c.st.x*1000,0)} mm, v ${nf(c.st.v*1000,0)} mm/s`,
+  der:c=>cylDer(c),
+  help:c=>cylHelp(c), helpCalc:(c,v)=>cylHelpCalc(c,v)
+},
+motor:{name:()=>'Hydraulimoottori',px:'M',bb:[-22,-34,62,34],mech:'rot',
+  ports:[{n:'A',x:0,y:-34,d:[0,-1]},{n:'B',x:0,y:34,d:[0,1]}],
+  prm:[{k:'Vg',l:'Kierrostilavuus Vg',u:'cm³/r',min:1,max:5000,st:1},{k:'TL',l:'Kuormitusmomentti',u:'Nm',min:0,max:1e5,st:1},
+       {k:'J',l:'Hitausmomentti J',u:'kg·m²',min:0.001,max:1000,st:0.01},{k:'b',l:'Viskoosi kitka',u:'Nm·s/rad',min:0,max:100,st:0.01},
+       {k:'etahm',l:'Hydromek. hyötysuhde ηhm',u:'',min:0.5,max:1,st:0.01},{k:'leak',l:'Vuoto 100 barissa',u:'L/min',min:0,max:20,st:0.1},
+       {k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{Vg:20,TL:20,J:0.05,b:0.02,etahm:0.9,leak:0.3,pmax:250},
+  init:()=>({w:0,w0:0,th:0}),
+  pre:c=>{c.st.w0=c.st.w;},
+  fl:(c,P,V)=>{const D=c.p.Vg*1e-6/(2*Math.PI),Gl=(c.p.leak/60000)/1e7;const q=D*V()+Gl*(P('A')-P('B'));return {A:q,B:-q};},
+  mr:(c,P,V,dt)=>{const D=c.p.Vg*1e-6/(2*Math.PI),w=V();return c.p.J*(w-c.st.w0)/dt-((P('A')-P('B'))*D*c.p.etahm-c.p.TL*Math.tanh(w/0.5)-c.p.b*w);},
+  post:(c,dt)=>{c.st.w=M.u[c.vi];c.st.th=(c.st.th+c.st.w*dt*180/Math.PI)%360;},
+  draw:()=>`<circle r="20" class="syf"/><polygon class="fi" points="-7,-19 7,-19 0,-8"/><polygon class="fi" points="-7,19 7,19 0,8"/>`+L(0,-20,0,-34)+L(0,20,0,34)+L(20,-2.5,36,-2.5)+L(20,2.5,36,2.5),
+  dyn:c=>`<g transform="translate(48,0) rotate(${r1(c.st.th)})"><circle r="12" class="syf"/>${L(-12,0,12,0)+L(0,-12,0,12)}</g>`,
+  read:c=>`${nf(c.st.w*60/(2*Math.PI),0)} r/min`,
+  der:c=>{const D=c.p.Vg*1e-6/(2*Math.PI),dp=np(c,'A')-np(c,'B'),w=c.st.w;
+    return [['Pyörimisnopeus',nf(w*60/(2*Math.PI),0)+' r/min'],['Paine-ero A−B',nf(BAR(dp),1)+' bar'],['Vääntömomentti',nf(dp*D*c.p.etahm,1)+' Nm'],
+      ['Vääntö / bar',nf(1e5*D*c.p.etahm,3)+' Nm/bar'],['Antoteho',nf(dp*D*c.p.etahm*w/1000,2)+' kW'],['Virtaus A',nf(LPM(qf(c,'A')),1)+' L/min'],
+      ['Teor. nopeus pumpun tuotolla',nf(pumpQsum()*1000/c.p.Vg,0)+' r/min']];},
+  help:()=>`<div class="fld"><span>Tarvittava vääntö</span><span class="inp"><input type="number" data-h="T" value="50" step="1"><em>Nm</em></span></div><div class="fld"><span>Käytettävä paine-ero</span><span class="inp"><input type="number" data-h="dp" value="100" step="5"><em>bar</em></span></div><div class="fld"><span>Haluttu nopeus</span><span class="inp"><input type="number" data-h="n" value="500" step="10"><em>r/min</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>{const Vg=20*Math.PI*v.T/(v.dp*c.p.etahm),Q=Vg*v.n/1000;return {html:`Vg = 20π·T / (Δp·ηhm) = <b>${nf(Vg,1)} cm³/r</b><br>Tarvittava virtaus Q = Vg·n/1000 ≈ <b>${nf(Q,1)} L/min</b> (+ vuoto)`,apply:{Vg:Math.round(Vg)},lab:`Käytä Vg = ${nf(Math.round(Vg),0)} cm³/r`};}
+},
+gauge:{name:()=>'Painemittari',px:'PI',bb:[-18,-18,18,30],
+  ports:[{n:'P',x:0,y:30,d:[0,1]}],
+  prm:[{k:'range',l:'Mitta-alue',u:'bar',min:1,max:1000,st:10}],def:{range:250},init:()=>({}),
+  fl:()=>({}),
+  draw:()=>{let s=`<circle r="16" class="syf"/>`+L(0,16,0,30);for(let i=0;i<=6;i++){const a=(-135+45*i)*Math.PI/180;s+=L(12*Math.sin(a),-12*Math.cos(a),15*Math.sin(a),-15*Math.cos(a));}return s;},
+  dyn:c=>{const a=(-135+270*c01(BAR(np(c,'P'))/c.p.range))*Math.PI/180;return `<line x1="0" y1="0" x2="${r1(11*Math.sin(a))}" y2="${r1(-11*Math.cos(a))}" class="ndl"/><circle r="2.2" class="fi"/>`;},
+  read:c=>`${nf(BAR(np(c,'P')),1)} bar`,
+  der:c=>[['Paine',nf(BAR(np(c,'P')),2)+' bar']]
+},
+flowm:{name:()=>'Virtausmittari',px:'FI',bb:[-30,-16,30,16],
+  ports:[{n:'A',x:-30,y:0,d:[-1,0]},{n:'B',x:30,y:0,d:[1,0]}],
+  prm:[{k:'range',l:'Mitta-alue',u:'L/min',min:1,max:2000,st:1}],def:{range:60},init:()=>({}),
+  fl:(c,P)=>{const q=2e-7*(P('A')-P('B'));return {A:q,B:-q};},
+  draw:()=>`<circle r="14" class="syf"/>`+L(-30,0,-14,0)+L(14,0,30,0)+ARW(-8,0,9,0)+L(-6,-8,6,-8),
+  read:c=>`${nf(LPM(qf(c,'A')),1)} L/min`,
+  der:c=>[['Virtaus A→B',nf(LPM(qf(c,'A')),2)+' L/min'],['Paine',nf(BAR(np(c,'A')),1)+' bar']]
+}
+};
+
+/* shared component logic */
+function dcvFl(c,P,four3){
+  const s=c.st.s,ov=0.12,A=areaFor(c.p.Qn,c.p.dpn);
+  const oa=c01((s-ov)/(1-ov)),ob=c01((-s-ov)/(1-ov));
+  const q={P:0,A:0,B:0,T:0};
+  const path=(a,b,o)=>{if(o<=0)return;const f=orif(P(a)-P(b),A*o);q[a]+=f;q[b]-=f;};
+  path('P','A',oa);path('B','T',oa);path('P','B',ob);path('A','T',ob);
+  if(four3){const oc=c01(1-Math.abs(s)/0.4),t=c.p.center;
+    if(t==='tandem')path('P','T',oc);
+    else if(t==='avoin'){path('P','T',oc);path('A','T',oc);path('B','T',oc);}
+    else if(t==='kelluva'){path('A','T',oc);path('B','T',oc);}}
+  const Gl=(c.p.leak/60000)/1e7;const lk=(a,b)=>{const f=Gl*(P(a)-P(b));q[a]+=f;q[b]-=f;};
+  lk('P','A');lk('P','B');lk('A','T');lk('B','T');
+  return q;
+}
+function dcvDer(c){return [['Kelan asema',c.st.tg>0?'a (P→A, B→T)':c.st.tg<0?'b (P→B, A→T)':'keskiasento'],
+  ['Virtaus P',nf(LPM(qf(c,'P')),1)+' L/min'],['Virtaus A',nf(LPM(qf(c,'A')),1)+' L/min'],['Virtaus B',nf(LPM(qf(c,'B')),1)+' L/min'],
+  ['Paineet P / A / B / T',[np(c,'P'),np(c,'A'),np(c,'B'),np(c,'T')].map(p=>nf(BAR(p),0)).join(' / ')+' bar'],
+  ['Tehohäviö',nf(lossW(c)/1000,2)+' kW']];}
+function setValve(c,tg){c.st.tg=tg;if(sel&&sel.id===c.id)syncValveBtns(c);}
+function cylFg(c){return c.p.ori==='pysty'?c.p.m*G:0;}
+const cylFact=c=>c.p.Ft==='aktiivi'?c.p.F:0, cylFres=c=>c.p.Fc+(c.p.Ft==='aktiivi'?0:Math.abs(c.p.F));
+function cylFh(c,pA,pB){const[AA,AB]=cylA(c);let F=pA*AA-pB*AB-cylFact(c)-cylFg(c);if(c.type==='scyl')F-=c.p.F0+c.p.k*1000*c.st.x;return F;}
+function cylPre(c){
+  const Fh=cylFh(c,np(c,'A'),c.type==='cyl'?np(c,'B'):0),Lm=c.p.L/1000,x=c.st.x,v=c.st.v,Fs=cylFres(c)*1.25;
+  let lock=false;
+  if(x<=1e-7&&Fh<=0&&v<=0)lock=true;
+  else if(x>=Lm-1e-7&&Fh>=0&&v>=0)lock=true;
+  else if(Math.abs(v)<2e-4&&Math.abs(Fh)<=Fs)lock=true;
+  c.st.lock=lock;if(lock)c.st.v=0;c.st.v0=c.st.v;
+}
+function cylMr(c,P,V,dt){
+  const v=V();if(c.st.lock)return v*1e4;
+  const Fh=cylFh(c,P('A'),c.type==='cyl'?P('B'):0);
+  return c.p.m*(v-c.st.v0)/dt-(Fh-c.p.cv*v-cylFres(c)*Math.tanh(v/0.005));
+}
+function cylPost(c,dt){let v=c.st.lock?0:M.u[c.vi];let x=c.st.x+v*dt;const Lm=c.p.L/1000;
+  if(x<0){x=0;if(v<0)v=0;}if(x>Lm){x=Lm;if(v>0)v=0;}c.st.x=x;c.st.v=v;}
+function cylDyn(c,single){
+  const f=c01(c.st.x/(c.p.L/1000)),xp=-64+112*f,end=xp+143;
+  let s=`<rect x="-69" y="-17" width="${r1(xp-3+69)}" height="34" fill="${pcol(np(c,'A'))}" opacity=".5"/>`;
+  if(!single)s+=`<rect x="${r1(xp+3)}" y="-17" width="${r1(Math.max(0,66-xp))}" height="34" fill="${pcol(np(c,'B'))}" opacity=".5"/>`;
+  else s+=ZZ(xp+3,68,-10,6,Math.max(3,Math.round((65-xp)/9)));
+  s+=`<rect x="${r1(xp-3)}" y="-17" width="6" height="34" class="fi"/><rect x="${r1(xp+3)}" y="-4" width="140" height="8" class="syf"/><rect x="${r1(end)}" y="-15" width="18" height="30" class="ldb"/>`;
+  let Fl=cylFact(c)+cylFg(c);if(c.p.Ft!=='aktiivi'&&Math.abs(c.p.F)>1&&Math.abs(c.st.v)>1e-3)Fl=Math.sign(c.st.v)*Math.abs(c.p.F);
+  if(Math.abs(Fl)>1){const a=Fl>0?[end+46,end+22]:[end+22,end+46];s+=ARW(a[0],0,a[1],0,'ldf','ldfh');}
+  return s;
+}
+function cylDer(c){
+  const[AA,AB]=cylA(c),pA=np(c,'A'),pB=c.type==='cyl'?np(c,'B'):0,Fh=pA*AA-pB*AB,Q=pumpQsum(),pm=c.p.pmax*1e5;
+  const r=[['Männän pinta-ala A',nf(AA*1e4,2)+' cm²']];
+  if(c.type==='cyl')r.push(['Rengaspinta-ala A−a',nf(AB*1e4,2)+' cm²'],['Pinta-alasuhde φ',nf(AA/AB,2)]);
+  r.push(['Hydraulinen voima nyt',nf(Fh/1000,2)+' kN'],['Asema / nopeus',`${nf(c.st.x*1000,0)} mm / ${nf(c.st.v*1000,0)} mm/s`],
+    ['Ulosajovoima, '+c.p.pmax+' bar',nf(pm*AA/1000,1)+' kN']);
+  if(c.type==='cyl')r.push(['Sisäänajovoima, '+c.p.pmax+' bar',nf(pm*AB/1000,1)+' kN']);
+  r.push(['Ulosajo pumpun tuotolla',nf(Q/60000/AA*1000,0)+' mm/s']);
+  if(c.type==='cyl')r.push(['Sisäänajo pumpun tuotolla',nf(Q/60000/AB*1000,0)+' mm/s']);
+  r.push(['Iskutilavuus A-puoli',nf(AA*c.p.L/1000*1000,2)+' L']);
+  if(c.p.ori==='pysty')r.push(['Kuorman paino m·g',nf(c.p.m*G/1000,2)+' kN']);
+  return r;
+}
+function cylHelp(){return `<div class="fld"><span>Tarvittava voima</span><span class="inp"><input type="number" data-h="F" value="10" step="0.5"><em>kN</em></span></div>
+<div class="fld"><span>Käyttöpaine</span><span class="inp"><input type="number" data-h="p" value="100" step="5"><em>bar</em></span></div>
+<div class="fld"><span>Haluttu ulosajonopeus</span><span class="inp"><input type="number" data-h="v" value="100" step="10"><em>mm/s</em></span></div><div class="res" data-hres></div>`;}
+function cylHelpCalc(c,v){
+  const Dreq=Math.sqrt(4*v.F*1000/(Math.PI*v.p*1e5))*1000;const Ds=STD_D.find(x=>x>=Dreq)||STD_D[STD_D.length-1];
+  const rod=STD_ROD[Ds];const Q=Math.PI/4*(Ds/1000)**2*v.v/1000*60000;
+  return {html:`D = √(4F / (π·p)) = ${nf(Dreq,1)} mm → vakiokoko <b>Ø${Ds}/${rod}</b><br>Tilavuusvirta ulosajoon Q = A·v = <b>${nf(Q,1)} L/min</b>`,
+    apply:c.type==='cyl'?{D:Ds,d:rod}:{D:Ds},lab:`Käytä Ø${Ds}${c.type==='cyl'?'/'+rod:''}`};
+}
+
+/* ---------- topology & solver ---------- */
+function rebuild(){
+  for(const c of comps){if(c.nets)for(const pn in c.nets){const i=c.nets[pn];if(M.nets[i])portP[c.id+':'+pn]=M.nets[i].p;}}
+  const parent={},keys=[];
+  for(const c of comps){c.pn=TY[c.type].ports.map(p=>p.n);for(const pn of c.pn){const k=c.id+':'+pn;parent[k]=k;keys.push(k);}}
+  const find=k=>{while(parent[k]!==k){parent[k]=parent[parent[k]];k=parent[k];}return k;};
+  for(const w of wires){if(parent[w.a]!==undefined&&parent[w.b]!==undefined){const a=find(w.a),b=find(w.b);if(a!==b)parent[a]=b;}}
+  const rIdx={},nets=[];
+  for(const k of keys){const r=find(k);if(!(r in rIdx)){rIdx[r]=nets.length;nets.push({ports:[],p:0,cav:false});}nets[rIdx[r]].ports.push(k);}
+  for(const n of nets){const ps=n.ports.map(k=>portP[k]).filter(v=>v!==undefined);n.p=ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:0;}
+  for(const c of comps){c.nets={};for(const pn of c.pn)c.nets[pn]=rIdx[find(c.id+':'+pn)];}
+  let idx=nets.length;const h=[];for(let i=0;i<nets.length;i++)h.push(20);
+  for(const c of comps){if(TY[c.type].mech){c.vi=idx++;h.push(TY[c.type].mech==='lin'?1e-5:1e-3);}else c.vi=-1;
+    c.eq=c.pn.map(pn=>c.nets[pn]);if(c.vi>=0)c.eq.push(c.vi);c.deps=[...new Set(c.eq)];c.q=c.q||{};}
+  const nU=idx;
+  M={nets,nU,h,u:new Float64Array(nU),R:new Float64Array(nU),b:new Float64Array(nU),C:new Float64Array(nets.length),pOld:new Float64Array(nets.length),
+     J:Array.from({length:nU},()=>new Float64Array(nU))};
+}
+function evalC(c,dt){
+  const t=TY[c.type],u=M.u;const P=n=>u[c.nets[n]];const V=()=>u[c.vi];
+  const q=t.fl?t.fl(c,P,V):null;const out=new Array(c.eq.length);
+  for(let i=0;i<c.pn.length;i++)out[i]=q?(q[c.pn[i]]||0):0;
+  if(c.vi>=0)out[c.pn.length]=t.mr(c,P,V,dt);
+  return out;
+}
+function assemble(dt){
+  const nN=M.nets.length,nU=M.nU,u=M.u,R=M.R,J=M.J;
+  R.fill(0);for(let i=0;i<nU;i++)J[i].fill(0);
+  for(let k=0;k<nN;k++){R[k]+=M.C[k]*(u[k]-M.pOld[k])/dt;J[k][k]+=M.C[k]/dt;}
+  for(const c of comps){
+    const base=evalC(c,dt),eq=c.eq;
+    for(let i=0;i<eq.length;i++)R[eq[i]]+=base[i];
+    for(const j of c.deps){const h=M.h[j],o=u[j];u[j]=o+h;const pe=evalC(c,dt);u[j]=o;
+      for(let i=0;i<eq.length;i++)J[eq[i]][j]+=(pe[i]-base[i])/h;}
+  }
+}
+function gauss(A,b,n){
+  for(let i=0;i<n;i++){let m=0;const r=A[i];for(let j=0;j<n;j++){const v=Math.abs(r[j]);if(v>m)m=v;}if(m>0){for(let j=0;j<n;j++)r[j]/=m;b[i]/=m;}}
+  for(let k=0;k<n;k++){
+    let p=k,m=Math.abs(A[k][k]);for(let i=k+1;i<n;i++){const v=Math.abs(A[i][k]);if(v>m){m=v;p=i;}}
+    if(m<1e-300)return false;
+    if(p!==k){const t=A[p];A[p]=A[k];A[k]=t;const tb=b[p];b[p]=b[k];b[k]=tb;}
+    const Ak=A[k],piv=Ak[k];
+    for(let i=k+1;i<n;i++){const Ai=A[i],f=Ai[k]/piv;if(f!==0){for(let j=k;j<n;j++)Ai[j]-=f*Ak[j];b[i]-=f*b[k];}}
+  }
+  for(let k=n-1;k>=0;k--){let s=b[k];const Ak=A[k];for(let j=k+1;j<n;j++)s-=Ak[j]*b[j];b[k]=s/Ak[k];}
+  return true;
+}
+let numErr=false,sampleT=0;
+function stepSim(dt){
+  const nN=M.nets.length,nU=M.nU,u=M.u;
+  for(const c of comps){const t=TY[c.type];if(t.pre)t.pre(c,dt);}
+  M.C.fill(0);
+  for(const c of comps){const t=TY[c.type];for(const pn of c.pn)M.C[c.nets[pn]]+=(VPORT+(t.vol?t.vol(c,pn):0))/BETA;}
+  for(let k=0;k<nN;k++){M.pOld[k]=M.nets[k].p;u[k]=M.nets[k].p;}
+  for(const c of comps)if(c.vi>=0)u[c.vi]=c.type==='motor'?c.st.w:c.st.v;
+  const saved=Float64Array.from(u);
+  for(let it=0;it<8;it++){
+    assemble(dt);const b=M.b;for(let i=0;i<nU;i++)b[i]=-M.R[i];
+    if(!gauss(M.J,b,nU))break;
+    let mp=0,mv=0;
+    for(let i=0;i<nN;i++){const d=clamp(b[i],-1e7,1e7);u[i]+=d;mp=Math.max(mp,Math.abs(d));}
+    for(let i=nN;i<nU;i++){u[i]+=b[i];mv=Math.max(mv,Math.abs(b[i]));}
+    if(mp<30&&mv<1e-7)break;
+  }
+  for(let i=0;i<nU;i++)if(!Number.isFinite(u[i])){u.set(saved);numErr=true;for(const n of M.nets)n.p=0;return;}
+  for(const c of comps){const e=evalC(c,dt);for(let i=0;i<c.pn.length;i++)c.q[c.pn[i]]=e[i];}
+  for(let k=0;k<nN;k++){const p=u[k];M.nets[k].cav=p<PFLOOR;M.nets[k].p=Math.max(p,PFLOOR);}
+  for(const c of comps){const t=TY[c.type];if(t.post)t.post(c,dt);}
+  simT+=dt;
+  if(simT-sampleT>=0.02){sampleT=simT;for(const pr of probes){const v=probeVal(pr);pr.buf.push([simT,v]);while(pr.buf.length&&pr.buf[0][0]<simT-10)pr.buf.shift();}}
+}
+
+/* ---------- geometry ---------- */
+function rotP(x,y,r){switch(((r%360)+360)%360){case 90:return[-y,x];case 180:return[-x,-y];case 270:return[y,-x];default:return[x,y];}}
+function portsW(c){return TY[c.type].ports.map(p=>{const[x,y]=rotP(p.x,p.y,c.rot),[dx,dy]=rotP(p.d[0],p.d[1],c.rot);
+  return {n:p.n,x:c.x+x,y:c.y+y,d:[Math.round(dx),Math.round(dy)],k:c.id+':'+p.n,c};});}
+function bbW(c){const b=TY[c.type].bb,a=rotP(b[0],b[1],c.rot),d=rotP(b[2],b[3],c.rot);
+  return [c.x+Math.min(a[0],d[0]),c.y+Math.min(a[1],d[1]),c.x+Math.max(a[0],d[0]),c.y+Math.max(a[1],d[1])];}
+function portByKey(k){const[id,pn]=k.split(':');const c=byId[id];if(!c)return null;return portsW(c).find(p=>p.n===pn)||null;}
+function route(p1,p2){
+  const s1={x:p1.x+p1.d[0]*14,y:p1.y+p1.d[1]*14},s2={x:p2.x+p2.d[0]*14,y:p2.y+p2.d[1]*14};
+  const mx=(s1.x+s2.x)/2,my=(s1.y+s2.y)/2;
+  const cands=[[{x:s2.x,y:s1.y}],[{x:s1.x,y:s2.y}],[{x:mx,y:s1.y},{x:mx,y:s2.y}],[{x:s1.x,y:my},{x:s2.x,y:my}]];
+  let best=null,bc=Infinity;
+  for(const mid of cands){const pts=[p1,s1,...mid,s2,p2];let cost=0,pd=null;
+    for(let i=1;i<pts.length;i++){const dx=pts[i].x-pts[i-1].x,dy=pts[i].y-pts[i-1].y,l=Math.abs(dx)+Math.abs(dy);if(l<0.5)continue;
+      const d=[Math.sign(dx),Math.sign(dy)];if(pd&&d[0]===-pd[0]&&d[1]===-pd[1])cost+=1000;cost+=l;if(pd&&(d[0]!==pd[0]||d[1]!==pd[1]))cost+=6;pd=d;}
+    if(cost<bc){bc=cost;best=pts;}}
+  const out=[best[0]];for(let i=1;i<best.length;i++){const a=out[out.length-1],p=best[i];if(Math.abs(p.x-a.x)+Math.abs(p.y-a.y)>0.5)out.push(p);}
+  return 'M'+out.map(p=>`${r1(p.x)},${r1(p.y)}`).join('L');
+}
+
+/* ---------- DOM layers ---------- */
+const cv=$('#cv'),world=$('#world'),lW=$('#lWires'),lC=$('#lComps'),lS=$('#lSel'),lP=$('#lPorts'),lL=$('#lLabels'),lPr=$('#lProbes'),tmpW=$('#tmpWire');
+function mk(tag,cls,parent){const e=document.createElementNS(NS,tag);if(cls)e.setAttribute('class',cls);if(parent)parent.appendChild(e);return e;}
+function applyView(){world.setAttribute('transform',`translate(${r1(view.tx)},${r1(view.ty)}) scale(${view.k})`);
+  $('#gridPat').setAttribute('patternTransform',`translate(${r1(view.tx)},${r1(view.ty)}) scale(${view.k})`);}
+function toWorld(e){const r=cv.getBoundingClientRect();return {x:(e.clientX-r.left-view.tx)/view.k,y:(e.clientY-r.top-view.ty)/view.k};}
+function mkCompDom(c){
+  const g=mk('g','comp',lC);g.dataset.id=c.id;c.el=g;c.stEl=mk('g','',g);c.dyEl=mk('g','',g);c.dyS=null;
+  const lb=mk('g','',lL);c.lt=mk('text','lt',lb);c.rt=mk('text','rt',lb);c.lbEl=lb;
+  renderStatic(c);placeComp(c);
+}
+function renderStatic(c){const t=TY[c.type],b=t.bb;c.stEl.innerHTML=`<rect class="hit" x="${b[0]-4}" y="${b[1]-4}" width="${b[2]-b[0]+8}" height="${b[3]-b[1]+8}"/>`+t.draw(c);c.dyS=null;}
+function placeComp(c){c.el.setAttribute('transform',`translate(${c.x},${c.y}) rotate(${c.rot})`);
+  const b=bbW(c);c.lt.setAttribute('x',b[0]);c.lt.setAttribute('y',b[1]-7);c.lt.textContent=c.label;c.rt.setAttribute('x',b[0]);c.rt.setAttribute('y',b[3]+16);}
+function renderPorts(){
+  const con=new Set();for(const w of wires){con.add(w.a);con.add(w.b);}
+  let s='';for(const c of comps)for(const p of portsW(c)){
+    s+=`<circle class="port${con.has(p.k)?' con':''}" data-port="${p.k}" cx="${p.x}" cy="${p.y}" r="4.5"/>`;
+    const tx=p.d[1]!==0?p.x+7:p.x+(p.d[0]>0?-2:-6),ty=p.d[1]!==0?p.y+(p.d[1]>0?-3:10):p.y-7;
+    s+=`<text class="pt" x="${tx}" y="${ty}">${p.n}</text>`;}
+  lP.innerHTML=s;
+}
+function renderWires(){
+  lW.innerHTML='';
+  for(const w of wires){const a=portByKey(w.a),b=portByKey(w.b);if(!a||!b)continue;
+    const g=mk('g','wire'+(sel&&sel.w===w.id?' selw':''),lW);g.dataset.w=w.id;const d=route(a,b);
+    w.hp=mk('path','wh',g);w.bp=mk('path','wb',g);w.fp=mk('path','wf',g);[w.hp,w.bp,w.fp].forEach(p=>p.setAttribute('d',d));w.g=g;w.off=w.off||0;}
+}
+function renderSel(){
+  lS.innerHTML='';
+  if(sel&&sel.id&&byId[sel.id]){const b=bbW(byId[sel.id]);const r=mk('rect','selr',lS);r.setAttribute('x',b[0]-8);r.setAttribute('y',b[1]-8);r.setAttribute('width',b[2]-b[0]+16);r.setAttribute('height',b[3]-b[1]+16);r.setAttribute('rx',6);}
+  for(const w of wires)if(w.g)w.g.classList.toggle('selw',!!(sel&&sel.w===w.id));
+}
+function renderProbesDom(){
+  lPr.innerHTML='';
+  for(const pr of probes){const g=mk('g','probe',lPr);g.dataset.pr=pr.id;pr.line=mk('line','',g);pr.rect=mk('rect','',g);pr.text=mk('text','',g);
+    pr.line.setAttribute('stroke',pr.color);pr.rect.setAttribute('stroke',pr.color);pr.rect.setAttribute('rx',5);}
+  renderProbeRows();
+}
+function syncAll(){for(const c of comps)placeComp(c);renderPorts();renderWires();renderSel();}
+
+/* ---------- probes ---------- */
+const PCOL=['#D23B2E','#2E8B57','#1E5DBA','#8E5BD0','#C77A00','#0E8C9A','#B4407A','#5A6B2E'];
+function probeTargetPt(pr){if(pr.kind==='p'||pr.kind==='q'){const p=portByKey(pr.target);return p?{x:p.x,y:p.y}:null;}
+  const c=byId[pr.target];return c?{x:c.x,y:c.y}:null;}
+function probeMeta(pr){
+  if(pr.kind==='p'){const[id,pn]=pr.target.split(':');return {n:'Paine',u:'bar',lab:`${byId[id]?.label}.${pn}`,d:1};}
+  if(pr.kind==='q'){const[id,pn]=pr.target.split(':');return {n:'Virtaus',u:'L/min',lab:`${byId[id]?.label}.${pn}`,d:1};}
+  const c=byId[pr.target];const mot=c&&c.type==='motor';
+  if(pr.kind==='F')return mot?{n:'Vääntö',u:'Nm',lab:c.label,d:1}:{n:'Voima',u:'kN',lab:c?.label,d:2};
+  return mot?{n:'Pyörimisnopeus',u:'r/min',lab:c.label,d:0}:{n:'Nopeus',u:'mm/s',lab:c?.label,d:0};
+}
+function probeVal(pr){
+  if(pr.kind==='p'||pr.kind==='q'){const[id,pn]=pr.target.split(':');const c=byId[id];if(!c)return NaN;return pr.kind==='p'?BAR(np(c,pn)):LPM(qf(c,pn));}
+  const c=byId[pr.target];if(!c)return NaN;
+  if(c.type==='motor'){if(pr.kind==='F')return (np(c,'A')-np(c,'B'))*c.p.Vg*1e-6/(2*Math.PI)*c.p.etahm;return c.st.w*60/(2*Math.PI);}
+  if(pr.kind==='F'){const[AA,AB]=cylA(c);return (np(c,'A')*AA-(c.type==='cyl'?np(c,'B')*AB:0))/1000;}
+  return c.st.v*1000;
+}
+function addProbe(kind,target){
+  if(probes.some(p=>p.kind===kind&&p.target===target))return;
+  snapshot();
+  const n=probes.length;probes.push({id:'pr'+(nextId++),kind,target,color:PCOL[n%PCOL.length],dx:26,dy:-30-((n%3)*22),buf:[]});
+  renderProbesDom();save();
+}
+function renderProbeRows(){
+  const root=$('#probeRows');
+  if(!probes.length){root.innerHTML='<p class="empty">Ei antureita. Paineanturi ja virtausanturi kiinnitetään komponentin liitäntään, voima- ja nopeusanturi sylinteriin tai moottoriin.</p>';return;}
+  root.innerHTML=probes.map(pr=>{const m=probeMeta(pr);return `<div class="prow" data-pr="${pr.id}"><div class="pl" style="border-left:4px solid ${pr.color};padding-left:7px">${m.n} ${esc(m.lab||'')}<b data-val>–</b></div><canvas data-cv></canvas><button type="button" data-rm title="Poista anturi" aria-label="Poista anturi">✕</button></div>`;}).join('');
+  for(const pr of probes){const row=root.querySelector(`[data-pr="${pr.id}"]`);pr.rowVal=row.querySelector('[data-val]');pr.cvs=row.querySelector('[data-cv]');}
+}
+$('#probeRows').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const id=b.closest('[data-pr]').dataset.pr;snapshot();probes=probes.filter(p=>p.id!==id);renderProbesDom();save();});
+function drawScope(){
+  const css=getComputedStyle(document.documentElement);const muted=css.getPropertyValue('--muted').trim(),grid=css.getPropertyValue('--grid2').trim();
+  for(const pr of probes){const cvs=pr.cvs;if(!cvs)continue;const m=probeMeta(pr);const v=probeVal(pr);
+    pr.rowVal.textContent=`${nf(v,m.d)} ${m.u}`;
+    const dpr=window.devicePixelRatio||1,w=cvs.clientWidth,h=cvs.clientHeight;if(!w)continue;
+    if(cvs.width!==Math.round(w*dpr)){cvs.width=Math.round(w*dpr);cvs.height=Math.round(h*dpr);}
+    const g=cvs.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+    const buf=pr.buf;let lo=0,hi=0;for(const[,y]of buf){if(y<lo)lo=y;if(y>hi)hi=y;}if(hi-lo<1e-6){hi+=1;}
+    const pad=(hi-lo)*0.1;lo-=lo<0?pad:0;hi+=pad;
+    const t0=simT-10,X=t=>(t-t0)/10*(w-4)+2,Y=y=>h-4-(y-lo)/(hi-lo)*(h-8);
+    g.strokeStyle=grid;g.lineWidth=1;g.beginPath();g.moveTo(0,Y(0));g.lineTo(w,Y(0));g.stroke();
+    g.strokeStyle=pr.color;g.lineWidth=1.8;g.beginPath();buf.forEach(([t,y],i)=>{i?g.lineTo(X(t),Y(y)):g.moveTo(X(t),Y(y));});g.stroke();
+    g.fillStyle=muted;g.font='11px Barlow, system-ui, sans-serif';g.fillText(nf(hi,m.d),4,11);g.fillText(nf(lo,m.d),4,h-5);
+  }
+}
+function updateProbeTags(){
+  for(const pr of probes){const pt=probeTargetPt(pr);if(!pt||!pr.text)continue;const m=probeMeta(pr);
+    const tx=pt.x+pr.dx,ty=pt.y+pr.dy;const s=`${pr.kind==='p'?'p':pr.kind==='q'?'Q':pr.kind==='F'?(m.u==='Nm'?'T':'F'):(m.u==='r/min'?'n':'v')} ${nf(probeVal(pr),m.d)} ${m.u}`;
+    pr.text.textContent=s;pr.text.setAttribute('x',tx+6);pr.text.setAttribute('y',ty+5);
+    const wdt=s.length*6.6+10;pr.rect.setAttribute('x',tx);pr.rect.setAttribute('y',ty-10);pr.rect.setAttribute('width',wdt);pr.rect.setAttribute('height',20);
+    pr.line.setAttribute('x1',pt.x);pr.line.setAttribute('y1',pt.y);pr.line.setAttribute('x2',tx+(pr.dx<0?wdt:0));pr.line.setAttribute('y2',ty);}
+}
+
+/* ---------- wire flows (tree peeling per net) ---------- */
+function wireFlows(){
+  const inj={},adj={};
+  for(const c of comps)for(const pn of c.pn){const k=c.id+':'+pn;inj[k]=-qf(c,pn);adj[k]=[];}
+  for(const w of wires){w.f=NaN;if(adj[w.a]&&adj[w.b]){adj[w.a].push(w);adj[w.b].push(w);}}
+  const deg={},done=new Set(),queue=[];
+  for(const k in adj){deg[k]=adj[k].length;if(deg[k]===1)queue.push(k);}
+  while(queue.length){const v=queue.pop();if(deg[v]!==1)continue;const w=adj[v].find(x=>!done.has(x.id));if(!w)continue;
+    done.add(w.id);const u=w.a===v?w.b:w.a;w.f=(w.a===v?1:-1)*inj[v];inj[u]+=inj[v];deg[v]--;deg[u]--;if(deg[u]===1)queue.push(u);}
+}
+
+/* ---------- render loop ---------- */
+let lastTs=null,acc=0,frame=0;
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function loop(ts){
+  const fdt=lastTs===null?0:Math.min(0.1,(ts-lastTs)/1000);lastTs=ts;
+  if(running&&M.nU>0){acc+=fdt*speed;let n=0;while(acc>=DT&&n<120){stepSim(DT);acc-=DT;n++;}if(n>=120)acc=0;}
+  render(fdt);requestAnimationFrame(loop);
+}
+function render(fdt){
+  frame++;
+  for(const c of comps){const t=TY[c.type];if(t.dyn){const s=t.dyn(c);if(s!==c.dyS){c.dyEl.innerHTML=s;c.dyS=s;}}}
+  wireFlows();
+  for(const w of wires){if(!w.bp)continue;const pa=portByKey(w.a);const c=pa&&pa.c;const p=c?np(c,pa.n):0;w.bp.setAttribute('stroke',pcol(p));
+    const Q=LPM(w.f);if(Number.isFinite(Q)&&Math.abs(Q)>0.03){w.fp.style.opacity=1;if(running&&!reduce){w.off-=Math.sign(Q)*Math.min(90,12+32*Math.log10(1+Math.abs(Q)))*fdt*speed;w.fp.style.strokeDashoffset=r1(w.off);}}
+    else w.fp.style.opacity=0;}
+  if(frame%3===0)for(const c of comps){c.rt.textContent=showRead&&TY[c.type].read?TY[c.type].read(c):'';}
+  updateProbeTags();
+  if(frame%2===0)drawScope();
+  if(frame%10===0)updDer();
+  if(frame%20===0)updWarns();
+  $('#simTime').textContent=`t = ${nf(simT,2)} s`;
+}
+
+/* ---------- warnings ---------- */
+function updWarns(){
+  const out=[];
+  if(numErr){out.push(['Numeerinen virhe, paineet nollattiin. Tarkista kytkennät.','']);}
+  const hasPRV=comps.some(c=>c.type==='prv');
+  for(const c of comps){const t=TY[c.type];
+    const lim=c.p.pmax||c.p.pr;if(lim){const pm=Math.max(...c.pn.map(pn=>np(c,pn)));if(pm>lim*1e5*1.02)out.push([`${c.label}: paine ${nf(BAR(pm),0)} bar ylittää sallitun ${lim} bar`,'']);}
+    if(c.type==='pump'&&c.st.on&&np(c,'S')<-0.4e5)out.push([`${c.label}: pumppu ei saa öljyä. Kytke imuliitäntä S säiliöön.`,'']);
+  }
+  if(M.nets.some(n=>n.cav))out.push(['Alipaine (kavitaatio) piirissä. Tarkista imu- ja paluulinjat tai kuorman jarrutus.','']);
+  if(!hasPRV&&comps.some(c=>c.type==='pump'&&c.p.kind==='vakio')&&M.nets.some(n=>n.p>350e5))out.push(['Paine karkaa: vakiotilavuuspumppu tarvitsee paineenrajoitusventtiilin.','']);
+  if(!comps.length)out.push(['Vedä komponentteja vasemmalta piirtoalustalle tai valitse esimerkkipiiri.','info']);
+  else if(!wires.length)out.push(['Kytke komponentit vetämällä liitännästä toiseen.','info']);
+  $('#warns').innerHTML=out.slice(0,4).map(([s,c])=>`<div class="${c}">${esc(s)}</div>`).join('');
+}
+
+/* ---------- inspector ---------- */
+const insp=$('#insp');
+function buildInsp(){
+  if(sel&&sel.w){const w=wires.find(x=>x.id===sel.w);if(!w){sel=null;return buildInsp();}
+    const a=portByKey(w.a),b=portByKey(w.b);
+    insp.innerHTML=`<h2>Letku</h2><p>${esc(a?.c.label)}.${a?.n} ↔ ${esc(b?.c.label)}.${b?.n}</p><dl class="der" id="der"></dl><div class="acts"><button class="btn danger" data-act="del">Poista kytkentä</button></div>`;updDer();return;}
+  if(!sel||!byId[sel.id]){
+    insp.innerHTML=`<h2>Piiri</h2><p>Valitse komponentti nähdäksesi sen mitoituksen ja lasketut arvot.</p>
+    <dl class="der" id="der"></dl>
+    <h3>Pikaohje</h3>
+    <p>Vedä komponentti paletista alustalle tai klikkaa sitä. Kytke vetämällä liitännästä (pieni ympyrä) toiseen liitäntään. Samaan liitäntään voi kytkeä useita letkuja, jolloin syntyy haara.</p>
+    <p>Ohjaa suuntaventtiiliä klikkaamalla sen kelaa (a vasemmalla, b oikealla). Pumpun voi pysäyttää klikkaamalla sähkömoottoria M.</p>
+    <p class="kbd">Näppäimet: Del poistaa, R kiertää, välilyönti käynnistää tai pysäyttää, Ctrl+Z kumoaa. Rulla zoomaa, tyhjän alueen veto siirtää näkymää.</p>`;updDer();return;}
+  const c=byId[sel.id],t=TY[c.type];
+  let h=`<div class="ih"><input id="lblIn" value="${esc(c.label)}" aria-label="Tunnus" maxlength="10"><span class="tn">${esc(t.name(c))}</span></div>`;
+  if(c.type==='dcv43')h+=`<div class="ctl"><span>Kelan asema</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="0">0</button><button data-v="-1">b</button></div></div>`;
+  if(c.type==='dcv42')h+=`<div class="ctl"><span>Kelan asema</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="-1">b (lepo)</button></div></div>`;
+  if(c.type==='pump')h+=`<div class="ctl"><span>Sähkömoottori</span><button class="btn ${c.st.on?'on':''}" data-act="pump">${c.st.on?'Käy, pysäytä':'Pysäytetty, käynnistä'}</button></div>`;
+  if(c.type==='throttle'||c.type==='owfc')h+=`<div class="ctl" style="flex-direction:column;align-items:stretch;gap:4px"><span>Avaus <b id="openV">${c.p.open} %</b></span><input type="range" class="rng" min="0" max="100" step="1" value="${c.p.open}" id="openR" aria-label="Avaus"></div>`;
+  h+=`<h3>Mitoitus</h3>`;
+  for(const pd of t.prm){if(pd.show&&!pd.show(c))continue;if(pd.k==='open')continue;
+    if(pd.sel)h+=`<label class="fld"><span>${pd.l}</span><span class="inp"><select data-k="${pd.k}">${pd.sel.map(([v,l])=>`<option value="${v}"${c.p[pd.k]===v?' selected':''}>${l}</option>`).join('')}</select></span></label>`;
+    else h+=`<label class="fld"><span>${pd.l}</span><span class="inp"><input type="number" data-k="${pd.k}" value="${c.p[pd.k]}" min="${pd.min}" max="${pd.max}" step="${pd.st}"><em>${pd.u}</em></span></label>`;}
+  h+=`<h3>Lasketut arvot</h3><dl class="der" id="der"></dl>`;
+  if(t.help)h+=`<h3>Mitoitusapu</h3><div class="help" id="help">${t.help(c)}<button class="btn" data-act="apply" id="applyBtn" style="display:none"></button></div>`;
+  h+=`<div class="acts"><button class="btn" data-act="rot">Kierrä 90°</button><button class="btn danger" data-act="del">Poista</button></div>`;
+  insp.innerHTML=h;
+  if(c.type==='dcv43'||c.type==='dcv42')syncValveBtns(c);
+  updDer();if(t.help)updHelp();
+}
+function syncValveBtns(c){const s=$('#vseg');if(!s)return;s.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===c.st.tg));}
+function updDer(){
+  const el=$('#der');if(!el)return;let rows=[];
+  if(sel&&sel.w){const w=wires.find(x=>x.id===sel.w);if(w){const a=portByKey(w.a);const p=a?np(a.c,a.n):0;rows=[['Paine',nf(BAR(p),1)+' bar'],['Virtaus letkussa',Number.isFinite(w.f)?nf(Math.abs(LPM(w.f)),2)+' L/min':'ei määritelty (silmukka)']];}}
+  else if(sel&&byId[sel.id]){const c=byId[sel.id];rows=TY[c.type].der?TY[c.type].der(c):[];}
+  else{const Q=pumpQsum();rows=[['Komponentteja',String(comps.length)],['Kytkentöjä',String(wires.length)],['Paineverkkoja',String(M.nets.length)],['Pumppujen tuotto yht.',nf(Q,1)+' L/min'],['Simulaatioaika',nf(simT,1)+' s']];}
+  el.innerHTML=rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+}
+let helpRes=null;
+function updHelp(){
+  const c=sel&&byId[sel.id];const root=$('#help');if(!c||!root)return;const v={};root.querySelectorAll('[data-h]').forEach(i=>v[i.dataset.h]=parseFloat(i.value)||0);
+  const ok=Object.values(v).every(x=>x>0);const r=ok?TY[c.type].helpCalc(c,v):{html:'Anna positiiviset arvot.'};helpRes=r;
+  root.querySelector('[data-hres]').innerHTML=r.html;const ab=$('#applyBtn');if(r.apply){ab.style.display='';ab.textContent=r.lab;}else ab.style.display='none';
+}
+insp.addEventListener('input',e=>{
+  if(e.target.matches('[data-h]'))updHelp();
+  if(e.target.id==='openR'){const c=byId[sel.id];c.p.open=+e.target.value;$('#openV').textContent=c.p.open+' %';}
+});
+insp.addEventListener('change',e=>{
+  const c=sel&&byId[sel.id];if(!c)return;
+  if(e.target.id==='lblIn'){snapshot();c.label=e.target.value.trim()||c.label;placeComp(c);renderProbeRows();save();return;}
+  if(e.target.id==='openR'){save();return;}
+  const k=e.target.dataset.k;if(!k)return;const pd=TY[c.type].prm.find(p=>p.k===k);snapshot();
+  if(pd.sel)c.p[k]=e.target.value;
+  else{let v=parseFloat(String(e.target.value).replace(',','.'));if(!Number.isFinite(v))v=c.p[k];c.p[k]=clamp(v,pd.min,pd.max);}
+  fixParams(c);renderStatic(c);placeComp(c);buildInsp();save();
+});
+function fixParams(c){if(c.type==='cyl'&&c.p.d>c.p.D-4)c.p.d=Math.max(5,c.p.D-4);
+  if((c.type==='cyl'||c.type==='scyl')&&c.st.x>c.p.L/1000)c.st.x=c.p.L/1000;}
+insp.addEventListener('click',e=>{
+  const vb=e.target.closest('#vseg button');if(vb){setValve(byId[sel.id],+vb.dataset.v);return;}
+  const a=e.target.closest('[data-act]');if(!a)return;const act=a.dataset.act;
+  if(act==='del')deleteSel();
+  if(act==='rot')rotateSel();
+  if(act==='pump'){const c=byId[sel.id];c.st.on=!c.st.on;buildInsp();}
+  if(act==='apply'&&helpRes&&helpRes.apply){const c=byId[sel.id];snapshot();Object.assign(c.p,helpRes.apply);fixParams(c);renderStatic(c);placeComp(c);buildInsp();save();}
+});
+
+/* ---------- editing ops ---------- */
+function newLabel(type){const pre=TY[type].px;let i=1;while(comps.some(c=>c.label===pre+i))i++;return pre+i;}
+function addComp(type,x,y,p={},opt={}){
+  const c={id:opt.id||('c'+(nextId++)),type,x:Math.round(x/10)*10,y:Math.round(y/10)*10,rot:opt.rot||0,label:opt.label||newLabel(type),p:Object.assign({},TY[type].def,p)};
+  c.st=TY[type].init(c);comps.push(c);byId[c.id]=c;mkCompDom(c);return c;
+}
+function deleteSel(){
+  if(!sel)return;snapshot();
+  if(sel.w){wires=wires.filter(w=>w.id!==sel.w);}
+  else if(byId[sel.id]){const id=sel.id;const c=byId[id];c.el.remove();c.lbEl.remove();comps=comps.filter(x=>x.id!==id);delete byId[id];
+    wires=wires.filter(w=>!w.a.startsWith(id+':')&&!w.b.startsWith(id+':'));
+    probes=probes.filter(p=>p.target!==id&&!p.target.startsWith(id+':'));renderProbesDom();}
+  sel=null;rebuild();syncAll();buildInsp();save();
+}
+function rotateSel(){if(!sel||!byId[sel.id])return;snapshot();const c=byId[sel.id];c.rot=(c.rot+90)%360;syncAll();save();}
+function addWire(a,b){if(a===b)return;if(a.split(':')[0]===b.split(':')[0]&&a===b)return;
+  if(wires.some(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a)))return;snapshot();wires.push({id:'w'+(nextId++),a,b});rebuild();renderPorts();renderWires();save();}
+function resetStates(){for(const c of comps){c.st=TY[c.type].init(c);c.q={};c.dyS=null;}portP={};M.nets.forEach(n=>{n.p=0;n.cav=false;});simT=0;sampleT=0;numErr=false;for(const p of probes)p.buf=[];rebuild();}
+
+/* ---------- serialization, undo, storage ---------- */
+function ser(){return JSON.stringify({v:1,comps:comps.map(c=>({id:c.id,type:c.type,x:c.x,y:c.y,rot:c.rot,label:c.label,p:c.p})),
+  wires:wires.map(w=>({a:w.a,b:w.b})),probes:probes.map(p=>({kind:p.kind,target:p.target,dx:p.dx,dy:p.dy}))});}
+function load(json,fit=true){
+  const d=typeof json==='string'?JSON.parse(json):json;if(!d||!Array.isArray(d.comps))throw new Error('Tiedostosta puuttuu komponenttilista.');
+  lC.innerHTML='';lL.innerHTML='';comps=[];byId={};wires=[];probes=[];sel=null;nextId=1;portP={};
+  for(const c of d.comps){if(!TY[c.type])continue;const n=parseInt(String(c.id).slice(1))||0;nextId=Math.max(nextId,n+1);addComp(c.type,c.x,c.y,c.p,{id:c.id,rot:c.rot,label:c.label});}
+  for(const w of d.wires||[])if(portByKey(w.a)&&portByKey(w.b))wires.push({id:'w'+(nextId++),a:w.a,b:w.b});
+  (d.probes||[]).forEach((p,i)=>{const ok=(p.kind==='p'||p.kind==='q')?portByKey(p.target):byId[p.target];if(ok)probes.push({id:'pr'+(nextId++),kind:p.kind,target:p.target,dx:p.dx??26,dy:p.dy??-30,color:PCOL[i%PCOL.length],buf:[]});});
+  resetStates();syncAll();renderProbesDom();buildInsp();if(fit)fitView();
+}
+const undo=[];
+function snapshot(){undo.push(ser());if(undo.length>60)undo.shift();}
+function doUndo(){if(!undo.length)return;const s=undo.pop();load(s,false);save();}
+let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('hydsim-v1',ser());}catch(e){}},300);}
+function fitView(){
+  const r=cv.getBoundingClientRect();if(!comps.length){view.k=1;view.tx=r.width/2;view.ty=r.height/2;applyView();return;}
+  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const c of comps){const b=bbW(c);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]+(TY[c.type].mech==='lin'?60:0));y1=Math.max(y1,b[3]);}
+  for(const pr of probes){const pt=probeTargetPt(pr);if(pt){x0=Math.min(x0,pt.x+pr.dx);y0=Math.min(y0,pt.y+pr.dy-14);x1=Math.max(x1,pt.x+pr.dx+110);}}
+  const padT=64,padB=56,padX=40;const k=clamp(Math.min((r.width-2*padX)/(x1-x0+80),(r.height-padT-padB)/(y1-y0+80)),0.35,1.6);
+  view.k=k;view.tx=(r.width-(x1+x0)*k)/2;view.ty=padT+((r.height-padT-padB)-(y1+y0)*k)/2;applyView();
+}
+
+/* ---------- examples ---------- */
+const BASE=(py)=>[
+  {id:'c1',type:'tank',x:160,y:py+110,label:'S1'},{id:'c2',type:'pump',x:160,y:py,label:'P1'},
+  {id:'c3',type:'prv',x:300,y:py+20,label:'PRV1'},{id:'c4',type:'tank',x:300,y:py+130,label:'S2'}];
+const BW=[{a:'c2:S',b:'c1:T'},{a:'c2:P',b:'c3:P'},{a:'c3:T',b:'c4:T'}];
+const EX={
+ ex1:{comps:[...BASE(480),{id:'c5',type:'gauge',x:230,y:380,label:'PI1'},{id:'c6',type:'dcv43',x:470,y:380,label:'SV1'},
+   {id:'c7',type:'tank',x:480,y:500,label:'S3'},{id:'c8',type:'cyl',x:470,y:250,label:'SYL1',p:{F:2000}}],
+  wires:[...BW,{a:'c5:P',b:'c2:P'},{a:'c2:P',b:'c6:P'},{a:'c6:T',b:'c7:T'},{a:'c6:A',b:'c8:A'},{a:'c6:B',b:'c8:B'}],
+  probes:[{kind:'p',target:'c8:A',dx:-150,dy:-50},{kind:'q',target:'c6:P',dx:30,dy:30},{kind:'F',target:'c8',dx:-40,dy:-70},{kind:'v',target:'c8',dx:60,dy:-70}]},
+ ex2:{comps:[...BASE(560),{id:'c6',type:'dcv43',x:470,y:440,label:'SV1'},{id:'c7',type:'tank',x:480,y:560,label:'S3'},
+   {id:'c8',type:'cyl',x:470,y:180,label:'SYL1',p:{F:3000}},{id:'c9',type:'owfc',x:526,y:300,rot:90,label:'VKV1',p:{open:5}},
+   {id:'c10',type:'gauge',x:340,y:228,rot:270,label:'PI1'},{id:'c11',type:'gauge',x:620,y:246,rot:90,label:'PI2'}],
+  wires:[...BW,{a:'c2:P',b:'c6:P'},{a:'c6:T',b:'c7:T'},{a:'c8:A',b:'c6:A'},{a:'c8:B',b:'c9:A'},{a:'c9:B',b:'c6:B'},{a:'c10:P',b:'c8:A'},{a:'c11:P',b:'c9:A'}],
+  probes:[{kind:'p',target:'c8:A',dx:-120,dy:-60},{kind:'p',target:'c8:B',dx:40,dy:-90},{kind:'v',target:'c8',dx:-30,dy:-80}]},
+ ex3:{comps:[...BASE(560),{id:'c5',type:'gauge',x:230,y:460,label:'PI1'},{id:'c6',type:'dcv43',x:470,y:440,label:'SV1',p:{center:'tandem'}},
+   {id:'c7',type:'tank',x:480,y:560,label:'S3'},{id:'c8',type:'motor',x:470,y:250,rot:270,label:'M1',p:{TL:20}},
+   {id:'c9',type:'flowm',x:440,y:340,rot:90,label:'FI1'},{id:'c10',type:'gauge',x:360,y:280,rot:270,label:'PI2'}],
+  wires:[...BW,{a:'c5:P',b:'c2:P'},{a:'c2:P',b:'c6:P'},{a:'c6:T',b:'c7:T'},{a:'c6:A',b:'c9:B'},{a:'c9:A',b:'c8:A'},{a:'c6:B',b:'c8:B'},{a:'c10:P',b:'c8:A'}],
+  probes:[{kind:'v',target:'c8',dx:60,dy:-40},{kind:'F',target:'c8',dx:60,dy:-10},{kind:'p',target:'c8:A',dx:-150,dy:-40}]},
+ ex4:{comps:[...BASE(560).map(c=>c.id==='c3'?{...c,p:{ps:80}}:c),{id:'c6',type:'dcv42',x:470,y:440,label:'SV1'},{id:'c7',type:'tank',x:480,y:560,label:'S3'},
+   {id:'c8',type:'scyl',x:470,y:200,rot:270,label:'SYL1'},{id:'c9',type:'throttle',x:460,y:340,rot:90,label:'KV1',p:{open:30}}],
+  wires:[...BW,{a:'c2:P',b:'c6:P'},{a:'c6:T',b:'c7:T'},{a:'c6:A',b:'c9:B'},{a:'c9:A',b:'c8:A'}],
+  probes:[{kind:'p',target:'c8:A',dx:40,dy:20},{kind:'v',target:'c8',dx:50,dy:-60},{kind:'F',target:'c8',dx:50,dy:-30}]}
+};
+
+/* ---------- palette ---------- */
+const PAL=[
+  ['Pumput ja säiliöt',[['pump','Vakiotilavuuspumppu',{kind:'vakio'}],['pump','Painesäädetty pumppu',{kind:'saato'}],['tank','Öljysäiliö',{}]]],
+  ['Suuntaventtiilit',[['dcv43','4/3-suuntaventtiili',{}],['dcv42','4/2-suuntaventtiili',{}]]],
+  ['Paine- ja virtaventtiilit',[['prv','Paineenrajoitusventtiili',{}],['check','Vastaventtiili',{}],['throttle','Kuristusventtiili',{}],['owfc','Vastusventtiili',{}]]],
+  ['Toimilaitteet',[['cyl','Kaksitoiminen sylinteri',{}],['scyl','Yksitoiminen sylinteri',{}],['motor','Hydraulimoottori',{}]]],
+  ['Mittarit',[['gauge','Painemittari',{}],['flowm','Virtausmittari',{}]]]
+];
+function buildPalette(){
+  const el=$('#pal');let h='';
+  PAL.forEach(([cat,items],ci)=>{h+=`<h3>${cat}</h3>`;items.forEach(([type,name,p],ii)=>{
+    const t=TY[type],fake={type,p:Object.assign({},t.def,p),st:null};fake.st=t.init(fake);const b=t.bb;
+    const vb=`${b[0]-6} ${b[1]-6} ${b[2]-b[0]+12} ${b[3]-b[1]+12}`;
+    h+=`<button type="button" class="pitem" data-pi="${ci}:${ii}" title="Vedä alustalle tai klikkaa"><svg viewBox="${vb}" aria-hidden="true">${t.draw(fake)}${t.dyn?t.dyn(fake):''}</svg><span>${name}</span></button>`;});});
+  h+=`<p class="copy">Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026.<br>Lisenssi: <a href="https://creativecommons.org/licenses/by/4.0/deed.fi" target="_blank" rel="license noopener">CC BY 4.0</a></p>`;
+  el.innerHTML=h;
+}
+
+/* ---------- pointer interaction ---------- */
+let drag=null;const tip=$('#tip');
+function nearestPort(w,maxD=16){let best=null,bd=maxD;for(const c of comps)for(const p of portsW(c)){const d=Math.hypot(p.x-w.x,p.y-w.y);if(d<bd){bd=d;best=p;}}return best;}
+function localPt(c,w){const dx=w.x-c.x,dy=w.y-c.y;return rotP(dx,dy,-c.rot);}
+cv.addEventListener('pointerdown',e=>{
+  if(e.button!==0&&e.pointerType==='mouse')return;
+  const w=toWorld(e),t=e.target;
+  const prEl=t.closest&&t.closest('.probe'),portEl=t.closest&&t.closest('[data-port]'),compEl=t.closest&&t.closest('.comp'),wireEl=t.closest&&t.closest('.wire');
+  cv.setPointerCapture(e.pointerId);
+  if(prEl){const pr=probes.find(p=>p.id===prEl.dataset.pr);drag={k:'probe',pr,sx:e.clientX,sy:e.clientY,dx:pr.dx,dy:pr.dy};return;}
+  if(tool!=='sel'){placeProbe(w,portEl,compEl,wireEl);drag={k:'none'};return;}
+  if(portEl){const p=portByKey(portEl.dataset.port);drag={k:'wire',from:p};tmpW.setAttribute('d',`M${p.x},${p.y}L${w.x},${w.y}`);return;}
+  if(compEl){const c=byId[compEl.dataset.id];sel={id:c.id};renderSel();buildInsp();
+    const t2=TY[c.type];const[lx]=localPt(c,w);const h=t2.hit?t2.hit(c,lx):null;
+    if(h&&t2.press&&c.p.mode==='jousi'){t2.press(c,h);drag={k:'mom',c};return;}
+    drag={k:'move',c,sx:e.clientX,sy:e.clientY,ox:c.x,oy:c.y,hit:h,moved:false};return;}
+  if(wireEl){sel={w:wireEl.dataset.w};renderSel();buildInsp();drag={k:'none'};return;}
+  sel=null;renderSel();buildInsp();drag={k:'pan',sx:e.clientX,sy:e.clientY,tx:view.tx,ty:view.ty};
+});
+cv.addEventListener('pointermove',e=>{
+  if(!drag){hoverTip(e);return;}
+  tip.style.display='none';
+  if(drag.k==='pan'){view.tx=drag.tx+e.clientX-drag.sx;view.ty=drag.ty+e.clientY-drag.sy;applyView();}
+  else if(drag.k==='move'){const dx=(e.clientX-drag.sx)/view.k,dy=(e.clientY-drag.sy)/view.k;
+    if(!drag.moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>4){drag.moved=true;snapshot();}
+    if(drag.moved){drag.c.x=Math.round((drag.ox+dx)/10)*10;drag.c.y=Math.round((drag.oy+dy)/10)*10;placeComp(drag.c);renderPorts();renderWires();renderSel();}}
+  else if(drag.k==='wire'){const w=toWorld(e);const p=nearestPort(w,14);const tx=p?p.x:w.x,ty=p?p.y:w.y;tmpW.setAttribute('d',`M${drag.from.x},${drag.from.y}L${tx},${ty}`);}
+  else if(drag.k==='probe'){drag.pr.dx=drag.dx+(e.clientX-drag.sx)/view.k;drag.pr.dy=drag.dy+(e.clientY-drag.sy)/view.k;}
+});
+function endDrag(e){
+  if(!drag)return;
+  if(drag.k==='wire'){const w=toWorld(e);const p=nearestPort(w,14);if(p&&p.k!==drag.from.k)addWire(drag.from.k,p.k);tmpW.setAttribute('d','');}
+  if(drag.k==='move'){if(drag.moved)save();else if(drag.hit){const t=TY[drag.c.type];if(t.click)t.click(drag.c,drag.hit);}}
+  if(drag.k==='mom'){const t=TY[drag.c.type];t.release(drag.c);}
+  if(drag.k==='probe')save();
+  drag=null;
+}
+cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
+cv.addEventListener('pointerleave',()=>{tip.style.display='none';});
+cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  const k2=clamp(view.k*Math.exp(-e.deltaY*0.0015),0.3,3);view.tx=mx-(mx-view.tx)*k2/view.k;view.ty=my-(my-view.ty)*k2/view.k;view.k=k2;applyView();},{passive:false});
+function hoverTip(e){
+  const t=e.target,stage=$('#stage').getBoundingClientRect();let s='';
+  const portEl=t.closest&&t.closest('[data-port]'),wireEl=t.closest&&t.closest('.wire');
+  if(portEl){const p=portByKey(portEl.dataset.port);if(p){const q=LPM(qf(p.c,p.n));s=`${p.c.label}.${p.n}: p ${nf(BAR(np(p.c,p.n)),1)} bar, Q ${nf(q,2)} L/min ${q>=0?'sisään':'ulos'}`;}}
+  else if(wireEl){const w=wires.find(x=>x.id===wireEl.dataset.w);const a=w&&portByKey(w.a);if(a)s=`p ${nf(BAR(np(a.c,a.n)),1)} bar`+(Number.isFinite(w.f)?`, Q ${nf(Math.abs(LPM(w.f)),2)} L/min`:'');}
+  if(!s){tip.style.display='none';return;}
+  tip.textContent=s;tip.style.display='block';tip.style.left=(e.clientX-stage.left+14)+'px';tip.style.top=(e.clientY-stage.top+14)+'px';
+}
+function placeProbe(w,portEl,compEl,wireEl){
+  let port=null,comp=null;
+  if(portEl)port=portByKey(portEl.dataset.port);
+  else if(wireEl){const wi=wires.find(x=>x.id===wireEl.dataset.w);const a=portByKey(wi.a),b=portByKey(wi.b);port=Math.hypot(a.x-w.x,a.y-w.y)<Math.hypot(b.x-w.x,b.y-w.y)?a:b;}
+  else if(compEl){comp=byId[compEl.dataset.id];}
+  if(tool==='p'||tool==='q'){if(!port&&comp){port=portsW(comp).reduce((a,p)=>Math.hypot(p.x-w.x,p.y-w.y)<Math.hypot(a.x-w.x,a.y-w.y)?p:a);}if(port)addProbe(tool,port.k);return;}
+  if(!comp&&port)comp=port.c;
+  if(comp&&['cyl','scyl','motor'].includes(comp.type))addProbe(tool,comp.id);
+  else flashWarn(tool==='F'?'Voima-anturi kiinnitetään sylinteriin tai moottoriin.':'Nopeusanturi kiinnitetään sylinteriin tai moottoriin.');
+}
+function flashWarn(s){const el=$('#warns');el.innerHTML=`<div class="info">${esc(s)}</div>`;}
+
+/* palette drag */
+let pdrag=null;
+$('#pal').addEventListener('pointerdown',e=>{const b=e.target.closest('.pitem');if(!b)return;e.preventDefault();
+  const[ci,ii]=b.dataset.pi.split(':').map(Number);const it=PAL[ci][1][ii];pdrag={it,sx:e.clientX,sy:e.clientY,ghost:null};b.setPointerCapture(e.pointerId);});
+$('#pal').addEventListener('pointermove',e=>{if(!pdrag)return;if(!pdrag.ghost&&Math.hypot(e.clientX-pdrag.sx,e.clientY-pdrag.sy)>5){const g=document.createElement('div');g.className='ghost';g.textContent=pdrag.it[1];document.body.appendChild(g);pdrag.ghost=g;}
+  if(pdrag.ghost){pdrag.ghost.style.left=(e.clientX+10)+'px';pdrag.ghost.style.top=(e.clientY+10)+'px';}});
+function palDrop(e){if(!pdrag)return;const[type,,p]=pdrag.it;const r=cv.getBoundingClientRect();
+  if(pdrag.ghost){pdrag.ghost.remove();if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){snapshot();const w=toWorld(e);placeNew(type,w.x,w.y,p);}}
+  else if(e.type==='pointerup'){snapshot();const n=comps.length%6;placeNew(type,(r.width/2-view.tx)/view.k+n*30,(r.height/2-view.ty)/view.k+n*30,p);}
+  pdrag=null;}
+function placeNew(type,x,y,p){const c=addComp(type,x,y,p);sel={id:c.id};rebuild();syncAll();buildInsp();save();}
+$('#pal').addEventListener('pointerup',palDrop);$('#pal').addEventListener('pointercancel',e=>{if(pdrag&&pdrag.ghost)pdrag.ghost.remove();pdrag=null;});
+
+/* ---------- toolbar & buttons ---------- */
+document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>setTool(b.dataset.tool)));
+function setTool(t){tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));cv.style.cursor=t==='sel'?'':'crosshair';}
+$('#showRead').addEventListener('change',e=>{showRead=e.target.checked;});
+$('#pScale').addEventListener('change',e=>{pScale=+e.target.value;for(const c of comps)c.dyS=null;});
+const runBtn=$('#runBtn');
+function setRun(r){running=r;runBtn.textContent=r?'Pysäytä':'Käynnistä';}
+runBtn.addEventListener('click',()=>setRun(!running));
+$('#resetBtn').addEventListener('click',()=>{resetStates();buildInsp();});
+$('#speed').addEventListener('change',e=>{speed=+e.target.value;});
+$('#exSel').addEventListener('change',e=>{const v=e.target.value;if(!v)return;snapshot();load(EX[v]);save();e.target.value='';setRun(true);});
+$('#undoBtn').addEventListener('click',doUndo);
+$('#fitBtn').addEventListener('click',fitView);
+$('#clearBtn').addEventListener('click',()=>{if(!comps.length)return;snapshot();load({comps:[],wires:[],probes:[]});save();});
+document.addEventListener('keydown',e=>{
+  if(e.target.closest('input,select,textarea'))return;
+  if($('#modal').classList.contains('open')){if(e.key==='Escape')closeModal();return;}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();doUndo();return;}
+  if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();deleteSel();}
+  else if(e.key==='r'||e.key==='R')rotateSel();
+  else if(e.key===' '){e.preventDefault();setRun(!running);}
+  else if(e.key==='Escape'){setTool('sel');tmpW.setAttribute('d','');drag=null;}
+  else if(e.key==='v'||e.key==='V')setTool('sel');
+});
+
+/* ---------- modal ---------- */
+const modal=$('#modal'),mbox=$('#mbox');
+function openModal(h){mbox.innerHTML=h;modal.classList.add('open');}
+function closeModal(){modal.classList.remove('open');}
+modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('[data-close]'))closeModal();});
+$('#ioBtn').addEventListener('click',()=>{
+  openModal(`<h2>Tallenna tai lataa piiri</h2><p>Piiri tallentuu automaattisesti tähän selaimeen. Siirtääksesi sen muualle kopioi alla oleva teksti talteen. Ladataksesi piirin liitä aiemmin kopioitu teksti kenttään ja valitse Lataa.</p>
+  <textarea id="ioText" spellcheck="false">${esc(ser())}</textarea><p id="ioMsg" class="kbd"></p>
+  <div class="mrow"><button class="btn" id="ioCopy">Kopioi</button><button class="btn pri" id="ioLoad">Lataa</button><button class="btn" data-close>Sulje</button></div>`);
+  $('#ioCopy').addEventListener('click',async()=>{const ta=$('#ioText');ta.select();try{await navigator.clipboard.writeText(ta.value);$('#ioMsg').textContent='Kopioitu leikepöydälle.';}catch(err){try{document.execCommand('copy');$('#ioMsg').textContent='Kopioitu.';}catch(e2){$('#ioMsg').textContent='Kopiointi estetty. Valitse teksti ja kopioi näppäimillä Ctrl+C.';}}});
+  $('#ioLoad').addEventListener('click',()=>{try{const s=$('#ioText').value;snapshot();load(s);save();closeModal();}catch(err){$('#ioMsg').textContent='Lataus epäonnistui: teksti ei ole kelvollinen piiri ('+err.message+').';}});
+});
+$('#helpBtn').addEventListener('click',()=>openModal(`<h2>Ohje</h2>
+<h3>Piirin rakentaminen</h3><p>Vedä komponentti vasemmalta piirtoalustalle tai klikkaa sitä, jolloin se ilmestyy näkymän keskelle. Kytke letku vetämällä liitännästä toiseen. Haaran saat kytkemällä samaan liitäntään useamman letkun. Kytkemätön liitäntä toimii tulppana.</p>
+<h3>Ohjaus</h3><p>Suuntaventtiiliä ohjataan klikkaamalla sen kelaa: vasen kela vaihtaa asentoon a (P→A, B→T), oikea asentoon b (P→B, A→T). Jousipalautteinen venttiili pysyy asennossa vain niin kauan kuin painat. Pumpun saa pysäytettyä klikkaamalla sähkömoottoria M tai ominaisuuspaneelista.</p>
+<h3>Mittaukset</h3><p>Valitse työkaluriviltä Paine tai Virtaus ja klikkaa liitäntää. Voima- ja nopeusanturi kiinnitetään sylinteriin tai moottoriin (moottorilla voima-anturi näyttää väännön). Anturien lukemat näkyvät piirroksessa ja käyrinä alapaneelissa. Virtauksen etumerkki: positiivinen virtaa komponenttiin sisään. Viemällä hiiren liitännän tai letkun päälle näet hetkellisen paineen ja virtauksen.</p>
+<h3>Mitoitus</h3><p>Valitse komponentti, niin oikeassa paneelissa voit muuttaa sen mitoitusarvoja ja näet lasketut suureet. Mitoitusapu laskee esimerkiksi sylinterin halkaisijan tarvittavasta voimasta ja ehdottaa vakiokokoa.</p>
+<h3>Malli ja rajoitukset</h3><p>Paineet ratkaistaan implisiittisesti öljyn kokoonpuristuvuuden (tehollinen puristuvuusmoduuli 1,2 GPa) ja kuristusyhtälön Q = Cd·A·√(2Δp/ρ) avulla, aika-askel 1 ms. Sylinterissä on massa, kitka ja vasteet; moottorissa hitausmomentti ja kuormitusmomentti. Malli on opetuskäyttöön tarkoitettu yksinkertaistus: letkujen painehäviöitä, lämpenemistä, viskositeetin muutosta ja venttiilien dynaamista ohjausta ei mallinneta, joten tulokset kuvaavat ilmiöitä mutta eivät korvaa järjestelmätoimittajan mitoituslaskelmia.</p>
+<p class="mcopy">Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026. Ohjelma on lisensoitu <a href="https://creativecommons.org/licenses/by/4.0/deed.fi" target="_blank" rel="license noopener">Creative Commons Nimeä 4.0 Kansainvälinen -lisenssillä (CC BY 4.0)</a>. Saat kopioida, jakaa ja muokata sitä mihin tahansa tarkoitukseen, kunhan mainitset tekijän ja oppilaitoksen, merkitset lisenssin ja kerrot tekemistäsi muutoksista.</p>
+<div class="mrow"><button class="btn pri" data-close>Selvä</button></div>`));
+
+/* ---------- test & validation API (used by tests/test_validointi.py) ---------- */
+const byLabel=l=>{const c=comps.find(x=>x.label===l);if(!c)throw new Error('Komponenttia ei löydy: '+l);return c;};
+window.HydSim={
+  version:'1.0.0',
+  loadExample:k=>{if(!EX[k])throw new Error('Tuntematon esimerkki '+k);load(EX[k],false);setRun(false);return comps.map(c=>c.label);},
+  loadCircuit:j=>{load(j,false);setRun(false);return comps.map(c=>c.label);},
+  serialize:()=>ser(),
+  pause:()=>setRun(false),
+  reset:()=>{resetStates();},
+  run:sec=>{setRun(false);const n=Math.round(sec/DT);for(let i=0;i<n;i++)stepSim(DT);return simT;},
+  time:()=>simT,
+  setValve:(l,tg)=>{setValve(byLabel(l),tg);},
+  setPump:(l,on)=>{byLabel(l).st.on=!!on;},
+  setParam:(l,k,v)=>{const c=byLabel(l);c.p[k]=v;fixParams(c);renderStatic(c);},
+  param:l=>({...byLabel(l).p}),
+  state:l=>{const c=byLabel(l);const o={};for(const k in c.st)if(typeof c.st[k]!=='object')o[k]=c.st[k];return o;},
+  p:(l,port)=>BAR(np(byLabel(l),port)),
+  q:(l,port)=>LPM(qf(byLabel(l),port)),
+  areas:l=>{const[AA,AB]=cylA(byLabel(l));return {A_mm2:AA*1e6,Aring_mm2:AB*1e6};},
+  forceKN:l=>{const c=byLabel(l);const[AA,AB]=cylA(c);return (np(c,'A')*AA-(c.type==='cyl'?np(c,'B')*AB:0))/1000;},
+  torqueNm:l=>{const c=byLabel(l);return (np(c,'A')-np(c,'B'))*c.p.Vg*1e-6/(2*Math.PI)*c.p.etahm;},
+  rpm:l=>byLabel(l).st.w*60/(2*Math.PI),
+  warnings:()=>{updWarns();return [...document.querySelectorAll('#warns div')].map(d=>d.textContent);},
+  numericError:()=>numErr
+};
+
+/* ---------- init ---------- */
+window.addEventListener('resize',()=>{});
+buildPalette();applyView();
+let stored=null;try{stored=localStorage.getItem('hydsim-v1');}catch(e){}
+try{if(stored&&JSON.parse(stored).comps.length)load(stored);else load(EX.ex1);}catch(e){load(EX.ex1);}
+updWarns();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

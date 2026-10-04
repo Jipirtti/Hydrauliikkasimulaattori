@@ -1,0 +1,5 @@
+__pycache__/
+.pytest_cache/
+validointiraportti.md
+validointi-junit.xml
+_site/

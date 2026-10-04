@@ -1,0 +1,6 @@
+# Fysiikkaa ja validointia koskevat muutokset vaativat vastuuopettajan hyväksynnän.
+# Korvaa @KAYTTAJATUNNUS vastuuopettajan GitHub-tunnuksella ja ota haaran suojauksessa
+# käyttöön "Require review from Code Owners".
+index.html            @KAYTTAJATUNNUS
+tests/                @KAYTTAJATUNNUS
+VALIDOINTI.md         @KAYTTAJATUNNUS

@@ -1,0 +1,62 @@
+# Automaattinen regressiovalidointi: ajetaan jokaisesta muutoksesta ja ajastetusti viikoittain.
+name: Validointi
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 4 * * 1"   # maanantaisin klo 04.00 UTC (07.00 Suomen kesäaikaa)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  validointi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Asenna testityökalut
+        run: |
+          pip install -r requirements-test.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Aja validointitestit
+        run: python -m pytest tests -v --junitxml=validointi-junit.xml
+
+      - name: Lisää raportti ajon yhteenvetoon
+        if: always()
+        run: |
+          if [ -f validointiraportti.md ]; then cat validointiraportti.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: Tallenna raportti
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validointiraportti
+          path: |
+            validointiraportti.md
+            validointi-junit.xml
+
+      - name: Avaa issue, jos ajastettu validointi epäonnistui
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Ajastettu validointi epäonnistui';
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', labels: 'validointi'
+            });
+            if (open.some(i => i.title === title)) return;
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo, title, labels: ['validointi', 'fysiikka'],
+              body: `Viikoittainen validointiajo epäonnistui.\n\nAjo ja raportti: ${run}\n\nTarkista, mikä ilmiö (V-tunnus) poikkesi käsinlaskusta, ja korjaa joko simulaattori tai testi. Fysiikan muutos vaatii opettajan validoinnin, ks. VALIDOINTI.md.`
+            });

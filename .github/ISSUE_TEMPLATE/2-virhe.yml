@@ -1,0 +1,28 @@
+name: Virheilmoitus
+description: Käyttöliittymä tai toiminto ei toimi.
+title: "[Virhe] "
+labels: ["virhe"]
+body:
+  - type: textarea
+    id: kuvaus
+    attributes:
+      label: Mitä tapahtui?
+    validations:
+      required: true
+  - type: textarea
+    id: toisto
+    attributes:
+      label: Miten virheen saa toistettua?
+      placeholder: "1. Lataa esimerkki 2\n2. ..."
+    validations:
+      required: true
+  - type: input
+    id: selain
+    attributes:
+      label: Selain ja laite
+      placeholder: esim. Chrome 140, Windows 11
+  - type: textarea
+    id: piiri
+    attributes:
+      label: Piiri JSON-muodossa (valinnainen)
+      render: json
