@@ -1,6 +1,6 @@
 # Hydrauliikkasimulaattori – käyttöohje
 
-Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026 · CC BY 4.0
+Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026 · CC BY 4.0
 
 > Tämä tiedosto on käyttöohjeen versioitu kopio. Kun simulaattoriin tehdään muutoksia, päivitä tämä ohje samassa pull requestissa.
 
@@ -250,7 +250,7 @@ Paineet ratkaistaan 1 ms aika-askeleella implisiittisesti öljyn kokoonpuristuvu
 
 ## Tekijä ja lisenssi
 
-Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026.
+Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. Suunnittelu, sisältö ja validointi: Juho Pirttilahti. Ohjelmakoodi toteutettu tekoälyavusteisesti (Claude, Anthropic).
 
 Tämä käyttöohje ja Hydrauliikkasimulaattori-ohjelmisto on lisensoitu [Creative Commons Nimeä 4.0 Kansainvälinen -lisenssillä (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.fi). Saat kopioida, jakaa ja muokata aineistoa mihin tahansa tarkoitukseen, kunhan mainitset tekijän ja oppilaitoksen, merkitset lisenssin ja kerrot, jos olet muuttanut aineistoa.
 

@@ -33,6 +33,7 @@ def sim(browser):
     page.goto(INDEX.as_uri())
     page.wait_for_function("window.HydSim !== undefined")
     page.evaluate("localStorage.clear()")
+    page.evaluate("HydSim.setLang('fi')")   # testiselaimen oletuskieli on englanti
 
     class Sim:
         def js(self, expr):

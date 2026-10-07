@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
   Hydrauliikkasimulaattori
-  Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026.
+  Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026.
+  Suunnittelu, sisältö ja validointi: Juho Pirttilahti. Ohjelmakoodi toteutettu tekoälyavusteisesti (Claude, Anthropic).
   Lisenssi: Creative Commons Nimeä 4.0 Kansainvälinen (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/deed.fi
   Saat kopioida, jakaa ja muokata ohjelmaa mihin tahansa tarkoitukseen, kunhan mainitset
   tekijän ja oppilaitoksen, merkitset lisenssin ja kerrot tekemistäsi muutoksista.
@@ -11,8 +12,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hydrauliikkasimulaattori</title>
-<meta name="author" content="Juho Pirttilahti, Seinäjoen ammattikorkeakoulu Oy">
-<meta name="copyright" content="Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026. CC BY 4.0">
+<meta name="author" content="Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK)">
+<meta name="copyright" content="Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. CC BY 4.0">
 <link rel="license" href="https://creativecommons.org/licenses/by/4.0/deed.fi">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,8 +53,12 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .brand strong{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:24px;font-weight:600}
 .brand span{font-size:13px;color:var(--muted)}
 .grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.langsw{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.langsw button{border:0;background:var(--paper);padding:5px 12px;cursor:pointer;font-size:14px;font-weight:600}
+.langsw button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .btn{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:34px}
 .btn:hover{border-color:var(--muted)}
+a.btn{display:inline-flex;align-items:center;text-decoration:none;color:var(--ink)}
 .btn.pri{background:var(--ink);color:var(--paper);border-color:var(--ink);min-width:118px}
 .btn.on{background:var(--acc);border-color:var(--acc);color:#1E1404}
 .btn.danger{color:var(--warn)}
@@ -181,43 +186,45 @@ select{background:var(--paper);border:1px solid var(--line);border-radius:7px;pa
 <body>
 <div class="app">
   <header class="bar">
-    <div class="brand"><strong>Hydrauliikkasimulaattori</strong><span>Juho Pirttilahti, SeAMK 2026, CC BY 4.0</span></div>
+    <div class="brand"><strong data-en="Hydraulics Simulator">Hydrauliikkasimulaattori</strong><span>Juho Pirttilahti, SEAMK 2026, CC BY 4.0</span></div>
+    <div class="langsw" role="group" aria-label="Kieli / Language"><button type="button" data-lang="fi" lang="fi">FI</button><button type="button" data-lang="en" lang="en">EN</button></div>
     <div class="grp">
       <button class="btn pri" id="runBtn" type="button">Pysäytä</button>
-      <button class="btn" id="resetBtn" type="button" title="Paineet nollaan, sylinterit alkuasemaan">Nollaa tila</button>
-      <label class="mini">Nopeus
-        <select id="speed"><option value="1">1×</option><option value="0.5">0,5×</option><option value="0.2">0,2×</option><option value="0.1">0,1×</option></select>
+      <button class="btn" id="resetBtn" type="button" title="Paineet nollaan, sylinterit alkuasemaan" data-en-title="Pressures to zero, cylinders to start position" data-en="Reset state">Nollaa tila</button>
+      <label class="mini"><span data-en="Speed">Nopeus</span>
+        <select id="speed"><option value="1">1×</option><option value="0.5" data-en="0.5×">0,5×</option><option value="0.2" data-en="0.2×">0,2×</option><option value="0.1" data-en="0.1×">0,1×</option></select>
       </label>
       <span class="time" id="simTime">t = 0,00 s</span>
     </div>
     <div class="grp">
-      <select id="exSel" aria-label="Esimerkkipiirit">
-        <option value="">Esimerkkipiirit…</option>
-        <option value="ex1">1. Kaksitoiminen sylinteri, 4/3-venttiili</option>
-        <option value="ex2">2. Nopeudensäätö poistopuolelta (meter-out)</option>
-        <option value="ex3">3. Hydraulimoottori ja virtausmittari</option>
-        <option value="ex4">4. Yksitoiminen pystysylinteri, hallittu lasku</option>
+      <select id="exSel" aria-label="Esimerkkipiirit" data-en-aria="Example circuits">
+        <option value="" data-en="Example circuits…">Esimerkkipiirit…</option>
+        <option value="ex1" data-en="1. Double-acting cylinder, 4/3 valve">1. Kaksitoiminen sylinteri, 4/3-venttiili</option>
+        <option value="ex2" data-en="2. Meter-out speed control">2. Nopeudensäätö poistopuolelta (meter-out)</option>
+        <option value="ex3" data-en="3. Hydraulic motor and flow meter">3. Hydraulimoottori ja virtausmittari</option>
+        <option value="ex4" data-en="4. Single-acting vertical cylinder, controlled lowering">4. Yksitoiminen pystysylinteri, hallittu lasku</option>
       </select>
-      <button class="btn" id="undoBtn" type="button" title="Ctrl+Z">Kumoa</button>
-      <button class="btn" id="ioBtn" type="button">Tallenna / lataa</button>
-      <button class="btn" id="fitBtn" type="button">Sovita näkymä</button>
-      <button class="btn danger" id="clearBtn" type="button">Tyhjennä</button>
-      <button class="btn" id="helpBtn" type="button">Ohje</button>
+      <button class="btn" id="undoBtn" type="button" title="Ctrl+Z" data-en="Undo">Kumoa</button>
+      <button class="btn" id="ioBtn" type="button" data-en="Save / load">Tallenna / lataa</button>
+      <button class="btn" id="fitBtn" type="button" data-en="Fit view">Sovita näkymä</button>
+      <button class="btn danger" id="clearBtn" type="button" data-en="Clear">Tyhjennä</button>
+      <button class="btn" id="helpBtn" type="button" data-en="Help">Ohje</button>
+      <a class="btn" id="manualLink" href="https://jipirtti.github.io/Hydrauliikkasimulaattori/docs/kayttoohje.html" target="_blank" rel="noopener" data-en="Manual (FI)">Käyttöohje</a>
     </div>
   </header>
 
-  <aside class="pal" id="pal" aria-label="Komponentit"></aside>
+  <aside class="pal" id="pal" aria-label="Komponentit" data-en-aria="Components"></aside>
 
   <main class="stage" id="stage">
-    <div class="tools" role="toolbar" aria-label="Työkalut">
-      <button type="button" data-tool="sel" aria-pressed="true" title="V">Valitse ja kytke</button>
-      <button type="button" data-tool="p" aria-pressed="false" title="Klikkaa liitäntää"><i class="sw" style="background:#D23B2E"></i>Paine</button>
-      <button type="button" data-tool="q" aria-pressed="false" title="Klikkaa liitäntää"><i class="sw" style="background:#2E8B57"></i>Virtaus</button>
-      <button type="button" data-tool="F" aria-pressed="false" title="Klikkaa sylinteriä tai moottoria"><i class="sw" style="background:#1E5DBA"></i>Voima</button>
-      <button type="button" data-tool="v" aria-pressed="false" title="Klikkaa sylinteriä tai moottoria"><i class="sw" style="background:#8E5BD0"></i>Nopeus</button>
-      <label><input type="checkbox" id="showRead" checked> Lukemat</label>
+    <div class="tools" role="toolbar" aria-label="Työkalut" data-en-aria="Tools">
+      <button type="button" data-tool="sel" aria-pressed="true" title="V"><span data-en="Select and connect">Valitse ja kytke</span></button>
+      <button type="button" data-tool="p" aria-pressed="false" title="Klikkaa liitäntää" data-en-title="Click a port"><i class="sw" style="background:#D23B2E"></i><span data-en="Pressure">Paine</span></button>
+      <button type="button" data-tool="q" aria-pressed="false" title="Klikkaa liitäntää" data-en-title="Click a port"><i class="sw" style="background:#2E8B57"></i><span data-en="Flow">Virtaus</span></button>
+      <button type="button" data-tool="F" aria-pressed="false" title="Klikkaa sylinteriä tai moottoria" data-en-title="Click a cylinder or motor"><i class="sw" style="background:#1E5DBA"></i><span data-en="Force">Voima</span></button>
+      <button type="button" data-tool="v" aria-pressed="false" title="Klikkaa sylinteriä tai moottoria" data-en-title="Click a cylinder or motor"><i class="sw" style="background:#8E5BD0"></i><span data-en="Speed">Nopeus</span></button>
+      <label><input type="checkbox" id="showRead" checked> <span data-en="Readings">Lukemat</span></label>
     </div>
-    <svg id="cv" aria-label="Piirtoalusta">
+    <svg id="cv" aria-label="Piirtoalusta" data-en-aria="Drawing canvas">
       <defs>
         <pattern id="gridPat" width="20" height="20" patternUnits="userSpaceOnUse">
           <path d="M20 0H0V20" fill="none" stroke="var(--grid)" stroke-width="1"/>
@@ -230,17 +237,17 @@ select{background:var(--paper);border:1px solid var(--line);border-radius:7px;pa
       </g>
     </svg>
     <div class="status">
-      <div class="legendp"><span>Paine</span><span>0</span><span class="grad"></span>
-        <select id="pScale" aria-label="Väriasteikon maksimi"><option>100</option><option selected>160</option><option>250</option><option>400</option></select><span>bar</span></div>
+      <div class="legendp"><span data-en="Pressure">Paine</span><span>0</span><span class="grad"></span>
+        <select id="pScale" aria-label="Väriasteikon maksimi" data-en-aria="Colour scale maximum"><option>100</option><option selected>160</option><option>250</option><option>400</option></select><span>bar</span></div>
       <div class="warns" id="warns"></div>
     </div>
     <div class="tip" id="tip"></div>
   </main>
 
-  <aside class="insp" id="insp" aria-label="Ominaisuudet ja mitoitus"></aside>
+  <aside class="insp" id="insp" aria-label="Ominaisuudet ja mitoitus" data-en-aria="Properties and sizing"></aside>
 
-  <section class="scope" aria-label="Mittaukset">
-    <div class="sh"><strong>Mittaukset</strong><span id="scopeHint">Valitse anturityökalu ja klikkaa liitäntää tai toimilaitetta. Käyrät näyttävät 10 s historian.</span></div>
+  <section class="scope" aria-label="Mittaukset" data-en-aria="Measurements">
+    <div class="sh"><strong data-en="Measurements">Mittaukset</strong><span id="scopeHint" data-en="Choose a sensor tool and click a port or actuator. The curves show a 10 s history.">Valitse anturityökalu ja klikkaa liitäntää tai toimilaitetta. Käyrät näyttävät 10 s historian.</span></div>
     <div id="probeRows"></div>
   </section>
 </div>
@@ -252,6 +259,14 @@ select{background:var(--paper);border:1px solid var(--line);border-radius:7px;pa
 'use strict';
 const $=s=>document.querySelector(s);
 const NS='http://www.w3.org/2000/svg';
+/* ---------- kieli / language ---------- */
+let lang=(()=>{try{const u=new URLSearchParams(location.search).get('lang');if(u==='fi'||u==='en')return u;const st=localStorage.getItem('hydsim-lang');if(st==='fi'||st==='en')return st;}catch(e){}
+  return (navigator.language||'fi').toLowerCase().startsWith('fi')?'fi':'en';})();
+const I18N_MISSING=new Set();
+const T=s=>{if(lang!=='en'||s==null||s==='')return s;let e=EN[s];if(e===undefined){const m=/^(.*), (\d+ bar)$/.exec(s);if(m&&EN[m[1]]!==undefined)return EN[m[1]]+', '+m[2];I18N_MISSING.add(s);return s;}return e;};
+const tr=(fi,en)=>lang==='en'?en:fi;
+const UNIT_EN={'r/min':'rpm','cm³/r':'cm³/rev'};const U=u=>lang==='en'&&UNIT_EN[u]?UNIT_EN[u]:u;
+const EN={"4/2-suuntaventtiili":"4/2 directional valve","4/3-suuntaventtiili":"4/3 directional valve","Akselin ottoteho":"Shaft input power","Akselin vääntö":"Shaft torque","Alkuasema":"Initial position","Antoteho":"Output power","Asema / nopeus":"Position / velocity","Asento":"Orientation","Asetuspaine":"Set pressure","Avautumispaine":"Cracking pressure","Avoin":"Open","Avaus":"Opening","Haluttu nopeus":"Desired speed","Haluttu ulosajonopeus":"Desired extension speed","Haluttu virtaus":"Desired flow","Hitausmomentti J":"Moment of inertia J","Hydraulimoottori":"Hydraulic motor","Hydraulinen teho":"Hydraulic power","Hydraulinen voima nyt":"Hydraulic force now","Hydromek. hyötysuhde ηhm":"Hydromech. efficiency ηhm","Iskunpituus":"Stroke","Iskutilavuus A-puoli":"Swept volume, A side","Jousen esijännitys":"Spring preload","Jousipalautteinen (pidä painettuna)":"Spring return (hold to actuate)","Jousivakio":"Spring rate","Kaksitoiminen sylinteri":"Double-acting cylinder","Kelan asema":"Spool position","Kelluva (A,B→T)":"Float (A,B→T)","Keskiasento":"Centre position","Kierrostilavuus Vg":"Displacement Vg","Kitkavoima":"Friction force","Komponentteja":"Components","Kuorman paino m·g":"Load weight m·g","Kuorman tyyppi":"Load type","Kuormitusmomentti":"Load torque","Kuristus Qn täysin auki":"Throttle Qn fully open","Kuristusventtiili":"Throttle valve","Kytkentöjä":"Connections","Käytettävä paine-ero":"Available pressure difference","Käyttöpaine":"Working pressure","Liikkuva massa":"Moving mass","Lukittuva (klikkaus)":"Detented (click)","Mitta-alue":"Range","Mittarit":"Instruments","Männän halkaisija D":"Piston diameter D","Männän pinta-ala A":"Piston area A","Männänvarren halkaisija d":"Rod diameter d","Nimellispaine":"Rated pressure","Nimellisvirtaus Qn":"Nominal flow Qn","Nopeus":"Speed","Ohjaus":"Actuation","Paine":"Pressure","Paine- ja virtaventtiilit":"Pressure and flow valves","Paine-ero":"Pressure difference","Paine-ero A−B":"Pressure difference A−B","Paine-ero Qn:llä":"Pressure drop at Qn","Paine-ero Qn:llä / tie":"Pressure drop at Qn per path","Paineen nousu Qn:llä":"Pressure override at Qn","Paineenrajoitusventtiili":"Pressure relief valve","Paineet P / A / B / T":"Pressures P / A / B / T","Painemittari":"Pressure gauge","Painesäädetty":"Pressure-compensated","Painesäädetty pumppu":"Pressure-compensated pump","Painetaso":"Pressure level","Paineverkkoja":"Pressure nodes","Paluulinjan paine":"Return line pressure","Pinta-alasuhde φ":"Area ratio φ","Pumppu, painesäädetty":"Pump, pressure-compensated","Pumppu, vakiotilavuus":"Pump, fixed displacement","Pumppujen tuotto yht.":"Total pump flow","Pumput ja säiliöt":"Pumps and tanks","Pysty, ulosajo ylös":"Vertical, extends upwards","Pyörimisnopeus":"Rotational speed","Pyörimisnopeus n":"Speed n","Qn täysin auki":"Qn fully open","Rengaspinta-ala A−a":"Annulus area A−a","Simulaatioaika":"Simulation time","Sisäänajo pumpun tuotolla":"Retraction at pump flow","Suljettu":"Closed","Suuntaventtiilit":"Directional valves","Suurin sallittu paine":"Maximum allowed pressure","Säiliön tilavuus":"Tank volume","Säätöpaine":"Compensator setting","Tandem (P→T)":"Tandem (P→T)","Tarvittava tuotto":"Required flow","Tarvittava voima":"Required force","Tarvittava vääntö":"Required torque","Tehohäviö":"Power loss","Tehohäviö (lämmöksi)":"Power loss (to heat)","Teor. nopeus pumpun tuotolla":"Theor. speed at pump flow","Teoreettinen tuotto":"Theoretical flow","Todellinen tuotto":"Actual flow","Toimilaitteet":"Actuators","Tyyppi":"Type","Täyttöaste":"Fill level","Ulkoinen kuorma F":"External load F","Ulosajo pumpun tuotolla":"Extension at pump flow","Vaaka":"Horizontal","Vakiotilavuus":"Fixed displacement","Vakiotilavuuspumppu":"Fixed displacement pump","Vakiovoima, vastustaa ulosajoa":"Constant force, resists extension","Vastaventtiili":"Check valve","Vastaventtiilin avautumispaine":"Check valve cracking pressure","Vastustaa liikettä (kitkamainen)":"Resists motion (friction-like)","Vastusventtiili":"One-way flow control valve","Vastusventtiili (kuristus + vasta)":"One-way flow control valve (throttle + check)","Virtaus":"Flow","Virtaus A":"Flow A","Virtaus A→B":"Flow A→B","Virtaus A→B (kuristettu)":"Flow A→B (throttled)","Virtaus B":"Flow B","Virtaus P":"Flow P","Virtaus säiliöön":"Flow to tank","Virtaus tien läpi":"Flow through path","Virtausaukko":"Orifice area","Virtausmittari":"Flow meter","Virtaus letkussa":"Flow in hose","Viskoosi kitka":"Viscous friction","Viskoosi vaimennus":"Viscous damping","Voima":"Force","Vol. hyötysuhde ηv (nimellispaineessa)":"Vol. efficiency ηv (at rated pressure)","Vuoto 100 barissa":"Leakage at 100 bar","Vääntö":"Torque","Vääntö / bar":"Torque per bar","Vääntömomentti":"Torque","Yksitoiminen sylinteri":"Single-acting cylinder","Yksitoiminen sylinteri (jousipalautus)":"Single-acting cylinder (spring return)","Öljymäärä":"Oil volume","Öljymäärä alussa":"Initial oil volume","Öljysäiliö":"Oil tank","Ulosajovoima":"Extension force","Sisäänajovoima":"Retraction force"};
 /* ---------- physics constants (SI) ---------- */
 const BETA=1.2e9, RHO=870, CD=0.65, DEL=3e4, VPORT=0.05e-3, GT=1e-6, PFLOOR=-0.95e5, G=9.81, DT=1e-3;
 const clamp=(x,a,b)=>x<a?a:x>b?b:x, c01=x=>clamp(x,0,1);
@@ -260,7 +275,7 @@ const sig=x=>1/(1+Math.exp(-clamp(x,-60,60)));
 const orif=(dp,A)=>CD*A*Math.sqrt(2/RHO)*dp/Math.pow(dp*dp+DEL*DEL,0.25);
 const areaFor=(Qn,dpn)=>(Qn/60000)/(CD*Math.sqrt(2*dpn*1e5/RHO));
 const LPM=q=>q*60000, BAR=p=>p/1e5;
-const nf=(x,d=1)=>Number.isFinite(x)?(Math.abs(x)<0.5*Math.pow(10,-d)?0:x).toLocaleString('fi-FI',{minimumFractionDigits:d,maximumFractionDigits:d,useGrouping:false}):'–';
+const nf=(x,d=1)=>Number.isFinite(x)?(Math.abs(x)<0.5*Math.pow(10,-d)?0:x).toLocaleString(lang==='en'?'en-US':'fi-FI',{minimumFractionDigits:d,maximumFractionDigits:d,useGrouping:false}):'–';
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 
 /* ---------- symbol helpers ---------- */
@@ -341,13 +356,13 @@ pump:{name:c=>c.p.kind==='saato'?'Pumppu, painesäädetty':'Pumppu, vakiotilavuu
   dyn:c=>c.st.on?`<circle cx="-48" cy="0" r="17.5" class="spin" transform="rotate(${r1(c.st.th)} -48 0)"/>`:'',
   hit:(c,lx)=>lx<-32?'motor':null,
   click:(c,h)=>{if(h==='motor'){c.st.on=!c.st.on;buildInsp();}},
-  read:c=>c.st.on?`${nf(LPM(-qf(c,'P')),1)} L/min`:'pysäytetty',
+  read:c=>c.st.on?`${nf(LPM(-qf(c,'P')),1)} L/min`:tr('pysäytetty','stopped'),
   der:c=>{const dp=BAR(np(c,'P')-np(c,'S')),Q=LPM(-qf(c,'P')),Qth=c.p.Vg*c.p.n/1000;
     return [['Teoreettinen tuotto',nf(Qth,1)+' L/min'],['Todellinen tuotto',nf(Q,1)+' L/min'],['Painetaso',nf(BAR(np(c,'P')),1)+' bar'],
       ['Hydraulinen teho',nf(Math.max(0,dp)*Q/600,2)+' kW'],['Akselin ottoteho',nf(Math.max(0,dp)*Qth*(c.st.nA/c.p.n)/600/c.p.etahm,2)+' kW'],
       ['Akselin vääntö',nf(c.p.Vg*Math.max(0,dp)/(20*Math.PI*c.p.etahm),1)+' Nm']];},
-  help:c=>`<div class="fld"><span>Tarvittava tuotto</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
-  helpCalc:(c,v)=>{const Vg=v.Q*1000/(c.p.n*c.p.etav);return {html:`Vg = Q·1000 / (n·ηv) = <b>${nf(Vg,1)} cm³/r</b>`,apply:{Vg:Math.round(Vg*10)/10},lab:`Käytä Vg = ${nf(Vg,1)} cm³/r`};}
+  help:c=>`<div class="fld"><span>${T('Tarvittava tuotto')}</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>{const Vg=v.Q*1000/(c.p.n*c.p.etav);return {html:`Vg = Q·1000 / (n·ηv) = <b>${nf(Vg,1)} ${U('cm³/r')}</b>`,apply:{Vg:Math.round(Vg*10)/10},lab:`${tr('Käytä','Use')} Vg = ${nf(Vg,1)} ${U('cm³/r')}`};}
 },
 prv:{name:()=>'Paineenrajoitusventtiili',px:'PRV',bb:[-26,-40,34,40],
   ports:[{n:'P',x:0,y:-40,d:[0,-1]},{n:'T',x:0,y:40,d:[0,1]}],
@@ -381,9 +396,9 @@ throttle:{name:()=>'Kuristusventtiili',px:'KV',bb:[-30,-14,30,14],
   read:c=>`${c.p.open} %`,
   der:c=>[['Virtausaukko',nf(areaFor(c.p.Qn,c.p.dpn)*c.p.open/100*1e6,2)+' mm²'],['Virtaus A→B',nf(LPM(qf(c,'A')),2)+' L/min'],
     ['Paine-ero A−B',nf(BAR(np(c,'A')-np(c,'B')),1)+' bar'],['Tehohäviö',nf(lossW(c)/1000,2)+' kW']],
-  help:()=>`<div class="fld"><span>Haluttu virtaus</span><span class="inp"><input type="number" data-h="Q" value="5" step="0.5"><em>L/min</em></span></div><div class="fld"><span>Paine-ero</span><span class="inp"><input type="number" data-h="dp" value="20" step="1"><em>bar</em></span></div><div class="res" data-hres></div>`,
+  help:()=>`<div class="fld"><span>${T('Haluttu virtaus')}</span><span class="inp"><input type="number" data-h="Q" value="5" step="0.5"><em>L/min</em></span></div><div class="fld"><span>${T('Paine-ero')}</span><span class="inp"><input type="number" data-h="dp" value="20" step="1"><em>bar</em></span></div><div class="res" data-hres></div>`,
   helpCalc:(c,v)=>{const A=areaFor(v.Q,v.dp),o=100*A/areaFor(c.p.Qn,c.p.dpn);
-    return {html:`Tarvittava aukko ${nf(A*1e6,2)} mm², eli avaus <b>${nf(o,0)} %</b>${o>100?' (venttiili liian pieni)':''}`,apply:o<=100?{open:Math.round(o)}:null,lab:`Käytä avausta ${nf(Math.min(o,100),0)} %`};}
+    return {html:tr(`Tarvittava aukko ${nf(A*1e6,2)} mm², eli avaus <b>${nf(o,0)} %</b>${o>100?' (venttiili liian pieni)':''}`,`Required orifice ${nf(A*1e6,2)} mm², i.e. opening <b>${nf(o,0)} %</b>${o>100?' (valve too small)':''}`),apply:o<=100?{open:Math.round(o)}:null,lab:tr(`Käytä avausta ${nf(Math.min(o,100),0)} %`,`Use opening ${nf(Math.min(o,100),0)} %`)};}
 },
 owfc:{name:()=>'Vastusventtiili (kuristus + vasta)',px:'VKV',bb:[-40,-24,40,24],
   ports:[{n:'A',x:-40,y:0,d:[-1,0]},{n:'B',x:40,y:0,d:[1,0]}],
@@ -413,10 +428,10 @@ dcv43:{name:()=>'4/3-suuntaventtiili',px:'SV',bb:[-88,-34,88,34],
   hit:(c,lx)=>{const tx=40*c.st.s;return lx<tx-62?'a':(lx>tx+62?'b':null);},
   click:(c,h)=>{if(h==='a')setValve(c,c.st.tg===1?0:1);if(h==='b')setValve(c,c.st.tg===-1?0:-1);},
   press:(c,h)=>setValve(c,h==='a'?1:-1), release:c=>setValve(c,0),
-  read:c=>'asento '+(c.st.tg>0?'a':c.st.tg<0?'b':'0'),
+  read:c=>tr('asento ','position ')+(c.st.tg>0?'a':c.st.tg<0?'b':'0'),
   der:c=>dcvDer(c),
-  help:()=>`<div class="fld"><span>Virtaus tien läpi</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
-  helpCalc:(c,v)=>({html:`Painehäviö yhdellä tiellä Δp = Δpn·(Q/Qn)² = <b>${nf(c.p.dpn*(v.Q/c.p.Qn)**2,1)} bar</b>`})
+  help:()=>`<div class="fld"><span>${T('Virtaus tien läpi')}</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>({html:`${tr('Painehäviö yhdellä tiellä','Pressure drop per flow path')} Δp = Δpn·(Q/Qn)² = <b>${nf(c.p.dpn*(v.Q/c.p.Qn)**2,1)} bar</b>`})
 },
 dcv42:{name:()=>'4/2-suuntaventtiili',px:'SV',bb:[-80,-34,38,34],
   ports:[{n:'A',x:-10,y:-34,d:[0,-1]},{n:'B',x:10,y:-34,d:[0,-1]},{n:'P',x:-10,y:34,d:[0,1]},{n:'T',x:10,y:34,d:[0,1]}],
@@ -432,10 +447,10 @@ dcv42:{name:()=>'4/2-suuntaventtiili',px:'SV',bb:[-80,-34,38,34],
   hit:(c,lx)=>{const tx=40*(c.st.s+1)/2;return lx<tx-58?'a':null;},
   click:(c,h)=>{if(h==='a')setValve(c,c.st.tg===1?-1:1);},
   press:c=>setValve(c,1), release:c=>setValve(c,-1),
-  read:c=>'asento '+(c.st.tg>0?'a':'b'),
+  read:c=>tr('asento ','position ')+(c.st.tg>0?'a':'b'),
   der:c=>dcvDer(c),
-  help:()=>`<div class="fld"><span>Virtaus tien läpi</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
-  helpCalc:(c,v)=>({html:`Painehäviö yhdellä tiellä Δp = Δpn·(Q/Qn)² = <b>${nf(c.p.dpn*(v.Q/c.p.Qn)**2,1)} bar</b>`})
+  help:()=>`<div class="fld"><span>${T('Virtaus tien läpi')}</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>({html:`${tr('Painehäviö yhdellä tiellä','Pressure drop per flow path')} Δp = Δpn·(Q/Qn)² = <b>${nf(c.p.dpn*(v.Q/c.p.Qn)**2,1)} bar</b>`})
 },
 cyl:{name:()=>'Kaksitoiminen sylinteri',px:'SYL',bb:[-70,-18,100,34],mech:'lin',
   ports:[{n:'A',x:-56,y:34,d:[0,1]},{n:'B',x:56,y:34,d:[0,1]}],
@@ -492,13 +507,13 @@ motor:{name:()=>'Hydraulimoottori',px:'M',bb:[-22,-34,62,34],mech:'rot',
   post:(c,dt)=>{c.st.w=M.u[c.vi];c.st.th=(c.st.th+c.st.w*dt*180/Math.PI)%360;},
   draw:()=>`<circle r="20" class="syf"/><polygon class="fi" points="-7,-19 7,-19 0,-8"/><polygon class="fi" points="-7,19 7,19 0,8"/>`+L(0,-20,0,-34)+L(0,20,0,34)+L(20,-2.5,36,-2.5)+L(20,2.5,36,2.5),
   dyn:c=>`<g transform="translate(48,0) rotate(${r1(c.st.th)})"><circle r="12" class="syf"/>${L(-12,0,12,0)+L(0,-12,0,12)}</g>`,
-  read:c=>`${nf(c.st.w*60/(2*Math.PI),0)} r/min`,
+  read:c=>`${nf(c.st.w*60/(2*Math.PI),0)} ${U('r/min')}`,
   der:c=>{const D=c.p.Vg*1e-6/(2*Math.PI),dp=np(c,'A')-np(c,'B'),w=c.st.w;
-    return [['Pyörimisnopeus',nf(w*60/(2*Math.PI),0)+' r/min'],['Paine-ero A−B',nf(BAR(dp),1)+' bar'],['Vääntömomentti',nf(dp*D*c.p.etahm,1)+' Nm'],
+    return [['Pyörimisnopeus',nf(w*60/(2*Math.PI),0)+' '+U('r/min')],['Paine-ero A−B',nf(BAR(dp),1)+' bar'],['Vääntömomentti',nf(dp*D*c.p.etahm,1)+' Nm'],
       ['Vääntö / bar',nf(1e5*D*c.p.etahm,3)+' Nm/bar'],['Antoteho',nf(dp*D*c.p.etahm*w/1000,2)+' kW'],['Virtaus A',nf(LPM(qf(c,'A')),1)+' L/min'],
-      ['Teor. nopeus pumpun tuotolla',nf(pumpQsum()*1000/c.p.Vg,0)+' r/min']];},
-  help:()=>`<div class="fld"><span>Tarvittava vääntö</span><span class="inp"><input type="number" data-h="T" value="50" step="1"><em>Nm</em></span></div><div class="fld"><span>Käytettävä paine-ero</span><span class="inp"><input type="number" data-h="dp" value="100" step="5"><em>bar</em></span></div><div class="fld"><span>Haluttu nopeus</span><span class="inp"><input type="number" data-h="n" value="500" step="10"><em>r/min</em></span></div><div class="res" data-hres></div>`,
-  helpCalc:(c,v)=>{const Vg=20*Math.PI*v.T/(v.dp*c.p.etahm),Q=Vg*v.n/1000;return {html:`Vg = 20π·T / (Δp·ηhm) = <b>${nf(Vg,1)} cm³/r</b><br>Tarvittava virtaus Q = Vg·n/1000 ≈ <b>${nf(Q,1)} L/min</b> (+ vuoto)`,apply:{Vg:Math.round(Vg)},lab:`Käytä Vg = ${nf(Math.round(Vg),0)} cm³/r`};}
+      ['Teor. nopeus pumpun tuotolla',nf(pumpQsum()*1000/c.p.Vg,0)+' '+U('r/min')]];},
+  help:()=>`<div class="fld"><span>${T('Tarvittava vääntö')}</span><span class="inp"><input type="number" data-h="T" value="50" step="1"><em>Nm</em></span></div><div class="fld"><span>${T('Käytettävä paine-ero')}</span><span class="inp"><input type="number" data-h="dp" value="100" step="5"><em>bar</em></span></div><div class="fld"><span>${T('Haluttu nopeus')}</span><span class="inp"><input type="number" data-h="n" value="500" step="10"><em>${U('r/min')}</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>{const Vg=20*Math.PI*v.T/(v.dp*c.p.etahm),Q=Vg*v.n/1000;return {html:`Vg = 20π·T / (Δp·ηhm) = <b>${nf(Vg,1)} ${U('cm³/r')}</b><br>${tr('Tarvittava virtaus','Required flow')} Q = Vg·n/1000 ≈ <b>${nf(Q,1)} L/min</b> ${tr('(+ vuoto)','(+ leakage)')}`,apply:{Vg:Math.round(Vg)},lab:`${tr('Käytä','Use')} Vg = ${nf(Math.round(Vg),0)} ${U('cm³/r')}`};}
 },
 gauge:{name:()=>'Painemittari',px:'PI',bb:[-18,-18,18,30],
   ports:[{n:'P',x:0,y:30,d:[0,1]}],
@@ -534,7 +549,7 @@ function dcvFl(c,P,four3){
   lk('P','A');lk('P','B');lk('A','T');lk('B','T');
   return q;
 }
-function dcvDer(c){return [['Kelan asema',c.st.tg>0?'a (P→A, B→T)':c.st.tg<0?'b (P→B, A→T)':'keskiasento'],
+function dcvDer(c){return [['Kelan asema',c.st.tg>0?'a (P→A, B→T)':c.st.tg<0?'b (P→B, A→T)':tr('keskiasento','centre position')],
   ['Virtaus P',nf(LPM(qf(c,'P')),1)+' L/min'],['Virtaus A',nf(LPM(qf(c,'A')),1)+' L/min'],['Virtaus B',nf(LPM(qf(c,'B')),1)+' L/min'],
   ['Paineet P / A / B / T',[np(c,'P'),np(c,'A'),np(c,'B'),np(c,'T')].map(p=>nf(BAR(p),0)).join(' / ')+' bar'],
   ['Tehohäviö',nf(lossW(c)/1000,2)+' kW']];}
@@ -580,14 +595,14 @@ function cylDer(c){
   if(c.p.ori==='pysty')r.push(['Kuorman paino m·g',nf(c.p.m*G/1000,2)+' kN']);
   return r;
 }
-function cylHelp(){return `<div class="fld"><span>Tarvittava voima</span><span class="inp"><input type="number" data-h="F" value="10" step="0.5"><em>kN</em></span></div>
-<div class="fld"><span>Käyttöpaine</span><span class="inp"><input type="number" data-h="p" value="100" step="5"><em>bar</em></span></div>
-<div class="fld"><span>Haluttu ulosajonopeus</span><span class="inp"><input type="number" data-h="v" value="100" step="10"><em>mm/s</em></span></div><div class="res" data-hres></div>`;}
+function cylHelp(){return `<div class="fld"><span>${T('Tarvittava voima')}</span><span class="inp"><input type="number" data-h="F" value="10" step="0.5"><em>kN</em></span></div>
+<div class="fld"><span>${T('Käyttöpaine')}</span><span class="inp"><input type="number" data-h="p" value="100" step="5"><em>bar</em></span></div>
+<div class="fld"><span>${T('Haluttu ulosajonopeus')}</span><span class="inp"><input type="number" data-h="v" value="100" step="10"><em>mm/s</em></span></div><div class="res" data-hres></div>`;}
 function cylHelpCalc(c,v){
   const Dreq=Math.sqrt(4*v.F*1000/(Math.PI*v.p*1e5))*1000;const Ds=STD_D.find(x=>x>=Dreq)||STD_D[STD_D.length-1];
   const rod=STD_ROD[Ds];const Q=Math.PI/4*(Ds/1000)**2*v.v/1000*60000;
-  return {html:`D = √(4F / (π·p)) = ${nf(Dreq,1)} mm → vakiokoko <b>Ø${Ds}/${rod}</b><br>Tilavuusvirta ulosajoon Q = A·v = <b>${nf(Q,1)} L/min</b>`,
-    apply:c.type==='cyl'?{D:Ds,d:rod}:{D:Ds},lab:`Käytä Ø${Ds}${c.type==='cyl'?'/'+rod:''}`};
+  return {html:`D = √(4F / (π·p)) = ${nf(Dreq,1)} mm → ${tr('vakiokoko','standard size')} <b>Ø${Ds}/${rod}</b><br>${tr('Tilavuusvirta ulosajoon','Flow for extension')} Q = A·v = <b>${nf(Q,1)} L/min</b>`,
+    apply:c.type==='cyl'?{D:Ds,d:rod}:{D:Ds},lab:`${tr('Käytä','Use')} Ø${Ds}${c.type==='cyl'?'/'+rod:''}`};
 }
 
 /* ---------- topology & solver ---------- */
@@ -750,15 +765,15 @@ function addProbe(kind,target){
 }
 function renderProbeRows(){
   const root=$('#probeRows');
-  if(!probes.length){root.innerHTML='<p class="empty">Ei antureita. Paineanturi ja virtausanturi kiinnitetään komponentin liitäntään, voima- ja nopeusanturi sylinteriin tai moottoriin.</p>';return;}
-  root.innerHTML=probes.map(pr=>{const m=probeMeta(pr);return `<div class="prow" data-pr="${pr.id}"><div class="pl" style="border-left:4px solid ${pr.color};padding-left:7px">${m.n} ${esc(m.lab||'')}<b data-val>–</b></div><canvas data-cv></canvas><button type="button" data-rm title="Poista anturi" aria-label="Poista anturi">✕</button></div>`;}).join('');
+  if(!probes.length){root.innerHTML=`<p class="empty">${tr('Ei antureita. Paineanturi ja virtausanturi kiinnitetään komponentin liitäntään, voima- ja nopeusanturi sylinteriin tai moottoriin.','No sensors. Pressure and flow sensors attach to a component port; force and speed sensors attach to a cylinder or motor.')}</p>`;return;}
+  root.innerHTML=probes.map(pr=>{const m=probeMeta(pr);return `<div class="prow" data-pr="${pr.id}"><div class="pl" style="border-left:4px solid ${pr.color};padding-left:7px">${T(m.n)} ${esc(m.lab||'')}<b data-val>–</b></div><canvas data-cv></canvas><button type="button" data-rm title="${tr('Poista anturi','Remove sensor')}" aria-label="${tr('Poista anturi','Remove sensor')}">✕</button></div>`;}).join('');
   for(const pr of probes){const row=root.querySelector(`[data-pr="${pr.id}"]`);pr.rowVal=row.querySelector('[data-val]');pr.cvs=row.querySelector('[data-cv]');}
 }
 $('#probeRows').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const id=b.closest('[data-pr]').dataset.pr;snapshot();probes=probes.filter(p=>p.id!==id);renderProbesDom();save();});
 function drawScope(){
   const css=getComputedStyle(document.documentElement);const muted=css.getPropertyValue('--muted').trim(),grid=css.getPropertyValue('--grid2').trim();
   for(const pr of probes){const cvs=pr.cvs;if(!cvs)continue;const m=probeMeta(pr);const v=probeVal(pr);
-    pr.rowVal.textContent=`${nf(v,m.d)} ${m.u}`;
+    pr.rowVal.textContent=`${nf(v,m.d)} ${U(m.u)}`;
     const dpr=window.devicePixelRatio||1,w=cvs.clientWidth,h=cvs.clientHeight;if(!w)continue;
     if(cvs.width!==Math.round(w*dpr)){cvs.width=Math.round(w*dpr);cvs.height=Math.round(h*dpr);}
     const g=cvs.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
@@ -772,7 +787,7 @@ function drawScope(){
 }
 function updateProbeTags(){
   for(const pr of probes){const pt=probeTargetPt(pr);if(!pt||!pr.text)continue;const m=probeMeta(pr);
-    const tx=pt.x+pr.dx,ty=pt.y+pr.dy;const s=`${pr.kind==='p'?'p':pr.kind==='q'?'Q':pr.kind==='F'?(m.u==='Nm'?'T':'F'):(m.u==='r/min'?'n':'v')} ${nf(probeVal(pr),m.d)} ${m.u}`;
+    const tx=pt.x+pr.dx,ty=pt.y+pr.dy;const s=`${pr.kind==='p'?'p':pr.kind==='q'?'Q':pr.kind==='F'?(m.u==='Nm'?'T':'F'):(m.u==='r/min'?'n':'v')} ${nf(probeVal(pr),m.d)} ${U(m.u)}`;
     pr.text.textContent=s;pr.text.setAttribute('x',tx+6);pr.text.setAttribute('y',ty+5);
     const wdt=s.length*6.6+10;pr.rect.setAttribute('x',tx);pr.rect.setAttribute('y',ty-10);pr.rect.setAttribute('width',wdt);pr.rect.setAttribute('height',20);
     pr.line.setAttribute('x1',pt.x);pr.line.setAttribute('y1',pt.y);pr.line.setAttribute('x2',tx+(pr.dx<0?wdt:0));pr.line.setAttribute('y2',ty);}
@@ -813,19 +828,20 @@ function render(fdt){
 }
 
 /* ---------- warnings ---------- */
+let lastWarnCodes=[];
 function updWarns(){
   const out=[];
-  if(numErr){out.push(['Numeerinen virhe, paineet nollattiin. Tarkista kytkennät.','']);}
+  if(numErr){out.push([tr('Numeerinen virhe, paineet nollattiin. Tarkista kytkennät.','Numerical error, pressures were reset. Check the connections.'),'','numeerinen']);}
   const hasPRV=comps.some(c=>c.type==='prv');
   for(const c of comps){const t=TY[c.type];
-    const lim=c.p.pmax||c.p.pr;if(lim){const pm=Math.max(...c.pn.map(pn=>np(c,pn)));if(pm>lim*1e5*1.02)out.push([`${c.label}: paine ${nf(BAR(pm),0)} bar ylittää sallitun ${lim} bar`,'']);}
-    if(c.type==='pump'&&c.st.on&&np(c,'S')<-0.4e5)out.push([`${c.label}: pumppu ei saa öljyä. Kytke imuliitäntä S säiliöön.`,'']);
+    const lim=c.p.pmax||c.p.pr;if(lim){const pm=Math.max(...c.pn.map(pn=>np(c,pn)));if(pm>lim*1e5*1.02)out.push([tr(`${c.label}: paine ${nf(BAR(pm),0)} bar ylittää sallitun ${lim} bar`,`${c.label}: pressure ${nf(BAR(pm),0)} bar exceeds the rated ${lim} bar`),'','ylipaine']);}
+    if(c.type==='pump'&&c.st.on&&np(c,'S')<-0.4e5)out.push([tr(`${c.label}: pumppu ei saa öljyä. Kytke imuliitäntä S säiliöön.`,`${c.label}: the pump is starved of oil. Connect suction port S to a tank.`),'','imu']);
   }
-  if(M.nets.some(n=>n.cav))out.push(['Alipaine (kavitaatio) piirissä. Tarkista imu- ja paluulinjat tai kuorman jarrutus.','']);
-  if(!hasPRV&&comps.some(c=>c.type==='pump'&&c.p.kind==='vakio')&&M.nets.some(n=>n.p>350e5))out.push(['Paine karkaa: vakiotilavuuspumppu tarvitsee paineenrajoitusventtiilin.','']);
-  if(!comps.length)out.push(['Vedä komponentteja vasemmalta piirtoalustalle tai valitse esimerkkipiiri.','info']);
-  else if(!wires.length)out.push(['Kytke komponentit vetämällä liitännästä toiseen.','info']);
-  $('#warns').innerHTML=out.slice(0,4).map(([s,c])=>`<div class="${c}">${esc(s)}</div>`).join('');
+  if(M.nets.some(n=>n.cav))out.push([tr('Alipaine (kavitaatio) piirissä. Tarkista imu- ja paluulinjat tai kuorman jarrutus.','Vacuum (cavitation) in the circuit. Check the suction and return lines or how the load is braked.'),'','kavitaatio']);
+  if(!hasPRV&&comps.some(c=>c.type==='pump'&&c.p.kind==='vakio')&&M.nets.some(n=>n.p>350e5))out.push([tr('Paine karkaa: vakiotilavuuspumppu tarvitsee paineenrajoitusventtiilin.','Pressure runaway: a fixed displacement pump needs a pressure relief valve.'),'','karkaa']);
+  if(!comps.length)out.push([tr('Vedä komponentteja vasemmalta piirtoalustalle tai valitse esimerkkipiiri.','Drag components from the left onto the canvas or load an example circuit.'),'info','tyhja']);
+  else if(!wires.length)out.push([tr('Kytke komponentit vetämällä liitännästä toiseen.','Connect components by dragging from one port to another.'),'info','kytke']);
+  lastWarnCodes=out.map(o=>o[2]);$('#warns').innerHTML=out.slice(0,4).map(([s,c])=>`<div class="${c}">${esc(s)}</div>`).join('');
 }
 
 /* ---------- inspector ---------- */
@@ -833,27 +849,33 @@ const insp=$('#insp');
 function buildInsp(){
   if(sel&&sel.w){const w=wires.find(x=>x.id===sel.w);if(!w){sel=null;return buildInsp();}
     const a=portByKey(w.a),b=portByKey(w.b);
-    insp.innerHTML=`<h2>Letku</h2><p>${esc(a?.c.label)}.${a?.n} ↔ ${esc(b?.c.label)}.${b?.n}</p><dl class="der" id="der"></dl><div class="acts"><button class="btn danger" data-act="del">Poista kytkentä</button></div>`;updDer();return;}
+    insp.innerHTML=`<h2>${tr('Letku','Hose')}</h2><p>${esc(a?.c.label)}.${a?.n} ↔ ${esc(b?.c.label)}.${b?.n}</p><dl class="der" id="der"></dl><div class="acts"><button class="btn danger" data-act="del">${tr('Poista kytkentä','Delete connection')}</button></div>`;updDer();return;}
   if(!sel||!byId[sel.id]){
-    insp.innerHTML=`<h2>Piiri</h2><p>Valitse komponentti nähdäksesi sen mitoituksen ja lasketut arvot.</p>
+    insp.innerHTML=tr(`<h2>Piiri</h2><p>Valitse komponentti nähdäksesi sen mitoituksen ja lasketut arvot.</p>
     <dl class="der" id="der"></dl>
     <h3>Pikaohje</h3>
     <p>Vedä komponentti paletista alustalle tai klikkaa sitä. Kytke vetämällä liitännästä (pieni ympyrä) toiseen liitäntään. Samaan liitäntään voi kytkeä useita letkuja, jolloin syntyy haara.</p>
     <p>Ohjaa suuntaventtiiliä klikkaamalla sen kelaa (a vasemmalla, b oikealla). Pumpun voi pysäyttää klikkaamalla sähkömoottoria M.</p>
-    <p class="kbd">Näppäimet: Del poistaa, R kiertää, välilyönti käynnistää tai pysäyttää, Ctrl+Z kumoaa. Rulla zoomaa, tyhjän alueen veto siirtää näkymää.</p>`;updDer();return;}
+    <p class="kbd">Näppäimet: Del poistaa, R kiertää, välilyönti käynnistää tai pysäyttää, Ctrl+Z kumoaa. Rulla zoomaa, tyhjän alueen veto siirtää näkymää.</p>`,
+    `<h2>Circuit</h2><p>Select a component to see its sizing parameters and calculated values.</p>
+    <dl class="der" id="der"></dl>
+    <h3>Quick guide</h3>
+    <p>Drag a component from the palette onto the canvas, or click it. Connect by dragging from a port (small circle) to another port. Several hoses can be connected to the same port to create a branch.</p>
+    <p>Operate a directional valve by clicking its solenoid (a on the left, b on the right). Stop a pump by clicking its electric motor M.</p>
+    <p class="kbd">Keys: Del deletes, R rotates, Space starts or stops, Ctrl+Z undoes. Scroll to zoom, drag empty space to pan.</p>`);updDer();return;}
   const c=byId[sel.id],t=TY[c.type];
-  let h=`<div class="ih"><input id="lblIn" value="${esc(c.label)}" aria-label="Tunnus" maxlength="10"><span class="tn">${esc(t.name(c))}</span></div>`;
-  if(c.type==='dcv43')h+=`<div class="ctl"><span>Kelan asema</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="0">0</button><button data-v="-1">b</button></div></div>`;
-  if(c.type==='dcv42')h+=`<div class="ctl"><span>Kelan asema</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="-1">b (lepo)</button></div></div>`;
-  if(c.type==='pump')h+=`<div class="ctl"><span>Sähkömoottori</span><button class="btn ${c.st.on?'on':''}" data-act="pump">${c.st.on?'Käy, pysäytä':'Pysäytetty, käynnistä'}</button></div>`;
-  if(c.type==='throttle'||c.type==='owfc')h+=`<div class="ctl" style="flex-direction:column;align-items:stretch;gap:4px"><span>Avaus <b id="openV">${c.p.open} %</b></span><input type="range" class="rng" min="0" max="100" step="1" value="${c.p.open}" id="openR" aria-label="Avaus"></div>`;
-  h+=`<h3>Mitoitus</h3>`;
+  let h=`<div class="ih"><input id="lblIn" value="${esc(c.label)}" aria-label="${tr('Tunnus','Tag')}" maxlength="10"><span class="tn">${esc(T(t.name(c)))}</span></div>`;
+  if(c.type==='dcv43')h+=`<div class="ctl"><span>${tr('Kelan asema','Spool position')}</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="0">0</button><button data-v="-1">b</button></div></div>`;
+  if(c.type==='dcv42')h+=`<div class="ctl"><span>${tr('Kelan asema','Spool position')}</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="-1">${tr('b (lepo)','b (rest)')}</button></div></div>`;
+  if(c.type==='pump')h+=`<div class="ctl"><span>${tr('Sähkömoottori','Electric motor')}</span><button class="btn ${c.st.on?'on':''}" data-act="pump">${c.st.on?tr('Käy, pysäytä','Running, stop'):tr('Pysäytetty, käynnistä','Stopped, start')}</button></div>`;
+  if(c.type==='throttle'||c.type==='owfc')h+=`<div class="ctl" style="flex-direction:column;align-items:stretch;gap:4px"><span>${tr('Avaus','Opening')} <b id="openV">${c.p.open} %</b></span><input type="range" class="rng" min="0" max="100" step="1" value="${c.p.open}" id="openR" aria-label="${tr('Avaus','Opening')}"></div>`;
+  h+=`<h3>${tr('Mitoitus','Sizing')}</h3>`;
   for(const pd of t.prm){if(pd.show&&!pd.show(c))continue;if(pd.k==='open')continue;
-    if(pd.sel)h+=`<label class="fld"><span>${pd.l}</span><span class="inp"><select data-k="${pd.k}">${pd.sel.map(([v,l])=>`<option value="${v}"${c.p[pd.k]===v?' selected':''}>${l}</option>`).join('')}</select></span></label>`;
-    else h+=`<label class="fld"><span>${pd.l}</span><span class="inp"><input type="number" data-k="${pd.k}" value="${c.p[pd.k]}" min="${pd.min}" max="${pd.max}" step="${pd.st}"><em>${pd.u}</em></span></label>`;}
-  h+=`<h3>Lasketut arvot</h3><dl class="der" id="der"></dl>`;
-  if(t.help)h+=`<h3>Mitoitusapu</h3><div class="help" id="help">${t.help(c)}<button class="btn" data-act="apply" id="applyBtn" style="display:none"></button></div>`;
-  h+=`<div class="acts"><button class="btn" data-act="rot">Kierrä 90°</button><button class="btn danger" data-act="del">Poista</button></div>`;
+    if(pd.sel)h+=`<label class="fld"><span>${T(pd.l)}</span><span class="inp"><select data-k="${pd.k}">${pd.sel.map(([v,l])=>`<option value="${v}"${c.p[pd.k]===v?' selected':''}>${T(l)}</option>`).join('')}</select></span></label>`;
+    else h+=`<label class="fld"><span>${T(pd.l)}</span><span class="inp"><input type="number" data-k="${pd.k}" value="${c.p[pd.k]}" min="${pd.min}" max="${pd.max}" step="${pd.st}"><em>${U(pd.u)}</em></span></label>`;}
+  h+=`<h3>${tr('Lasketut arvot','Calculated values')}</h3><dl class="der" id="der"></dl>`;
+  if(t.help)h+=`<h3>${tr('Mitoitusapu','Sizing helper')}</h3><div class="help" id="help">${t.help(c)}<button class="btn" data-act="apply" id="applyBtn" style="display:none"></button></div>`;
+  h+=`<div class="acts"><button class="btn" data-act="rot">${tr('Kierrä 90°','Rotate 90°')}</button><button class="btn danger" data-act="del">${tr('Poista','Delete')}</button></div>`;
   insp.innerHTML=h;
   if(c.type==='dcv43'||c.type==='dcv42')syncValveBtns(c);
   updDer();if(t.help)updHelp();
@@ -861,15 +883,15 @@ function buildInsp(){
 function syncValveBtns(c){const s=$('#vseg');if(!s)return;s.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===c.st.tg));}
 function updDer(){
   const el=$('#der');if(!el)return;let rows=[];
-  if(sel&&sel.w){const w=wires.find(x=>x.id===sel.w);if(w){const a=portByKey(w.a);const p=a?np(a.c,a.n):0;rows=[['Paine',nf(BAR(p),1)+' bar'],['Virtaus letkussa',Number.isFinite(w.f)?nf(Math.abs(LPM(w.f)),2)+' L/min':'ei määritelty (silmukka)']];}}
+  if(sel&&sel.w){const w=wires.find(x=>x.id===sel.w);if(w){const a=portByKey(w.a);const p=a?np(a.c,a.n):0;rows=[['Paine',nf(BAR(p),1)+' bar'],['Virtaus letkussa',Number.isFinite(w.f)?nf(Math.abs(LPM(w.f)),2)+' L/min':tr('ei määritelty (silmukka)','undefined (loop)')]];}}
   else if(sel&&byId[sel.id]){const c=byId[sel.id];rows=TY[c.type].der?TY[c.type].der(c):[];}
   else{const Q=pumpQsum();rows=[['Komponentteja',String(comps.length)],['Kytkentöjä',String(wires.length)],['Paineverkkoja',String(M.nets.length)],['Pumppujen tuotto yht.',nf(Q,1)+' L/min'],['Simulaatioaika',nf(simT,1)+' s']];}
-  el.innerHTML=rows.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  el.innerHTML=rows.map(([a,b])=>`<dt>${T(a)}</dt><dd>${b}</dd>`).join('');
 }
 let helpRes=null;
 function updHelp(){
   const c=sel&&byId[sel.id];const root=$('#help');if(!c||!root)return;const v={};root.querySelectorAll('[data-h]').forEach(i=>v[i.dataset.h]=parseFloat(i.value)||0);
-  const ok=Object.values(v).every(x=>x>0);const r=ok?TY[c.type].helpCalc(c,v):{html:'Anna positiiviset arvot.'};helpRes=r;
+  const ok=Object.values(v).every(x=>x>0);const r=ok?TY[c.type].helpCalc(c,v):{html:tr('Anna positiiviset arvot.','Enter positive values.')};helpRes=r;
   root.querySelector('[data-hres]').innerHTML=r.html;const ab=$('#applyBtn');if(r.apply){ab.style.display='';ab.textContent=r.lab;}else ab.style.display='none';
 }
 insp.addEventListener('input',e=>{
@@ -975,11 +997,11 @@ const PAL=[
 ];
 function buildPalette(){
   const el=$('#pal');let h='';
-  PAL.forEach(([cat,items],ci)=>{h+=`<h3>${cat}</h3>`;items.forEach(([type,name,p],ii)=>{
+  PAL.forEach(([cat,items],ci)=>{h+=`<h3>${T(cat)}</h3>`;items.forEach(([type,name,p],ii)=>{
     const t=TY[type],fake={type,p:Object.assign({},t.def,p),st:null};fake.st=t.init(fake);const b=t.bb;
     const vb=`${b[0]-6} ${b[1]-6} ${b[2]-b[0]+12} ${b[3]-b[1]+12}`;
-    h+=`<button type="button" class="pitem" data-pi="${ci}:${ii}" title="Vedä alustalle tai klikkaa"><svg viewBox="${vb}" aria-hidden="true">${t.draw(fake)}${t.dyn?t.dyn(fake):''}</svg><span>${name}</span></button>`;});});
-  h+=`<p class="copy">Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026.<br>Lisenssi: <a href="https://creativecommons.org/licenses/by/4.0/deed.fi" target="_blank" rel="license noopener">CC BY 4.0</a></p>`;
+    h+=`<button type="button" class="pitem" data-pi="${ci}:${ii}" title="${tr('Vedä alustalle tai klikkaa','Drag onto the canvas or click')}"><svg viewBox="${vb}" aria-hidden="true">${t.draw(fake)}${t.dyn?t.dyn(fake):''}</svg><span>${T(name)}</span></button>`;});});
+  h+=`<p class="copy">${tr('Tekijä','Author')}: Juho Pirttilahti, ${tr('Seinäjoen ammattikorkeakoulu','Seinäjoki University of Applied Sciences')} (SEAMK), 2026.<br>${tr('Suunnittelu, sisältö ja validointi: Juho Pirttilahti. Ohjelmakoodi toteutettu tekoälyavusteisesti (Claude, Anthropic).','Design, content and validation: Juho Pirttilahti. Code implemented with AI assistance (Claude, Anthropic).')}<br>${tr('Lisenssi','Licence')}: <a href="https://creativecommons.org/licenses/by/4.0/deed.fi" target="_blank" rel="license noopener">CC BY 4.0</a></p>`;
   el.innerHTML=h;
 }
 
@@ -1027,7 +1049,7 @@ cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientR
 function hoverTip(e){
   const t=e.target,stage=$('#stage').getBoundingClientRect();let s='';
   const portEl=t.closest&&t.closest('[data-port]'),wireEl=t.closest&&t.closest('.wire');
-  if(portEl){const p=portByKey(portEl.dataset.port);if(p){const q=LPM(qf(p.c,p.n));s=`${p.c.label}.${p.n}: p ${nf(BAR(np(p.c,p.n)),1)} bar, Q ${nf(q,2)} L/min ${q>=0?'sisään':'ulos'}`;}}
+  if(portEl){const p=portByKey(portEl.dataset.port);if(p){const q=LPM(qf(p.c,p.n));s=`${p.c.label}.${p.n}: p ${nf(BAR(np(p.c,p.n)),1)} bar, Q ${nf(q,2)} L/min ${q>=0?tr('sisään','in'):tr('ulos','out')}`;}}
   else if(wireEl){const w=wires.find(x=>x.id===wireEl.dataset.w);const a=w&&portByKey(w.a);if(a)s=`p ${nf(BAR(np(a.c,a.n)),1)} bar`+(Number.isFinite(w.f)?`, Q ${nf(Math.abs(LPM(w.f)),2)} L/min`:'');}
   if(!s){tip.style.display='none';return;}
   tip.textContent=s;tip.style.display='block';tip.style.left=(e.clientX-stage.left+14)+'px';tip.style.top=(e.clientY-stage.top+14)+'px';
@@ -1040,7 +1062,7 @@ function placeProbe(w,portEl,compEl,wireEl){
   if(tool==='p'||tool==='q'){if(!port&&comp){port=portsW(comp).reduce((a,p)=>Math.hypot(p.x-w.x,p.y-w.y)<Math.hypot(a.x-w.x,a.y-w.y)?p:a);}if(port)addProbe(tool,port.k);return;}
   if(!comp&&port)comp=port.c;
   if(comp&&['cyl','scyl','motor'].includes(comp.type))addProbe(tool,comp.id);
-  else flashWarn(tool==='F'?'Voima-anturi kiinnitetään sylinteriin tai moottoriin.':'Nopeusanturi kiinnitetään sylinteriin tai moottoriin.');
+  else flashWarn(tool==='F'?tr('Voima-anturi kiinnitetään sylinteriin tai moottoriin.','The force sensor attaches to a cylinder or motor.'):tr('Nopeusanturi kiinnitetään sylinteriin tai moottoriin.','The speed sensor attaches to a cylinder or motor.'));
 }
 function flashWarn(s){const el=$('#warns');el.innerHTML=`<div class="info">${esc(s)}</div>`;}
 
@@ -1063,7 +1085,7 @@ function setTool(t){tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b
 $('#showRead').addEventListener('change',e=>{showRead=e.target.checked;});
 $('#pScale').addEventListener('change',e=>{pScale=+e.target.value;for(const c of comps)c.dyS=null;});
 const runBtn=$('#runBtn');
-function setRun(r){running=r;runBtn.textContent=r?'Pysäytä':'Käynnistä';}
+function setRun(r){running=r;runBtn.textContent=r?tr('Pysäytä','Pause'):tr('Käynnistä','Run');}
 runBtn.addEventListener('click',()=>setRun(!running));
 $('#resetBtn').addEventListener('click',()=>{resetStates();buildInsp();});
 $('#speed').addEventListener('change',e=>{speed=+e.target.value;});
@@ -1088,25 +1110,53 @@ function openModal(h){mbox.innerHTML=h;modal.classList.add('open');}
 function closeModal(){modal.classList.remove('open');}
 modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('[data-close]'))closeModal();});
 $('#ioBtn').addEventListener('click',()=>{
-  openModal(`<h2>Tallenna tai lataa piiri</h2><p>Piiri tallentuu automaattisesti tähän selaimeen. Siirtääksesi sen muualle kopioi alla oleva teksti talteen. Ladataksesi piirin liitä aiemmin kopioitu teksti kenttään ja valitse Lataa.</p>
-  <textarea id="ioText" spellcheck="false">${esc(ser())}</textarea><p id="ioMsg" class="kbd"></p>
-  <div class="mrow"><button class="btn" id="ioCopy">Kopioi</button><button class="btn pri" id="ioLoad">Lataa</button><button class="btn" data-close>Sulje</button></div>`);
-  $('#ioCopy').addEventListener('click',async()=>{const ta=$('#ioText');ta.select();try{await navigator.clipboard.writeText(ta.value);$('#ioMsg').textContent='Kopioitu leikepöydälle.';}catch(err){try{document.execCommand('copy');$('#ioMsg').textContent='Kopioitu.';}catch(e2){$('#ioMsg').textContent='Kopiointi estetty. Valitse teksti ja kopioi näppäimillä Ctrl+C.';}}});
-  $('#ioLoad').addEventListener('click',()=>{try{const s=$('#ioText').value;snapshot();load(s);save();closeModal();}catch(err){$('#ioMsg').textContent='Lataus epäonnistui: teksti ei ole kelvollinen piiri ('+err.message+').';}});
+  openModal(tr(`<h2>Tallenna tai lataa piiri</h2><p>Piiri tallentuu automaattisesti tähän selaimeen. Siirtääksesi sen muualle kopioi alla oleva teksti talteen. Ladataksesi piirin liitä aiemmin kopioitu teksti kenttään ja valitse Lataa.</p>`,
+     `<h2>Save or load a circuit</h2><p>The circuit is saved automatically in this browser. To move it elsewhere, copy the text below. To load a circuit, paste previously copied text into the field and choose Load.</p>`)+
+  `<textarea id="ioText" spellcheck="false">${esc(ser())}</textarea><p id="ioMsg" class="kbd"></p>
+  <div class="mrow"><button class="btn" id="ioCopy">${tr('Kopioi','Copy')}</button><button class="btn pri" id="ioLoad">${tr('Lataa','Load')}</button><button class="btn" data-close>${tr('Sulje','Close')}</button></div>`);
+  $('#ioCopy').addEventListener('click',async()=>{const ta=$('#ioText');ta.select();try{await navigator.clipboard.writeText(ta.value);$('#ioMsg').textContent=tr('Kopioitu leikepöydälle.','Copied to clipboard.');}catch(err){try{document.execCommand('copy');$('#ioMsg').textContent=tr('Kopioitu.','Copied.');}catch(e2){$('#ioMsg').textContent=tr('Kopiointi estetty. Valitse teksti ja kopioi näppäimillä Ctrl+C.','Copying was blocked. Select the text and copy with Ctrl+C.');}}});
+  $('#ioLoad').addEventListener('click',()=>{try{const s=$('#ioText').value;snapshot();load(s);save();closeModal();}catch(err){$('#ioMsg').textContent=tr('Lataus epäonnistui: teksti ei ole kelvollinen piiri (','Loading failed: the text is not a valid circuit (')+err.message+').';}});
 });
-$('#helpBtn').addEventListener('click',()=>openModal(`<h2>Ohje</h2>
+$('#helpBtn').addEventListener('click',()=>openModal(tr(`<h2>Ohje</h2>
+<p>Täydellinen käyttöohje esimerkkeineen ja harjoitustehtävineen: <a href="https://jipirtti.github.io/Hydrauliikkasimulaattori/docs/kayttoohje.html" target="_blank" rel="noopener">Hydrauliikkasimulaattorin käyttöohje</a>.</p>
 <h3>Piirin rakentaminen</h3><p>Vedä komponentti vasemmalta piirtoalustalle tai klikkaa sitä, jolloin se ilmestyy näkymän keskelle. Kytke letku vetämällä liitännästä toiseen. Haaran saat kytkemällä samaan liitäntään useamman letkun. Kytkemätön liitäntä toimii tulppana.</p>
 <h3>Ohjaus</h3><p>Suuntaventtiiliä ohjataan klikkaamalla sen kelaa: vasen kela vaihtaa asentoon a (P→A, B→T), oikea asentoon b (P→B, A→T). Jousipalautteinen venttiili pysyy asennossa vain niin kauan kuin painat. Pumpun saa pysäytettyä klikkaamalla sähkömoottoria M tai ominaisuuspaneelista.</p>
 <h3>Mittaukset</h3><p>Valitse työkaluriviltä Paine tai Virtaus ja klikkaa liitäntää. Voima- ja nopeusanturi kiinnitetään sylinteriin tai moottoriin (moottorilla voima-anturi näyttää väännön). Anturien lukemat näkyvät piirroksessa ja käyrinä alapaneelissa. Virtauksen etumerkki: positiivinen virtaa komponenttiin sisään. Viemällä hiiren liitännän tai letkun päälle näet hetkellisen paineen ja virtauksen.</p>
 <h3>Mitoitus</h3><p>Valitse komponentti, niin oikeassa paneelissa voit muuttaa sen mitoitusarvoja ja näet lasketut suureet. Mitoitusapu laskee esimerkiksi sylinterin halkaisijan tarvittavasta voimasta ja ehdottaa vakiokokoa.</p>
 <h3>Malli ja rajoitukset</h3><p>Paineet ratkaistaan implisiittisesti öljyn kokoonpuristuvuuden (tehollinen puristuvuusmoduuli 1,2 GPa) ja kuristusyhtälön Q = Cd·A·√(2Δp/ρ) avulla, aika-askel 1 ms. Sylinterissä on massa, kitka ja vasteet; moottorissa hitausmomentti ja kuormitusmomentti. Malli on opetuskäyttöön tarkoitettu yksinkertaistus: letkujen painehäviöitä, lämpenemistä, viskositeetin muutosta ja venttiilien dynaamista ohjausta ei mallinneta, joten tulokset kuvaavat ilmiöitä mutta eivät korvaa järjestelmätoimittajan mitoituslaskelmia.</p>
-<p class="mcopy">Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SeAMK), 2026. Ohjelma on lisensoitu <a href="https://creativecommons.org/licenses/by/4.0/deed.fi" target="_blank" rel="license noopener">Creative Commons Nimeä 4.0 Kansainvälinen -lisenssillä (CC BY 4.0)</a>. Saat kopioida, jakaa ja muokata sitä mihin tahansa tarkoitukseen, kunhan mainitset tekijän ja oppilaitoksen, merkitset lisenssin ja kerrot tekemistäsi muutoksista.</p>
-<div class="mrow"><button class="btn pri" data-close>Selvä</button></div>`));
+<p class="mcopy">Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. Suunnittelu, sisältö ja validointi: Juho Pirttilahti. Ohjelmakoodi toteutettu tekoälyavusteisesti (Claude, Anthropic). Ohjelma on lisensoitu <a href="https://creativecommons.org/licenses/by/4.0/deed.fi" target="_blank" rel="license noopener">Creative Commons Nimeä 4.0 Kansainvälinen -lisenssillä (CC BY 4.0)</a>. Saat kopioida, jakaa ja muokata sitä mihin tahansa tarkoitukseen, kunhan mainitset tekijän ja oppilaitoksen, merkitset lisenssin ja kerrot tekemistäsi muutoksista.</p>
+`,`<h2>Help</h2>
+<p>Full user manual with examples and exercises (in Finnish): <a href="https://jipirtti.github.io/Hydrauliikkasimulaattori/docs/kayttoohje.html" target="_blank" rel="noopener">Hydraulics simulator user manual</a>.</p>
+<h3>Building a circuit</h3><p>Drag a component from the left onto the canvas, or click it to place it in the middle of the view. Connect a hose by dragging from one port to another. Connect several hoses to the same port to make a branch. An unconnected port acts as a plug.</p>
+<h3>Operating</h3><p>Operate a directional valve by clicking its solenoid: the left solenoid shifts to position a (P→A, B→T), the right one to position b (P→B, A→T). A spring-return valve stays shifted only while you hold the mouse button. Stop a pump by clicking its electric motor M or from the properties panel.</p>
+<h3>Measurements</h3><p>Choose Pressure or Flow on the toolbar and click a port. Force and speed sensors attach to a cylinder or motor (on a motor the force sensor shows torque). Sensor readings appear on the drawing and as curves in the bottom panel. Flow sign: positive flows into the component. Hover over a port or hose to see the instantaneous pressure and flow.</p>
+<h3>Sizing</h3><p>Select a component to edit its sizing parameters and see calculated values in the right-hand panel. The sizing helper calculates, for example, the cylinder bore needed for a given force and suggests a standard size.</p>
+<h3>Model and limitations</h3><p>Pressures are solved implicitly from oil compressibility (effective bulk modulus 1.2 GPa) and the orifice equation Q = Cd·A·√(2Δp/ρ) with a 1 ms time step. Cylinders have mass, friction and end stops; motors have inertia and load torque. The model is a teaching simplification: hose pressure losses, heating, viscosity changes and valve control dynamics are not modelled, so the results illustrate the phenomena but do not replace a system supplier's sizing calculations.</p>
+<p class="mcopy">Author: Juho Pirttilahti, Seinäjoki University of Applied Sciences (SEAMK), 2026. Design, content and validation: Juho Pirttilahti. Code implemented with AI assistance (Claude, Anthropic). Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="license noopener">Creative Commons Attribution 4.0 International (CC BY 4.0)</a>. You may copy, share and adapt it for any purpose, provided you credit the author and the institution, indicate the licence and state your changes.</p>
+`)+`<div class="mrow"><button class="btn pri" data-close>${tr('Selvä','OK')}</button></div>`));
+
+/* ---------- kielen vaihto / language switching ---------- */
+function applyStatic(){
+  document.querySelectorAll('[data-en]').forEach(el=>{if(el.dataset.fi===undefined)el.dataset.fi=el.textContent;el.textContent=lang==='en'?el.dataset.en:el.dataset.fi;});
+  document.querySelectorAll('[data-en-title]').forEach(el=>{if(el.dataset.fiTitle===undefined)el.dataset.fiTitle=el.getAttribute('title');el.setAttribute('title',lang==='en'?el.dataset.enTitle:el.dataset.fiTitle);});
+  document.querySelectorAll('[data-en-aria]').forEach(el=>{if(el.dataset.fiAria===undefined)el.dataset.fiAria=el.getAttribute('aria-label');el.setAttribute('aria-label',lang==='en'?el.dataset.enAria:el.dataset.fiAria);});
+  document.documentElement.lang=lang;document.title=lang==='en'?'Hydraulics Simulator':'Hydrauliikkasimulaattori';
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+}
+function setLang(l){if(l!=='fi'&&l!=='en')return;lang=l;try{localStorage.setItem('hydsim-lang',l);}catch(e){}
+  try{const u=new URL(location.href);if(u.searchParams.has('lang')){u.searchParams.set('lang',l);history.replaceState(null,'',u);}}catch(e){}
+  applyStatic();buildPalette();setRun(running);buildInsp();renderProbeRows();if(modal.classList.contains('open'))closeModal();
+  for(const c of comps)c.dyS=null;updWarns();}
+document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
 
 /* ---------- test & validation API (used by tests/test_validointi.py) ---------- */
 const byLabel=l=>{const c=comps.find(x=>x.label===l);if(!c)throw new Error('Komponenttia ei löydy: '+l);return c;};
 window.HydSim={
-  version:'1.0.0',
+  version:'1.1.1',
+  setLang:l=>{setLang(l);return lang;},
+  lang:()=>lang,
+  warningCodes:()=>{updWarns();return lastWarnCodes.slice();},
+  i18nMissing:()=>[...I18N_MISSING],
   loadExample:k=>{if(!EX[k])throw new Error('Tuntematon esimerkki '+k);load(EX[k],false);setRun(false);return comps.map(c=>c.label);},
   loadCircuit:j=>{load(j,false);setRun(false);return comps.map(c=>c.label);},
   serialize:()=>ser(),
@@ -1131,7 +1181,7 @@ window.HydSim={
 
 /* ---------- init ---------- */
 window.addEventListener('resize',()=>{});
-buildPalette();applyView();
+applyStatic();buildPalette();applyView();setRun(running);
 let stored=null;try{stored=localStorage.getItem('hydsim-v1');}catch(e){}
 try{if(stored&&JSON.parse(stored).comps.length)load(stored);else load(EX.ex1);}catch(e){load(EX.ex1);}
 updWarns();

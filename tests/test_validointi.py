@@ -173,6 +173,6 @@ def test_V15_toistettavuus(sim):
 
 def test_V16_varoitukset(sim):
     sim.call("loadExample", "ex1"); sim.call("run", 2)
-    assert not [w for w in sim.call("warnings") if "ylittää" in w], "V16: varoitus ilman syytä"
+    assert "ylipaine" not in sim.call("warningCodes"), "V16: ylipainevaroitus ilman syytä"
     sim.call("setParam", "PRV1", "ps", 300); sim.call("setValve", "SV1", 1); sim.call("run", 5)
-    assert any("ylittää" in w for w in sim.call("warnings")), "V16: ylipainevaroitus puuttuu (300 bar > sylinterin 250 bar)"
+    assert "ylipaine" in sim.call("warningCodes"), "V16: ylipainevaroitus puuttuu (300 bar > sylinterin 250 bar)"

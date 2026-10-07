@@ -26,6 +26,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rakenna käyttöohjeen HTML-sivu
+        run: |
+          pip install markdown
+          python tools/rakenna_ohje.py
       - name: Kokoa sivusto
         run: |
           mkdir -p _site

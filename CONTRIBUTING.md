@@ -29,11 +29,20 @@ Testit käyttävät simulaattorin testirajapintaa `window.HydSim` (määritelty 
 
 ## Käyttöohje
 
-Käyttöohje on tiedostossa `docs/kayttoohje.md`. Päivitä se samassa PR:ssä, jos käyttö, esimerkkien lukuarvot tai kuvakaappaukset muuttuvat.
+Käyttöohje on tiedostossa `docs/kayttoohje.md`. Päivitä se samassa PR:ssä, jos käyttö, esimerkkien lukuarvot tai kuvakaappaukset muuttuvat. Julkaisutyönkulku rakentaa siitä verkkosivun `docs/kayttoohje.html` (`tools/rakenna_ohje.py`), joten HTML-tiedostoa ei muokata eikä tallenneta repositorioon.
 
-## Kieli
+## Kieli ja käännökset
 
-Käyttöliittymä, dokumentaatio ja issuet ovat suomeksi. Koodin kommentit voivat olla suomeksi tai englanniksi.
+Dokumentaatio ja issuet ovat suomeksi. Koodin kommentit voivat olla suomeksi tai englanniksi.
+
+Käyttöliittymä on kaksikielinen (suomi ja englanti). Suomenkieliset tekstit ovat koodissa avaimina, ja englanninkieliset käännökset ovat `index.html`:n sanakirjassa `EN`. Kun lisäät tekstejä:
+
+- Komponenttien nimet, parametrien nimet, valintalistojen vaihtoehdot ja lasketut suureet käännetään sanakirjan kautta funktiolla `T()`. Lisää uusi suomenkielinen teksti ja sen käännös `EN`-sanakirjaan.
+- Lauseet ja numeroita sisältävät tekstit kirjoitetaan suoraan muodossa `tr('suomeksi', 'in English')`.
+- Sivun kiinteään HTML:ään lisätään englanninkielinen teksti attribuutteihin `data-en`, `data-en-title` tai `data-en-aria`.
+- Yksiköt, jotka eroavat kielittäin (esim. r/min → rpm), kulkevat funktion `U()` kautta.
+
+Testi K01 renderöi kaikki komponentit englanniksi ja epäonnistuu, jos jokin teksti puuttuu sanakirjasta.
 
 ## Lisenssi
 
