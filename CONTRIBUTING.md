@@ -47,3 +47,11 @@ Testi K01 renderöi kaikki komponentit englanniksi ja epäonnistuu, jos jokin te
 ## Lisenssi
 
 Lähettämällä muutoksen hyväksyt, että se julkaistaan projektin lisenssillä (CC BY 4.0).
+
+## Yksinkertainen ja kehittynyt malli
+
+Kun lisäät komponentin tai parametrin, päätä samalla sen käyttäytyminen yksinkertaisessa mallissa (`index.html`):
+
+- `IDEAL[tyyppi]` antaa häviöparametreille ihanteelliset arvot yksinkertaisessa mallissa (esim. kitka 0, hyötysuhde 1). Käyttäjän omat arvot säilyvät kentässä `c.pu`, ja laskenta käyttää kenttää `c.p`, joka muodostetaan funktiolla `effP`.
+- `SIMPLE_SHOW[tyyppi]` luettelee parametrit, jotka näytetään yksinkertaisen mallin ominaisuuspaneelissa.
+- Lisää testi tiedostoon `tests/test_malli.py`, jos yksinkertaisen mallin tuloksen pitää vastata uutta käsinlaskukaavaa.

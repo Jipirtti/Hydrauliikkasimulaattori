@@ -18,6 +18,28 @@ Simulaattorilla voi harjoitella esimerkiksi:
 
 Simulaattori on tarkoitettu ilmiöiden ymmärtämiseen. Sen tulokset eivät korvaa järjestelmätoimittajan mitoituslaskelmia (ks. kohta Mallin rajoitukset).
 
+## Yksinkertainen ja kehittynyt malli
+
+Yläpalkin valitsimella **Yksinkertainen | Kehittynyt** vaihdetaan simulointimallia samalla tavalla kuin kieltä. Vaihto tehdään lennosta, piiri säilyy, ja valinta muistetaan selaimessa.
+
+| | Yksinkertainen | Kehittynyt |
+| --- | --- | --- |
+| Tarkoitus | Perusyhtälöiden opettelu: tulos vastaa suoraan käsinlaskua | Todellisen järjestelmän häviöiden ja niiden vaikutusten tarkastelu |
+| Pumppu | Ei vuotoa eikä hyötysuhdetta: Q = Vg·n/1000 | Volumetrinen ja hydromekaaninen hyötysuhde, vuoto kasvaa paineen mukana |
+| Paineenrajoitusventtiili | Paine pysyy asetusarvossa | Paine nousee virtauksen mukana (ominaiskäyrä) |
+| Suunta-, vasta- ja virranjakoventtiilit | Ei käytännössä painehäviötä eikä vuotoa | Painehäviö Δp = Δpn·(Q/Qn)², vuoto |
+| Sylinteri | Ei kitkaa: p = F / A | Kitka, tartuntakitka ja viskoosi vaimennus |
+| Hydraulimoottori | Ei vuotoa eikä kitkaa: n = Q / Vg, Δp = 20π·T / Vg | Vuoto, hyötysuhde ja viskoosi kitka |
+| Ominaisuuspaneeli | Vain perusmitoitus (esim. sylinterin D, d, isku, massa, kuorma) | Kaikki parametrit |
+
+Kuristus- ja vastusventtiilin kuristus toimii molemmissa malleissa samalla tavalla, koska kuristus on niiden tehtävä. Yksinkertaisessa mallissa toimilaitteiden vaimennus vaikuttaa vain nopeuden muutoksiin: se vaimentaa värähtelyt, mutta tasaisen liikkeen paineet ja nopeudet vastaavat perusyhtälöitä. Kiihdytyksen jälkeen paine asettuu noin sekunnissa.
+
+Mallin vaihto ei hävitä arvoja. Kehittyneessä mallissa asetetut häviöparametrit (esim. kitkavoima) säilyvät tallessa ja palaavat käyttöön, kun vaihdat takaisin kehittyneeseen malliin.
+
+Linkkiin voi kirjoittaa mallin valmiiksi: `?malli=yksinkertainen` tai `?malli=kehittynyt` (englanniksi `?mode=simple` tai `?mode=advanced`), esimerkiksi https://jipirtti.github.io/Hydrauliikkasimulaattori/?malli=yksinkertainen. Kieli ja malli voidaan yhdistää: `?lang=en&mode=simple`.
+
+**Tehtävissä** kannattaa aina kertoa, kummalla mallilla tehtävä tehdään. Hyvä etenemistapa on laskea ilmiö ensin käsin, tarkistaa se yksinkertaisella mallilla ja katsoa sitten kehittyneellä mallilla, paljonko häviöt muuttavat tulosta.
+
 ## Näkymän osat
 
 Näkymä jakautuu viiteen alueeseen. Kapealla näytöllä, kuten puhelimessa, alueet pinoutuvat allekkain ja paletti vierii vaakasuunnassa.
@@ -98,7 +120,7 @@ Yksiköt: D (m), F (N), p (Pa); Vg (cm³/r), Q (L/min), n (r/min); T (Nm), Δp (
 
 ## Simuloinnin ajaminen ja ohjaus
 
-Simulointi käynnistyy itsestään, kun sivu avataan, ja laskee reaaliajassa. Piiriä voi muokata simuloinnin pyöriessä: uusi kytkentä tulee voimaan heti.
+Simulointi käynnistyy itsestään, kun sivu avataan, ja laskee reaaliajassa. Valitse ensin yläpalkista simulointimalli (Yksinkertainen tai Kehittynyt, ks. edellä). Piiriä voi muokata simuloinnin pyöriessä: uusi kytkentä tulee voimaan heti.
 
 - **Käynnistä / Pysäytä** (tai välilyönti) jäädyttää ajan. Lukemat ja käyrät jäävät näkyviin tarkastelua varten.
 - **Nopeus** 0,5×, 0,2× tai 0,1× hidastaa nopeita tapahtumia, kuten painepiikkiä sylinterin osuessa päätyyn.
@@ -142,6 +164,8 @@ Käyrä näyttää 10 sekunnin historian ja skaalautuu automaattisesti. Asteikon
 - **Sylinterin kammiot** värjäytyvät paineen mukaan, joten paine-ero A- ja B-puolen välillä näkyy suoraan piirrosmerkistä.
 
 ## Esimerkkikaavio: kaksitoiminen sylinteri ja 4/3-venttiili
+
+Tämän kohdan lukuarvot on laskettu kehittyneellä mallilla. Yksinkertaisella mallilla A-puolen paine ulosajossa on 10,2 bar (= 2 kN / 19,6 cm², ei kitkaa) ja päädyssä tasan 100 bar.
 
 Esimerkkipiiri 1 on hydrauliikan peruspiiri: pumppu syöttää 14,5 L/min, paineenrajoitusventtiili rajaa paineen 100 bariin, ja 4/3-venttiili ohjaa Ø50/28-sylinteriä, jonka kuormana on 2 kN. Lataa se yläpalkin valikosta Esimerkkipiirit → 1.
 
@@ -199,7 +223,7 @@ Oikean reunan ominaisuuspaneelissa on valittuna SV1: kelan asema a, mitoitusarvo
 
 ## Muut esimerkkipiirit ja harjoitustehtävät
 
-Esimerkkipiirit ladataan yläpalkin valikosta. Lataus korvaa nykyisen piirin, mutta Kumoa palauttaa sen.
+Esimerkkipiirit ladataan yläpalkin valikosta. Lataus korvaa nykyisen piirin, mutta Kumoa palauttaa sen. Alla olevan taulukon lukuarvot ovat kehittyneestä mallista; yksinkertaisen mallin arvot ovat taulukon jälkeen.
 
 | Esimerkki | Mitä tehdään | Mitä pitäisi nähdä |
 | --- | --- | --- |
@@ -210,16 +234,30 @@ Esimerkkipiirit ladataan yläpalkin valikosta. Lataus korvaa nykyisen piirin, mu
 | 6. Moottori sylinterin rinnalla | Sama pumppu ja sylinteri pystyssä, moottori Vg 20 cm³/r on kytketty A- ja B-linjan väliin. Klikkaa SV1:n kelaa a ja kokeile moottorin kuormitusmomenttia 0, 5 ja 40 Nm. | Virtaus menee pienimmän paineen tietä. 0 Nm: moottori vie koko tuoton (noin 2160 r/min) eikä kuorma nouse. 5 Nm: sylinteri lähtee nousemaan, mutta hidastuu sitä mukaa kuin moottori kiihtyy. 40 Nm: moottori tarvitsisi noin 140 bar, joten se ei pyöri ja sylinteri saa koko tuoton (253 mm/s). |
 | 7. Virranjakoventtiilit ja vastaventtiilit | Kuten esimerkki 6, mutta A- ja B-linjoissa on virranjakoventtiilit (50/50) ja niiden rinnalla paluuvirtauksen vastaventtiilit. Klikkaa SV1:n kelaa a ja pidä se päällä, kunnes sylinteri on päädyssä. | Sylinteri (127 mm/s) ja moottori (noin 1070 r/min) liikkuvat yhtä aikaa, koska kumpikin saa puolet tuotosta kuormapaineista riippumatta. Kun sylinteri on päädyssä, virranjakajan sylinterilähtö tukkeutuu ja myös moottori pysähtyy; paine nousee paineenrajoitusventtiilin avautumispaineeseen. Vastaventtiilit päästävät poistuvan öljyn ohi virranjakajan, jolloin paluuvirtaus ei kulje jakajan läpi. |
 
+Yksinkertaisen mallin arvot samoissa esimerkeissä (vastaavat käsinlaskua):
+
+| Esimerkki | Yksinkertainen malli | Käsinlasku |
+| --- | --- | --- |
+| 1 | Ulos 123 mm/s ja 10,2 bar, sisään 179 mm/s, päädyssä 100 bar | v = Q/A, p = F/A, v = Q/(A − a) |
+| 3 | 725 r/min, paine-ero 62,8 bar | n = Q/Vg, Δp = 20π·T/Vg |
+| 5 | Pikaliike 1,02 m/s | v = Q/a |
+| 6 (moottori 40 Nm) | Sylinteri 256 mm/s, nostopaine 34,7 bar | v = Q/A, p = m·g/A |
+| 7 | Sylinteri 128 mm/s, moottori 1090 r/min | v = (Q/2)/A, n = (Q/2)/Vg |
+
 ### Harjoitustehtäviä
 
-1. Laske esimerkissä 1 sylinterin ulos- ja sisäänajonopeus käsin pumpun tuotosta. Tarkista tulos nopeusanturilla.
-2. Vaihda esimerkin 1 venttiilin keskiasennoksi tandem. Mitä tapahtuu paineenrajoitusventtiilin läpi menevälle virtaukselle ja pumpun tehontarpeelle keskiasennossa?
-3. Nosta esimerkin 1 sylinterin kuorma 25 kN:iin. Miksi sylinteri ei liiku ulos? Mitoita Mitoitusavulla uusi sylinteri ja kokeile.
-4. Vaihda esimerkin 2 kuristus tulopuolelle (A-linjaan) ja vertaa B-puolen painetta poistopuolen kuristukseen.
-5. Poista esimerkistä 4 kuristin ja kytke venttiili suoraan sylinteriin. Seuraa laskunopeutta ja A-puolen painetta laskun aikana.
-6. Vaihda esimerkin 1 pumppu painesäädetyksi (säätöpaine 90 bar). Mitä tapahtuu paineenrajoitusventtiilin virtaukselle sylinterin ollessa päädyssä?
-7. Valitse esimerkin 1 sylinterin asennoksi Pysty, ulosajo alas ja massaksi 1000 kg. Aja sylinteriä molempiin suuntiin. Miksi ulosajo on pumpun tuottoa nopeampi, ja millä paineenrajoituksen asetuksella sylinteri nousee takaisin? Vertaa käsinlaskuun m·g / (A − a).
-8. Poista esimerkin 7 virranjakoventtiilit ja vastaventtiilit ja korvaa ne suorilla letkuilla. Mitä moottorille ja sylinterille tapahtuu nyt, ja miksi tulos eroaa virranjakajan kanssa saadusta?
+Suluissa on malli, jolla tehtävä on tarkoitettu tehtäväksi.
+
+1. (Yksinkertainen) Laske esimerkissä 1 sylinterin ulos- ja sisäänajonopeus käsin pumpun tuotosta. Tarkista tulos nopeusanturilla.
+2. (Kehittynyt) Vaihda esimerkin 1 venttiilin keskiasennoksi tandem. Mitä tapahtuu paineenrajoitusventtiilin läpi menevälle virtaukselle ja pumpun tehontarpeelle keskiasennossa?
+3. (Yksinkertainen) Nosta esimerkin 1 sylinterin kuorma 25 kN:iin. Miksi sylinteri ei liiku ulos? Mitoita Mitoitusavulla uusi sylinteri ja kokeile.
+4. (Kehittynyt) Vaihda esimerkin 2 kuristus tulopuolelle (A-linjaan) ja vertaa B-puolen painetta poistopuolen kuristukseen.
+5. (Kehittynyt) Poista esimerkistä 4 kuristin ja kytke venttiili suoraan sylinteriin. Seuraa laskunopeutta ja A-puolen painetta laskun aikana.
+6. (Kehittynyt) Vaihda esimerkin 1 pumppu painesäädetyksi (säätöpaine 90 bar). Mitä tapahtuu paineenrajoitusventtiilin virtaukselle sylinterin ollessa päädyssä?
+7. (Yksinkertainen, sitten kehittynyt) Valitse esimerkin 1 sylinterin asennoksi Pysty, ulosajo alas ja massaksi 1000 kg. Aja sylinteriä molempiin suuntiin. Miksi ulosajo on pumpun tuottoa nopeampi, ja millä paineenrajoituksen asetuksella sylinteri nousee takaisin? Vertaa käsinlaskuun m·g / (A − a).
+8. (Yksinkertainen) Poista esimerkin 7 virranjakoventtiilit ja vastaventtiilit ja korvaa ne suorilla letkuilla. Mitä moottorille ja sylinterille tapahtuu nyt, ja miksi tulos eroaa virranjakajan kanssa saadusta?
+9. (Molemmat) Aja esimerkki 1 ulos ensin yksinkertaisella ja sitten kehittyneellä mallilla. Kirjaa molemmista A-puolen paine liikkeen aikana, nopeus ja paine päädyssä. Mistä häviöistä erot syntyvät? Laske kehittyneen mallin hydraulinen hyötysuhde liikkeen aikana (hyödyllinen teho F·v jaettuna pumpun teholla p·Q).
+10. (Molemmat) Aja esimerkki 5 pikaliikkeellä molemmilla malleilla. Miksi kehittyneessä mallissa nopeus jää teoreettisesta, ja mitä tapahtuu, kun SV2:n nimellisvirtaus pienennetään 30 L/min:iin?
 
 Kun laadit omia tehtäviä simulaattorille, anna tehtävässä pumpun tuotto, paineenrajoituksen asetus, sylinterin mitat ja isku, venttiilien nimellisvirtaus sekä moottorin kuormitusmomentti. Erityisesti pikaliikkeen nopeus ja rinnakkaisten toimilaitteiden käyttäytyminen riippuvat näistä arvoista.
 

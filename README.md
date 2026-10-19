@@ -8,6 +8,8 @@ Selaimessa toimiva hydrauliikan perusteiden opetussimulaattori. Piiri rakennetaa
 
 **Kieli / Language:** käyttöliittymä on suomeksi ja englanniksi. Kieltä vaihdetaan yläpalkin FI | EN -valitsimella lennosta, ja valinta muistetaan selaimessa. Suoran linkin englanninkieliseen versioon saa parametrilla `?lang=en`: <https://jipirtti.github.io/Hydrauliikkasimulaattori/?lang=en>. The user interface is available in Finnish and English; switch with the FI | EN toggle or use `?lang=en`.
 
+**Malli / Model:** yläpalkin Yksinkertainen | Kehittynyt -valitsimella vaihdetaan simulointimallia lennosta. Yksinkertaisessa mallissa komponentit ovat ihanteellisia (ei kitkaa, vuotoja eikä venttiilien painehäviöitä), joten tulos vastaa suoraan käsinlaskua. Kehittynyt malli sisältää häviöt. Linkki: `?malli=yksinkertainen` tai `?mode=simple`. Choose Simple (ideal components) or Advanced (real losses) in the header.
+
 Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. Suunnittelu, sisältö ja validointi: Juho Pirttilahti. Ohjelmakoodi toteutettu tekoälyavusteisesti (Claude, Anthropic). Lisenssi: [CC BY 4.0](LICENSE).
 
 ## Ominaisuudet
@@ -31,10 +33,10 @@ Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. Suunnitt
 
 Simulaattorin ilmiöt validoidaan kahdella tasolla, ks. [VALIDOINTI.md](VALIDOINTI.md):
 
-- **Automaattisesti:** 23 validointitestiä vertaa simulaattorin tuloksia käsinlaskukaavoihin (esim. v = Q/A, F = p·A, massatase, moottorin vääntö). GitHub Actions ajaa ne jokaisesta muutoksesta ja maanantaisin ajastetusti. Jos ajastettu ajo epäonnistuu, siitä avautuu automaattisesti issue. Raportti näkyy ajon yhteenvedossa.
+- **Automaattisesti:** 30 validointitestiä vertaa simulaattorin tuloksia käsinlaskukaavoihin (esim. v = Q/A, F = p·A, massatase, moottorin vääntö). GitHub Actions ajaa ne jokaisesta muutoksesta ja maanantaisin ajastetusti. Jos ajastettu ajo epäonnistuu, siitä avautuu automaattisesti issue. Raportti näkyy ajon yhteenvedossa.
 - **Opettajan validointi:** jokainen ilmiö tarkistetaan käsinlaskulla, kirjallisuudesta tai laboratoriomittauksella ja kirjataan validoiduksi. Validointikierros avautuu issueksi automaattisesti 15.1. ja 15.8.
 
-Lisäksi kolme kielitestiä (`tests/test_kieli.py`) varmistaa, että englanninkielisessä näkymässä ei ole kääntämättömiä tekstejä ja että kielen vaihto ei vaikuta laskentaan.
+Lisäksi neljä kielitestiä (`tests/test_kieli.py`) varmistaa, että englanninkielisessä näkymässä ei ole kääntämättömiä tekstejä, että kielen vaihto ei vaikuta laskentaan ja että kielen ja mallin valitsimet toimivat. Testit M01–M07 (`tests/test_malli.py`) tarkistavat yksinkertaisen mallin käsinlaskua vastaan.
 
 Testien ajaminen omalla koneella:
 

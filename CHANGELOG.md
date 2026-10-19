@@ -1,5 +1,12 @@
 # Muutosloki
 
+## 1.3.0 – 2026-10-19
+
+- Simulointimallin valinta yläpalkissa: **Yksinkertainen** (ihanteelliset komponentit, tulos vastaa käsinlaskua) ja **Kehittynyt** (kitka, vuodot, hyötysuhteet ja venttiilien painehäviöt). Valinta vaihtuu lennosta kuten kieli, muistetaan selaimessa ja voidaan antaa linkissä (`?malli=yksinkertainen`, `?mode=simple`).
+- Yksinkertaisessa mallissa ominaisuuspaneeli näyttää vain perusmitoituksen. Kehittyneen mallin häviöparametrit säilyvät tallessa mallia vaihdettaessa.
+- Käyttöohjeeseen osio malleista, esimerkkien arvot yksinkertaisella mallilla, harjoitustehtäviin mallimerkinnät ja kaksi mallien vertailutehtävää.
+- Uudet testit M01–M07 (`tests/test_malli.py`) ja kielitesti K04.
+
 ## 1.2.0 – 2026-10-19
 
 - Uudet komponentit: 3/2-suuntaventtiili ja virranjakoventtiili (säädettävä jakosuhde). Paletissa on nyt 15 komponenttia.

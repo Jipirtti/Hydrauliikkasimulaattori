@@ -37,6 +37,20 @@ Odotusarvot ovat esimerkkipiirien oletusparametreilla. Toleranssi on testin hyv�
 | V21 | Virranjakoventtiili | Esim. 7, kela a | Q_A = r·Q_P, Q_B = (1 − r)·Q_P, v = Q_A / A | 21,5 + 21,5 L/min; 127 mm/s | 1–3 % | Ei validoitu |
 | V22 | Virranjakajan lähtö tukossa | Esim. 7, kela a, sylinteri päädyssä | Moottori pysähtyy, pumpun tuotto paineenrajoitukselle | 0 r/min | – | Ei validoitu |
 
+## A2. Yksinkertainen malli (automaattinen testi `tests/test_malli.py` + opettajan validointi)
+
+Yksinkertaisessa mallissa häviöt on jätetty pois, joten tulos vastaa perusyhtälöä ilman häviötermejä.
+
+| ID | Ilmiö | Piiri ja toimenpide | Käsinlaskukaava | Odotettu (oletus) | Tol. | Opettajan validointi |
+| --- | --- | --- | --- | --- | --- | --- |
+| M01 | Ihanteellinen pumppu | Esim. 1, lepotila | Q = Vg·n/1000 | 14,5 L/min | 0,5 % | Ei validoitu |
+| M02 | Ulosajo ilman häviöitä | Esim. 1, kela a | v = Q/A, p = F/A | 123 mm/s, 10,2 bar | 0,5 % / 1 % | Ei validoitu |
+| M03 | Ihanteellinen paineenrajoitus | Esim. 1, iskun pää | p = ps | 100 bar | 1 % | Ei validoitu |
+| M04 | Ihanteellinen moottori | Esim. 3, kela a | n = Q/Vg, Δp = 20π·T/Vg | 725 r/min, 62,8 bar | 1 % | Ei validoitu |
+| M05 | Pikaliike ja virranjako | Esim. 5 (isku 2000 mm) ja 7, kela a | v = Q/a; n = (Q/2)/Vg | 1,03 m/s; 1088 r/min | 1 % | Ei validoitu |
+| M06 | Pystykuorman nostopaine | Esim. 6, moottori 40 Nm, kela a | p = m·g/A | 34,7 bar | 1 % | Ei validoitu |
+| M07 | Mallin vaihto säilyttää parametrit | Esim. 1, kitka 333 N kehittyneessä | Yksinkertaisessa 0 N, takaisin vaihdettaessa 333 N | – | – | Ei validoitu |
+
 ## B. Laadulliset ilmiöt (opettajan validointi simulaattorissa)
 
 Näille ei ole automaattista testiä. Opettaja tarkistaa käyttäytymisen silmämääräisesti ja kirjaa havainnon.

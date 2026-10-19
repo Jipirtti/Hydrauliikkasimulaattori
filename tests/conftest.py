@@ -34,6 +34,7 @@ def sim(browser):
     page.wait_for_function("window.HydSim !== undefined")
     page.evaluate("localStorage.clear()")
     page.evaluate("HydSim.setLang('fi')")   # testiselaimen oletuskieli on englanti
+    page.evaluate("HydSim.setMode('advanced')")   # V-testit koskevat kehittynyttä mallia; M-testit vaihtavat itse
 
     class Sim:
         def js(self, expr):

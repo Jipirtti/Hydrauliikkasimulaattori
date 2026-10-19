@@ -59,3 +59,25 @@ def test_K03_url_parametri_ja_valitsin(browser):
     assert page.inner_text("#helpBtn") == "Ohje"
     assert page.evaluate("document.querySelector('[data-lang=fi]').getAttribute('aria-pressed')") == "true"
     page.close()
+
+
+def test_K04_mallin_valitsin(browser):
+    """Mallin valitsin toimii molemmilla kielillä, URL-parametrilla ja muistaa valinnan."""
+    page = browser.new_page()
+    page.goto(INDEX.as_uri() + "?lang=en&malli=yksinkertainen")
+    page.wait_for_function("window.HydSim !== undefined")
+    assert page.evaluate("HydSim.mode()") == "simple"
+    assert page.inner_text("[data-mode=simple]") == "Simple"
+    assert page.inner_text("[data-mode=advanced]") == "Advanced"
+    page.click("[data-mode=advanced]")
+    assert page.evaluate("HydSim.mode()") == "advanced"
+    assert page.evaluate("localStorage.getItem('hydsim-mode')") == "advanced"
+    page.click("[data-lang=fi]")
+    assert page.inner_text("[data-mode=simple]") == "Yksinkertainen"
+    assert page.inner_text("[data-mode=advanced]") == "Kehittynyt"
+    assert page.evaluate("document.querySelector('[data-mode=advanced]').getAttribute('aria-pressed')") == "true"
+    page.goto(INDEX.as_uri() + "?mode=simple")
+    page.wait_for_function("window.HydSim !== undefined")
+    assert page.evaluate("HydSim.mode()") == "simple"
+    page.evaluate("localStorage.clear()")
+    page.close()
