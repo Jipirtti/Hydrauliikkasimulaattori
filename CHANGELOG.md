@@ -1,5 +1,12 @@
 # Muutosloki
 
+## 1.5.0 – 2026-10-19
+
+- Usean komponentin valinta: Shift+veto tyhjästä kohdasta valitsee laatikolla, Shift+klikkaus lisää tai poistaa valinnasta, Ctrl+A valitsee kaiken ja Esc poistaa valinnan.
+- Valitut siirtyvät ryhmänä vetämällä; niiden väliset letkut siirtyvät reitteineen.
+- Kopioi ja liitä (Ctrl+C / Ctrl+V) komponenteille mitoituksineen ja niiden välisille letkuille. Delete poistaa kaikki valitut.
+- Käyttöliittymätestit U04–U05.
+
 ## 1.4.0 – 2026-10-19
 
 - Letkun reittiä voi muokata vetämällä letkun osaa. Päät pysyvät kytkettyinä, reitti pysyy suorakulmaisena ja seuraa komponentteja, kun niitä siirretään. Muokattu reitti tallentuu piirin mukana.

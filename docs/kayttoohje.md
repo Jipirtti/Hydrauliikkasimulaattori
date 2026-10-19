@@ -65,6 +65,17 @@ Piiri syntyy kolmessa vaiheessa: komponentit alustalle, letkut liitännästä li
 3. Kierrä valittua komponenttia 90° R-näppäimellä tai ominaisuuspaneelin Kierrä 90° -painikkeella.
 4. Poista valittu komponentti Delete-näppäimellä tai Poista-painikkeella. Siihen liitetyt letkut ja anturit poistuvat samalla.
 
+### Useiden komponenttien valinta, siirto ja kopiointi
+
+- **Laatikkovalinta:** pidä Shift-näppäin pohjassa ja vedä tyhjästä kohdasta laatikko. Kaikki komponentit, joihin laatikko osuu, valitaan. Ilman Shiftiä veto siirtää näkymää kuten ennenkin.
+- **Shift+klikkaus** lisää komponentin valintaan tai poistaa sen valinnasta.
+- **Ctrl+A** valitsee kaikki komponentit ja **Esc** poistaa valinnan.
+- **Ryhmän siirto:** vedä mitä tahansa valittua komponenttia, jolloin kaikki valitut siirtyvät yhtä paljon. Valittujen komponenttien väliset letkut siirtyvät muotoiltuine reitteineen. Letkut valinnan ulkopuolisiin komponentteihin pysyvät kytkettyinä ja venyvät.
+- **Kopioi ja liitä:** Ctrl+C kopioi valitut komponentit, niiden mitoituksen ja niiden väliset letkut. Ctrl+V liittää kopion 40 pikselin päähän uusilla tunnuksilla (esim. SYL2), ja liitetyt jäävät valituiksi, jolloin ne voi heti vetää paikalleen. Valinnan ulkopuolelle meneviä letkuja ei kopioida.
+- **Poisto:** Delete poistaa kaikki valitut.
+
+Ominaisuuspaneeli näyttää usean komponentin valinnasta niiden tunnukset sekä Kopioi-, Liitä- ja Poista valitut -painikkeet. Mitoitusta muokataan edelleen komponentti kerrallaan. Laatikkovalinta ja Shift+klikkaus vaativat näppäimistön, joten ne eivät toimi kosketusnäytöllä.
+
 ### Linjojen piirtäminen
 
 1. Varmista, että työkalurivillä on valittuna Valitse ja kytke. Jos anturityökalu on päällä, klikkaus lisää anturin eikä aloita linjaa. Esc palauttaa valintatyökalun.
@@ -296,10 +307,14 @@ Paineet ratkaistaan 1 ms aika-askeleella implisiittisesti öljyn kokoonpuristuvu
 | Näppäin | Toiminto |
 | --- | --- |
 | Välilyönti | Käynnistä tai pysäytä |
-| Delete / Backspace | Poista valittu komponentti tai letku |
+| Delete / Backspace | Poista valitut komponentit tai letku |
 | R | Kierrä valittua 90° |
 | Ctrl+Z | Kumoa |
-| V tai Esc | Valitse ja kytke -työkalu |
+| Ctrl+C / Ctrl+V | Kopioi ja liitä valitut komponentit letkuineen |
+| Ctrl+A | Valitse kaikki komponentit |
+| Shift+veto tyhjästä | Laatikkovalinta |
+| Shift+klikkaus | Lisää tai poista komponentti valinnasta |
+| V tai Esc | Valitse ja kytke -työkalu (Esc poistaa myös valinnan) |
 | Hiiren rulla | Zoomaa |
 
 ## Tekijä ja lisenssi

@@ -36,7 +36,7 @@ Simulaattorin ilmiöt validoidaan kahdella tasolla, ks. [VALIDOINTI.md](VALIDOIN
 - **Automaattisesti:** 30 validointitestiä vertaa simulaattorin tuloksia käsinlaskukaavoihin (esim. v = Q/A, F = p·A, massatase, moottorin vääntö). GitHub Actions ajaa ne jokaisesta muutoksesta ja maanantaisin ajastetusti. Jos ajastettu ajo epäonnistuu, siitä avautuu automaattisesti issue. Raportti näkyy ajon yhteenvedossa.
 - **Opettajan validointi:** jokainen ilmiö tarkistetaan käsinlaskulla, kirjallisuudesta tai laboratoriomittauksella ja kirjataan validoiduksi. Validointikierros avautuu issueksi automaattisesti 15.1. ja 15.8.
 
-Lisäksi neljä kielitestiä (`tests/test_kieli.py`) varmistaa, että englanninkielisessä näkymässä ei ole kääntämättömiä tekstejä, että kielen vaihto ei vaikuta laskentaan ja että kielen ja mallin valitsimet toimivat. Testit M01–M07 (`tests/test_malli.py`) tarkistavat yksinkertaisen mallin käsinlaskua vastaan, ja käyttöliittymätestit U01–U03 (`tests/test_kaytto.py`) letkujen reitin muokkauksen.
+Lisäksi neljä kielitestiä (`tests/test_kieli.py`) varmistaa, että englanninkielisessä näkymässä ei ole kääntämättömiä tekstejä, että kielen vaihto ei vaikuta laskentaan ja että kielen ja mallin valitsimet toimivat. Testit M01–M07 (`tests/test_malli.py`) tarkistavat yksinkertaisen mallin käsinlaskua vastaan, ja käyttöliittymätestit U01–U05 (`tests/test_kaytto.py`) letkujen reitin muokkauksen, laatikkovalinnan, ryhmäsiirron sekä kopioinnin ja liittämisen.
 
 Testien ajaminen omalla koneella:
 
