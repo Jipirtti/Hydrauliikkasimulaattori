@@ -12,11 +12,11 @@ Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. Suunnitt
 
 ## Ominaisuudet
 
-- 13 komponenttia: vakiotilavuus- ja painesäädetty pumppu, öljysäiliö, 4/3- ja 4/2-suuntaventtiili, paineenrajoitus-, vasta-, kuristus- ja vastusventtiili, kaksi- ja yksitoiminen sylinteri, hydraulimoottori, paine- ja virtausmittari.
+- 15 komponenttia: vakiotilavuus- ja painesäädetty pumppu, öljysäiliö, 4/3-, 4/2- ja 3/2-suuntaventtiili, paineenrajoitus-, vasta-, kuristus-, vastus- ja virranjakoventtiili, kaksi- ja yksitoiminen sylinteri, hydraulimoottori, paine- ja virtausmittari.
 - Paine-, virtaus-, voima- ja nopeusanturit, joiden lukemat piirtyvät 10 sekunnin käyriksi.
 - Mitoitusparametrit, lasketut arvot ja käänteinen mitoitusapu jokaiselle komponentille.
 - Aikatason laskenta: öljyn kokoonpuristuvuus, sylinterin massa ja kitka, moottorin hitausmomentti. Painepiikit, kavitaatio ja ryntäävä kuorma näkyvät.
-- Neljä esimerkkipiiriä ja harjoitustehtävät käyttöohjeessa.
+- Seitsemän esimerkkipiiriä (mm. pikaliike, rinnakkaiset toimilaitteet ja virranjako) ja harjoitustehtävät käyttöohjeessa.
 
 ## Dokumentaatio
 
@@ -31,7 +31,7 @@ Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. Suunnitt
 
 Simulaattorin ilmiöt validoidaan kahdella tasolla, ks. [VALIDOINTI.md](VALIDOINTI.md):
 
-- **Automaattisesti:** 17 validointitestiä vertaa simulaattorin tuloksia käsinlaskukaavoihin (esim. v = Q/A, F = p·A, massatase, moottorin vääntö). GitHub Actions ajaa ne jokaisesta muutoksesta ja maanantaisin ajastetusti. Jos ajastettu ajo epäonnistuu, siitä avautuu automaattisesti issue. Raportti näkyy ajon yhteenvedossa.
+- **Automaattisesti:** 23 validointitestiä vertaa simulaattorin tuloksia käsinlaskukaavoihin (esim. v = Q/A, F = p·A, massatase, moottorin vääntö). GitHub Actions ajaa ne jokaisesta muutoksesta ja maanantaisin ajastetusti. Jos ajastettu ajo epäonnistuu, siitä avautuu automaattisesti issue. Raportti näkyy ajon yhteenvedossa.
 - **Opettajan validointi:** jokainen ilmiö tarkistetaan käsinlaskulla, kirjallisuudesta tai laboratoriomittauksella ja kirjataan validoiduksi. Validointikierros avautuu issueksi automaattisesti 15.1. ja 15.8.
 
 Lisäksi kolme kielitestiä (`tests/test_kieli.py`) varmistaa, että englanninkielisessä näkymässä ei ole kääntämättömiä tekstejä ja että kielen vaihto ei vaikuta laskentaan.

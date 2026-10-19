@@ -176,3 +176,81 @@ def test_V16_varoitukset(sim):
     assert "ylipaine" not in sim.call("warningCodes"), "V16: ylipainevaroitus ilman syytä"
     sim.call("setParam", "PRV1", "ps", 300); sim.call("setValve", "SV1", 1); sim.call("run", 5)
     assert "ylipaine" in sim.call("warningCodes"), "V16: ylipainevaroitus puuttuu (300 bar > sylinterin 250 bar)"
+
+
+# ---------------------------------------------------------------- riippuva kuorma (versio 1.2.0)
+def test_V17_riippuva_kuorma(sim, check):
+    """Männänvarsi alaspäin: paino avustaa ulosajoa ja sisäänajo vaatii pB·(A − a) − pA·A = m·g + Fc + cv·v."""
+    sim.call("loadExample", "ex1")
+    for k, v in (("ori", "alas"), ("m", 1000), ("F", 0), ("x0", 300)):
+        sim.call("setParam", "SYL1", k, v)
+    sim.call("reset"); sim.call("run", 1.0)
+    assert abs(sim.call("state", "SYL1")["x"] - 0.3) < 1e-6, "V17: riippuva kuorma ei pysynyt alhaalla"
+    sim.call("setValve", "SV1", -1); sim.call("run", 1.0)
+    c = sim.call("param", "SYL1"); a = areas(sim, "SYL1"); v = sim.call("state", "SYL1")["v"]
+    assert v < -0.01, "V17: sylinteri ei nostanut riippuvaa kuormaa"
+    F_hydr = bar_to_npmm2(sim.call("p", "SYL1", "B")) * a["Aring_mm2"] - bar_to_npmm2(sim.call("p", "SYL1", "A")) * a["A_mm2"]
+    check("V17", "Riippuvan kuorman nosto: pB·(A−a) − pA·A = m·g + Fc + cv·|v|", F_hydr,
+          c["m"] * G + c["Fc"] + c["cv"] * abs(v), 0.02, "N")
+
+
+# ---------------------------------------------------------------- pikaliikekytkentä
+def test_V18_pikaliike_nopeus(sim, check):
+    sim.call("loadExample", "ex5"); sim.call("setParam", "SYL1", "L", 2000); sim.call("run", 1)
+    sim.call("setValve", "SV1", 1); sim.call("run", 1.5)
+    a = areas(sim, "SYL1"); q = sim.call("q", "SV1", "P")
+    # regeneratiivinen ulosajo: v·A = Q + v·(A − a)  →  v = Q / a
+    check("V18", "Pikaliike: v = Q / a (varren pinta-ala)", sim.call("state", "SYL1")["v"],
+          q / 60000 / ((a["A_mm2"] - a["Aring_mm2"]) * 1e-6), 0.03, "m/s")
+
+
+def test_V19_pikaliike_voima(sim, check):
+    sim.call("loadExample", "ex5"); sim.call("setParam", "SYL1", "ori", "pysty"); sim.call("run", 1)
+    sim.call("setValve", "SV1", 1); sim.call("run", 3)
+    a = areas(sim, "SYL1"); p = sim.call("p", "SYL1", "A")
+    rod = a["A_mm2"] - a["Aring_mm2"]
+    assert sim.call("state", "SYL1")["x"] < 0.002, "V19: pikaliike nosti kuorman, vaikka p·a < m·g"
+    check("V19", "Pikaliikkeen voima F = p·a", sim.call("forceKN", "SYL1"), bar_to_npmm2(p) * rod / 1000, 0.03, "kN")
+    sim.call("setValve", "SV2", 1); sim.call("run", 1.5)
+    assert sim.call("state", "SYL1")["v"] > 0.1, "V19: normaali kytkentä ei nostanut kuormaa"
+
+
+# ---------------------------------------------------------------- rinnakkaiset toimilaitteet
+def test_V20_rinnakkainen_moottori(sim, check):
+    sim.call("loadExample", "ex6"); sim.call("setParam", "M1", "TL", 0); sim.call("run", 1)
+    sim.call("setValve", "SV1", 1); sim.call("run", 5)
+    m = sim.call("param", "M1"); q = sim.call("q", "SV1", "P")
+    dp = sim.call("p", "M1", "A") - sim.call("p", "M1", "B")
+    check("V20a", "Kevyt moottori vie koko virtauksen: n = (Q − vuoto) / Vg", sim.call("rpm", "M1"),
+          (q - m["leak"] * dp / 100) * 1000 / m["Vg"], 0.03, "r/min")
+    assert sim.call("state", "SYL1")["x"] < 0.05, "V20: sylinteri nousi, vaikka moottori tarvitsee pienemmän paineen"
+    sim.call("loadExample", "ex6"); sim.call("setParam", "M1", "TL", 40); sim.call("run", 1)
+    sim.call("setValve", "SV1", 1); sim.call("run", 1.5)
+    a = areas(sim, "SYL1"); q = sim.call("q", "SV1", "P")
+    check("V20b", "Raskas moottori pysyy, sylinteri saa virtauksen: v = Q / A", sim.call("state", "SYL1")["v"],
+          q / 60000 / (a["A_mm2"] * 1e-6), 0.03, "m/s")
+    assert abs(sim.call("rpm", "M1")) < 20, "V20: moottori pyörii, vaikka sen kuorma vaatii yli asetuspaineen"
+
+
+# ---------------------------------------------------------------- virranjakoventtiili
+def test_V21_virranjako(sim, check):
+    sim.call("loadExample", "ex7"); sim.call("run", 1)
+    sim.call("setValve", "SV1", 1); sim.call("run", 2)
+    r = sim.call("param", "VJ1")["r"] / 100
+    qP = sim.call("q", "VJ1", "P"); qA = -sim.call("q", "VJ1", "A"); qB = -sim.call("q", "VJ1", "B")
+    check("V21a", "Virranjako: Q_A = r·Q_P", qA, r * qP, 0.01, "L/min")
+    check("V21b", "Virranjako: Q_B = (1 − r)·Q_P", qB, (1 - r) * qP, 0.01, "L/min")
+    a = areas(sim, "SYL1")
+    check("V21c", "Sylinterin nopeus jaetulla virralla v = Q_A / A", sim.call("state", "SYL1")["v"],
+          qA / 60000 / (a["A_mm2"] * 1e-6), 0.03, "m/s")
+    for vv in ("VV1", "VV2"):
+        assert abs(sim.call("q", vv, "A")) < 0.05, f"V21: {vv} päästää virtausta väärään suuntaan"
+
+
+def test_V22_virranjako_paadyssa(sim):
+    sim.call("loadExample", "ex7"); sim.call("run", 1)
+    sim.call("setValve", "SV1", 1); sim.call("run", 7)
+    L = sim.call("param", "SYL1")["L"] / 1000
+    assert abs(sim.call("state", "SYL1")["x"] - L) < 1e-6, "V22: sylinteri ei ajanut päätyyn"
+    assert abs(sim.call("rpm", "M1")) < 5, "V22: moottori pyörii, vaikka virranjakajan toinen lähtö on tukossa"
+    assert sim.call("q", "PRV1", "P") > 0.95 * -sim.call("q", "P1", "P"), "V22: pumpun tuotto ei ohjautunut paineenrajoitukselle"

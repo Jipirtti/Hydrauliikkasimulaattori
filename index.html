@@ -203,6 +203,9 @@ select{background:var(--paper);border:1px solid var(--line);border-radius:7px;pa
         <option value="ex2" data-en="2. Meter-out speed control">2. Nopeudensäätö poistopuolelta (meter-out)</option>
         <option value="ex3" data-en="3. Hydraulic motor and flow meter">3. Hydraulimoottori ja virtausmittari</option>
         <option value="ex4" data-en="4. Single-acting vertical cylinder, controlled lowering">4. Yksitoiminen pystysylinteri, hallittu lasku</option>
+        <option value="ex5" data-en="5. Regenerative circuit with a 3/2 valve">5. Pikaliikekytkentä 3/2-venttiilillä</option>
+        <option value="ex6" data-en="6. Motor in parallel with a cylinder">6. Moottori sylinterin rinnalla</option>
+        <option value="ex7" data-en="7. Flow divider valves and check valves">7. Virranjakoventtiilit ja vastaventtiilit</option>
       </select>
       <button class="btn" id="undoBtn" type="button" title="Ctrl+Z" data-en="Undo">Kumoa</button>
       <button class="btn" id="ioBtn" type="button" data-en="Save / load">Tallenna / lataa</button>
@@ -266,7 +269,7 @@ const I18N_MISSING=new Set();
 const T=s=>{if(lang!=='en'||s==null||s==='')return s;let e=EN[s];if(e===undefined){const m=/^(.*), (\d+ bar)$/.exec(s);if(m&&EN[m[1]]!==undefined)return EN[m[1]]+', '+m[2];I18N_MISSING.add(s);return s;}return e;};
 const tr=(fi,en)=>lang==='en'?en:fi;
 const UNIT_EN={'r/min':'rpm','cm³/r':'cm³/rev'};const U=u=>lang==='en'&&UNIT_EN[u]?UNIT_EN[u]:u;
-const EN={"4/2-suuntaventtiili":"4/2 directional valve","4/3-suuntaventtiili":"4/3 directional valve","Akselin ottoteho":"Shaft input power","Akselin vääntö":"Shaft torque","Alkuasema":"Initial position","Antoteho":"Output power","Asema / nopeus":"Position / velocity","Asento":"Orientation","Asetuspaine":"Set pressure","Avautumispaine":"Cracking pressure","Avoin":"Open","Avaus":"Opening","Haluttu nopeus":"Desired speed","Haluttu ulosajonopeus":"Desired extension speed","Haluttu virtaus":"Desired flow","Hitausmomentti J":"Moment of inertia J","Hydraulimoottori":"Hydraulic motor","Hydraulinen teho":"Hydraulic power","Hydraulinen voima nyt":"Hydraulic force now","Hydromek. hyötysuhde ηhm":"Hydromech. efficiency ηhm","Iskunpituus":"Stroke","Iskutilavuus A-puoli":"Swept volume, A side","Jousen esijännitys":"Spring preload","Jousipalautteinen (pidä painettuna)":"Spring return (hold to actuate)","Jousivakio":"Spring rate","Kaksitoiminen sylinteri":"Double-acting cylinder","Kelan asema":"Spool position","Kelluva (A,B→T)":"Float (A,B→T)","Keskiasento":"Centre position","Kierrostilavuus Vg":"Displacement Vg","Kitkavoima":"Friction force","Komponentteja":"Components","Kuorman paino m·g":"Load weight m·g","Kuorman tyyppi":"Load type","Kuormitusmomentti":"Load torque","Kuristus Qn täysin auki":"Throttle Qn fully open","Kuristusventtiili":"Throttle valve","Kytkentöjä":"Connections","Käytettävä paine-ero":"Available pressure difference","Käyttöpaine":"Working pressure","Liikkuva massa":"Moving mass","Lukittuva (klikkaus)":"Detented (click)","Mitta-alue":"Range","Mittarit":"Instruments","Männän halkaisija D":"Piston diameter D","Männän pinta-ala A":"Piston area A","Männänvarren halkaisija d":"Rod diameter d","Nimellispaine":"Rated pressure","Nimellisvirtaus Qn":"Nominal flow Qn","Nopeus":"Speed","Ohjaus":"Actuation","Paine":"Pressure","Paine- ja virtaventtiilit":"Pressure and flow valves","Paine-ero":"Pressure difference","Paine-ero A−B":"Pressure difference A−B","Paine-ero Qn:llä":"Pressure drop at Qn","Paine-ero Qn:llä / tie":"Pressure drop at Qn per path","Paineen nousu Qn:llä":"Pressure override at Qn","Paineenrajoitusventtiili":"Pressure relief valve","Paineet P / A / B / T":"Pressures P / A / B / T","Painemittari":"Pressure gauge","Painesäädetty":"Pressure-compensated","Painesäädetty pumppu":"Pressure-compensated pump","Painetaso":"Pressure level","Paineverkkoja":"Pressure nodes","Paluulinjan paine":"Return line pressure","Pinta-alasuhde φ":"Area ratio φ","Pumppu, painesäädetty":"Pump, pressure-compensated","Pumppu, vakiotilavuus":"Pump, fixed displacement","Pumppujen tuotto yht.":"Total pump flow","Pumput ja säiliöt":"Pumps and tanks","Pysty, ulosajo ylös":"Vertical, extends upwards","Pyörimisnopeus":"Rotational speed","Pyörimisnopeus n":"Speed n","Qn täysin auki":"Qn fully open","Rengaspinta-ala A−a":"Annulus area A−a","Simulaatioaika":"Simulation time","Sisäänajo pumpun tuotolla":"Retraction at pump flow","Suljettu":"Closed","Suuntaventtiilit":"Directional valves","Suurin sallittu paine":"Maximum allowed pressure","Säiliön tilavuus":"Tank volume","Säätöpaine":"Compensator setting","Tandem (P→T)":"Tandem (P→T)","Tarvittava tuotto":"Required flow","Tarvittava voima":"Required force","Tarvittava vääntö":"Required torque","Tehohäviö":"Power loss","Tehohäviö (lämmöksi)":"Power loss (to heat)","Teor. nopeus pumpun tuotolla":"Theor. speed at pump flow","Teoreettinen tuotto":"Theoretical flow","Todellinen tuotto":"Actual flow","Toimilaitteet":"Actuators","Tyyppi":"Type","Täyttöaste":"Fill level","Ulkoinen kuorma F":"External load F","Ulosajo pumpun tuotolla":"Extension at pump flow","Vaaka":"Horizontal","Vakiotilavuus":"Fixed displacement","Vakiotilavuuspumppu":"Fixed displacement pump","Vakiovoima, vastustaa ulosajoa":"Constant force, resists extension","Vastaventtiili":"Check valve","Vastaventtiilin avautumispaine":"Check valve cracking pressure","Vastustaa liikettä (kitkamainen)":"Resists motion (friction-like)","Vastusventtiili":"One-way flow control valve","Vastusventtiili (kuristus + vasta)":"One-way flow control valve (throttle + check)","Virtaus":"Flow","Virtaus A":"Flow A","Virtaus A→B":"Flow A→B","Virtaus A→B (kuristettu)":"Flow A→B (throttled)","Virtaus B":"Flow B","Virtaus P":"Flow P","Virtaus säiliöön":"Flow to tank","Virtaus tien läpi":"Flow through path","Virtausaukko":"Orifice area","Virtausmittari":"Flow meter","Virtaus letkussa":"Flow in hose","Viskoosi kitka":"Viscous friction","Viskoosi vaimennus":"Viscous damping","Voima":"Force","Vol. hyötysuhde ηv (nimellispaineessa)":"Vol. efficiency ηv (at rated pressure)","Vuoto 100 barissa":"Leakage at 100 bar","Vääntö":"Torque","Vääntö / bar":"Torque per bar","Vääntömomentti":"Torque","Yksitoiminen sylinteri":"Single-acting cylinder","Yksitoiminen sylinteri (jousipalautus)":"Single-acting cylinder (spring return)","Öljymäärä":"Oil volume","Öljymäärä alussa":"Initial oil volume","Öljysäiliö":"Oil tank","Ulosajovoima":"Extension force","Sisäänajovoima":"Retraction force"};
+const EN={"3/2-suuntaventtiili":"3/2 directional valve","Virranjakoventtiili":"Flow divider valve","Pysty, ulosajo alas":"Vertical, extends downwards","Kuorman paino m·g (avustaa ulosajoa)":"Load weight m·g (assists extension)","Virtaus T":"Flow T","Paineet P / A / T":"Pressures P / A / T","Jakosuhde, osuus A-lähtöön":"Split ratio, share to outlet A","Nimellisvirtaus Qn (tulo P)":"Rated flow Qn (inlet P)","Jakosuhde A : B":"Split ratio A : B","Virtaus ulos A":"Flow out of A","Virtaus ulos B":"Flow out of B","Paineet P / A / B":"Pressures P / A / B","4/2-suuntaventtiili":"4/2 directional valve","4/3-suuntaventtiili":"4/3 directional valve","Akselin ottoteho":"Shaft input power","Akselin vääntö":"Shaft torque","Alkuasema":"Initial position","Antoteho":"Output power","Asema / nopeus":"Position / velocity","Asento":"Orientation","Asetuspaine":"Set pressure","Avautumispaine":"Cracking pressure","Avoin":"Open","Avaus":"Opening","Haluttu nopeus":"Desired speed","Haluttu ulosajonopeus":"Desired extension speed","Haluttu virtaus":"Desired flow","Hitausmomentti J":"Moment of inertia J","Hydraulimoottori":"Hydraulic motor","Hydraulinen teho":"Hydraulic power","Hydraulinen voima nyt":"Hydraulic force now","Hydromek. hyötysuhde ηhm":"Hydromech. efficiency ηhm","Iskunpituus":"Stroke","Iskutilavuus A-puoli":"Swept volume, A side","Jousen esijännitys":"Spring preload","Jousipalautteinen (pidä painettuna)":"Spring return (hold to actuate)","Jousivakio":"Spring rate","Kaksitoiminen sylinteri":"Double-acting cylinder","Kelan asema":"Spool position","Kelluva (A,B→T)":"Float (A,B→T)","Keskiasento":"Centre position","Kierrostilavuus Vg":"Displacement Vg","Kitkavoima":"Friction force","Komponentteja":"Components","Kuorman paino m·g":"Load weight m·g","Kuorman tyyppi":"Load type","Kuormitusmomentti":"Load torque","Kuristus Qn täysin auki":"Throttle Qn fully open","Kuristusventtiili":"Throttle valve","Kytkentöjä":"Connections","Käytettävä paine-ero":"Available pressure difference","Käyttöpaine":"Working pressure","Liikkuva massa":"Moving mass","Lukittuva (klikkaus)":"Detented (click)","Mitta-alue":"Range","Mittarit":"Instruments","Männän halkaisija D":"Piston diameter D","Männän pinta-ala A":"Piston area A","Männänvarren halkaisija d":"Rod diameter d","Nimellispaine":"Rated pressure","Nimellisvirtaus Qn":"Nominal flow Qn","Nopeus":"Speed","Ohjaus":"Actuation","Paine":"Pressure","Paine- ja virtaventtiilit":"Pressure and flow valves","Paine-ero":"Pressure difference","Paine-ero A−B":"Pressure difference A−B","Paine-ero Qn:llä":"Pressure drop at Qn","Paine-ero Qn:llä / tie":"Pressure drop at Qn per path","Paineen nousu Qn:llä":"Pressure override at Qn","Paineenrajoitusventtiili":"Pressure relief valve","Paineet P / A / B / T":"Pressures P / A / B / T","Painemittari":"Pressure gauge","Painesäädetty":"Pressure-compensated","Painesäädetty pumppu":"Pressure-compensated pump","Painetaso":"Pressure level","Paineverkkoja":"Pressure nodes","Paluulinjan paine":"Return line pressure","Pinta-alasuhde φ":"Area ratio φ","Pumppu, painesäädetty":"Pump, pressure-compensated","Pumppu, vakiotilavuus":"Pump, fixed displacement","Pumppujen tuotto yht.":"Total pump flow","Pumput ja säiliöt":"Pumps and tanks","Pysty, ulosajo ylös":"Vertical, extends upwards","Pyörimisnopeus":"Rotational speed","Pyörimisnopeus n":"Speed n","Qn täysin auki":"Qn fully open","Rengaspinta-ala A−a":"Annulus area A−a","Simulaatioaika":"Simulation time","Sisäänajo pumpun tuotolla":"Retraction at pump flow","Suljettu":"Closed","Suuntaventtiilit":"Directional valves","Suurin sallittu paine":"Maximum allowed pressure","Säiliön tilavuus":"Tank volume","Säätöpaine":"Compensator setting","Tandem (P→T)":"Tandem (P→T)","Tarvittava tuotto":"Required flow","Tarvittava voima":"Required force","Tarvittava vääntö":"Required torque","Tehohäviö":"Power loss","Tehohäviö (lämmöksi)":"Power loss (to heat)","Teor. nopeus pumpun tuotolla":"Theor. speed at pump flow","Teoreettinen tuotto":"Theoretical flow","Todellinen tuotto":"Actual flow","Toimilaitteet":"Actuators","Tyyppi":"Type","Täyttöaste":"Fill level","Ulkoinen kuorma F":"External load F","Ulosajo pumpun tuotolla":"Extension at pump flow","Vaaka":"Horizontal","Vakiotilavuus":"Fixed displacement","Vakiotilavuuspumppu":"Fixed displacement pump","Vakiovoima, vastustaa ulosajoa":"Constant force, resists extension","Vastaventtiili":"Check valve","Vastaventtiilin avautumispaine":"Check valve cracking pressure","Vastustaa liikettä (kitkamainen)":"Resists motion (friction-like)","Vastusventtiili":"One-way flow control valve","Vastusventtiili (kuristus + vasta)":"One-way flow control valve (throttle + check)","Virtaus":"Flow","Virtaus A":"Flow A","Virtaus A→B":"Flow A→B","Virtaus A→B (kuristettu)":"Flow A→B (throttled)","Virtaus B":"Flow B","Virtaus P":"Flow P","Virtaus säiliöön":"Flow to tank","Virtaus tien läpi":"Flow through path","Virtausaukko":"Orifice area","Virtausmittari":"Flow meter","Virtaus letkussa":"Flow in hose","Viskoosi kitka":"Viscous friction","Viskoosi vaimennus":"Viscous damping","Voima":"Force","Vol. hyötysuhde ηv (nimellispaineessa)":"Vol. efficiency ηv (at rated pressure)","Vuoto 100 barissa":"Leakage at 100 bar","Vääntö":"Torque","Vääntö / bar":"Torque per bar","Vääntömomentti":"Torque","Yksitoiminen sylinteri":"Single-acting cylinder","Yksitoiminen sylinteri (jousipalautus)":"Single-acting cylinder (spring return)","Öljymäärä":"Oil volume","Öljymäärä alussa":"Initial oil volume","Öljysäiliö":"Oil tank","Ulosajovoima":"Extension force","Sisäänajovoima":"Retraction force"};
 /* ---------- physics constants (SI) ---------- */
 const BETA=1.2e9, RHO=870, CD=0.65, DEL=3e4, VPORT=0.05e-3, GT=1e-6, PFLOOR=-0.95e5, G=9.81, DT=1e-3;
 const clamp=(x,a,b)=>x<a?a:x>b?b:x, c01=x=>clamp(x,0,1);
@@ -380,7 +383,7 @@ check:{name:()=>'Vastaventtiili',px:'VV',bb:[-30,-12,30,12],
   prm:[{k:'pc',l:'Avautumispaine',u:'bar',min:0,max:20,st:0.1},{k:'Qn',l:'Nimellisvirtaus Qn',u:'L/min',min:1,max:1000,st:1},
        {k:'dpn',l:'Paine-ero Qn:llä',u:'bar',min:0.5,max:30,st:0.5},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
   def:{pc:0.5,Qn:40,dpn:3,pmax:315}, init:()=>({}),
-  fl:(c,P)=>{const dp=P('A')-P('B');const k=(c.p.Qn/60000)/(c.p.dpn*1e5),s=0.2e5;const q=k*s*sp((dp-c.p.pc*1e5)/s)+1e-14*dp;return {A:q,B:-q};},
+  fl:(c,P)=>{const dp=P('A')-P('B');const k=(c.p.Qn/60000)/(c.p.dpn*1e5),s=0.05e5;const q=k*s*sp((dp-c.p.pc*1e5)/s)+1e-14*dp;return {A:q,B:-q};},
   draw:()=>L(-30,0,-6,0)+`<path class="sy" d="M6,-10L-6,0L6,10"/>`+L(10,0,30,0),
   dyn:c=>`<circle cx="${r1(4+4*c01(LPM(qf(c,'A'))/c.p.Qn*3))}" r="6" class="syf"/>`,
   read:c=>`${nf(LPM(qf(c,'A')),1)} L/min`,
@@ -452,11 +455,54 @@ dcv42:{name:()=>'4/2-suuntaventtiili',px:'SV',bb:[-80,-34,38,34],
   help:()=>`<div class="fld"><span>${T('Virtaus tien läpi')}</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
   helpCalc:(c,v)=>({html:`${tr('Painehäviö yhdellä tiellä','Pressure drop per flow path')} Δp = Δpn·(Q/Qn)² = <b>${nf(c.p.dpn*(v.Q/c.p.Qn)**2,1)} bar</b>`})
 },
+dcv32:{name:()=>'3/2-suuntaventtiili',px:'SV',bb:[-80,-34,38,34],
+  ports:[{n:'A',x:-10,y:-34,d:[0,-1]},{n:'P',x:-10,y:34,d:[0,1]},{n:'T',x:10,y:34,d:[0,1]}],
+  prm:[{k:'mode',l:'Ohjaus',sel:[['lukittuva','Lukittuva (klikkaus)'],['jousi','Jousipalautteinen (pidä painettuna)']]},
+       {k:'Qn',l:'Nimellisvirtaus Qn',u:'L/min',min:1,max:1000,st:1},{k:'dpn',l:'Paine-ero Qn:llä / tie',u:'bar',min:1,max:50,st:0.5},
+       {k:'leak',l:'Vuoto 100 barissa',u:'L/min',min:0,max:5,st:0.01},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{mode:'lukittuva',Qn:30,dpn:5,leak:0.02,pmax:315},
+  init:()=>({s:-1,tg:-1}),
+  pre:(c,dt)=>{c.st.s+=clamp(c.st.tg-c.st.s,-25*dt,25*dt);},
+  fl:(c,P)=>{const s=c.st.s,ov=0.12,A=areaFor(c.p.Qn,c.p.dpn),q={P:0,A:0,T:0};
+    const oa=c01((s-ov)/(1-ov)),ob=c01((-s-ov)/(1-ov));
+    const path=(a,b,o)=>{if(o<=0)return;const f=orif(P(a)-P(b),A*o);q[a]+=f;q[b]-=f;};
+    path('P','A',oa);path('A','T',ob);
+    const Gl=(c.p.leak/60000)/1e7;const lk=(a,b)=>{const f=Gl*(P(a)-P(b));q[a]+=f;q[b]-=f;};lk('P','A');lk('A','T');
+    return q;},
+  draw:()=>L(-10,-20,-10,-34)+L(-10,20,-10,34)+L(10,20,10,34),
+  dyn:c=>{const tx=40*(c.st.s+1)/2;return `<g transform="translate(${r1(tx)},0)">${BOX(-40)+ARW(-50,17,-50,-17)+BLKB(-30)+BOX(0)+ARW(-10,-17,10,17)+BLKB(-10)}${SOL(-78,c.st.tg>0)}${ZZ(20,36,0,6,3)}${L(36,-9,36,9)}</g>`;},
+  hit:(c,lx)=>{const tx=40*(c.st.s+1)/2;return lx<tx-58?'a':null;},
+  click:(c,h)=>{if(h==='a')setValve(c,c.st.tg===1?-1:1);},
+  press:c=>setValve(c,1), release:c=>setValve(c,-1),
+  read:c=>tr('asento ','position ')+(c.st.tg>0?'a':'b'),
+  der:c=>[['Kelan asema',c.st.tg>0?'a (P→A)':tr('b (A→T, lepo)','b (A→T, rest)')],
+    ['Virtaus P',nf(LPM(qf(c,'P')),1)+' L/min'],['Virtaus A',nf(LPM(qf(c,'A')),1)+' L/min'],['Virtaus T',nf(LPM(qf(c,'T')),1)+' L/min'],
+    ['Paineet P / A / T',[np(c,'P'),np(c,'A'),np(c,'T')].map(p=>nf(BAR(p),0)).join(' / ')+' bar'],['Tehohäviö',nf(lossW(c)/1000,2)+' kW']],
+  help:()=>`<div class="fld"><span>${T('Virtaus tien läpi')}</span><span class="inp"><input type="number" data-h="Q" value="20" step="1"><em>L/min</em></span></div><div class="res" data-hres></div>`,
+  helpCalc:(c,v)=>({html:`${tr('Painehäviö yhdellä tiellä','Pressure drop per flow path')} Δp = Δpn·(Q/Qn)² = <b>${nf(c.p.dpn*(v.Q/c.p.Qn)**2,1)} bar</b>`})
+},
+fdiv:{name:()=>'Virranjakoventtiili',px:'VJ',bb:[-30,-38,30,38],
+  ports:[{n:'A',x:-14,y:-38,d:[0,-1]},{n:'B',x:14,y:-38,d:[0,-1]},{n:'P',x:0,y:38,d:[0,1]}],
+  prm:[{k:'r',l:'Jakosuhde, osuus A-lähtöön',u:'%',min:5,max:95,st:1},{k:'Qn',l:'Nimellisvirtaus Qn (tulo P)',u:'L/min',min:1,max:1000,st:1},
+       {k:'dpn',l:'Paine-ero Qn:llä',u:'bar',min:1,max:50,st:0.5},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
+  def:{r:50,Qn:40,dpn:5,pmax:315}, init:()=>({}),
+  fl:(c,P)=>{const pP=P('P'),pA=P('A'),pB=P('B'),e=0.05e5,s=0.02e5,d=Math.sqrt((pA-pB)**2+e*e);
+    const hi=(pA+pB+d)/2,lo=(pA+pB-d)/2;
+    const f=s*sp((pP-hi)/s)-s*sp((lo-pP)/s);
+    const Q=orif(f,areaFor(c.p.Qn,c.p.dpn)),r=c.p.r/100;
+    const g=1e-14;return {P:Q+g*(pP-pA)+g*(pP-pB),A:-r*Q-g*(pP-pA),B:-(1-r)*Q-g*(pP-pB)};},
+  draw:()=>`<rect x="-30" y="-24" width="60" height="48" class="sy dash"/>`+L(0,38,0,24)+L(0,24,0,10)+L(-14,10,14,10)+L(-14,10,-14,-38)+L(14,10,14,-38)+
+    `<path class="sy" d="M-20,-14Q-14,-8 -8,-14M-20,-2Q-14,-8 -8,-2M8,-14Q14,-8 20,-14M8,-2Q14,-8 20,-2"/>`+ARW(-14,0,-14,-20)+ARW(14,0,14,-20),
+  read:c=>`A ${nf(-LPM(qf(c,'A')),1)} / B ${nf(-LPM(qf(c,'B')),1)} L/min`,
+  der:c=>[['Jakosuhde A : B',`${c.p.r} : ${100-c.p.r}`],['Virtaus P',nf(LPM(qf(c,'P')),1)+' L/min'],['Virtaus ulos A',nf(-LPM(qf(c,'A')),1)+' L/min'],
+    ['Virtaus ulos B',nf(-LPM(qf(c,'B')),1)+' L/min'],['Paineet P / A / B',[np(c,'P'),np(c,'A'),np(c,'B')].map(p=>nf(BAR(p),0)).join(' / ')+' bar'],
+    ['Tehohäviö',nf(lossW(c)/1000,2)+' kW']]
+},
 cyl:{name:()=>'Kaksitoiminen sylinteri',px:'SYL',bb:[-70,-18,100,34],mech:'lin',
   ports:[{n:'A',x:-56,y:34,d:[0,1]},{n:'B',x:56,y:34,d:[0,1]}],
   prm:[{k:'D',l:'Männän halkaisija D',u:'mm',min:10,max:400,st:1},{k:'d',l:'Männänvarren halkaisija d',u:'mm',min:5,max:380,st:1},
        {k:'L',l:'Iskunpituus',u:'mm',min:10,max:3000,st:10},{k:'m',l:'Liikkuva massa',u:'kg',min:0.1,max:50000,st:1},
-       {k:'F',l:'Ulkoinen kuorma F',u:'N',min:-1e6,max:1e6,st:100},{k:'Ft',l:'Kuorman tyyppi',sel:[['vastus','Vastustaa liikettä (kitkamainen)'],['aktiivi','Vakiovoima, vastustaa ulosajoa']]},{k:'ori',l:'Asento',sel:[['vaaka','Vaaka'],['pysty','Pysty, ulosajo ylös']]},
+       {k:'F',l:'Ulkoinen kuorma F',u:'N',min:-1e6,max:1e6,st:100},{k:'Ft',l:'Kuorman tyyppi',sel:[['vastus','Vastustaa liikettä (kitkamainen)'],['aktiivi','Vakiovoima, vastustaa ulosajoa']]},{k:'ori',l:'Asento',sel:[['vaaka','Vaaka'],['pysty','Pysty, ulosajo ylös'],['alas','Pysty, ulosajo alas']]},
        {k:'Fc',l:'Kitkavoima',u:'N',min:0,max:1e5,st:10},{k:'cv',l:'Viskoosi vaimennus',u:'N·s/m',min:0,max:1e6,st:100},
        {k:'x0',l:'Alkuasema',u:'mm',min:0,max:3000,st:10},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
   def:{D:50,d:28,L:300,m:50,F:0,Ft:'vastus',ori:'vaaka',Fc:150,cv:800,x0:0,pmax:250},
@@ -476,7 +522,7 @@ scyl:{name:()=>'Yksitoiminen sylinteri (jousipalautus)',px:'SYL',bb:[-70,-28,100
   ports:[{n:'A',x:-56,y:34,d:[0,1]}],
   prm:[{k:'D',l:'Männän halkaisija D',u:'mm',min:10,max:400,st:1},{k:'L',l:'Iskunpituus',u:'mm',min:10,max:3000,st:10},
        {k:'m',l:'Liikkuva massa',u:'kg',min:0.1,max:50000,st:1},{k:'F',l:'Ulkoinen kuorma F',u:'N',min:-1e6,max:1e6,st:100},{k:'Ft',l:'Kuorman tyyppi',sel:[['vastus','Vastustaa liikettä (kitkamainen)'],['aktiivi','Vakiovoima, vastustaa ulosajoa']]},
-       {k:'ori',l:'Asento',sel:[['vaaka','Vaaka'],['pysty','Pysty, ulosajo ylös']]},
+       {k:'ori',l:'Asento',sel:[['vaaka','Vaaka'],['pysty','Pysty, ulosajo ylös'],['alas','Pysty, ulosajo alas']]},
        {k:'F0',l:'Jousen esijännitys',u:'N',min:0,max:1e5,st:10},{k:'k',l:'Jousivakio',u:'N/mm',min:0,max:1000,st:0.1},
        {k:'Fc',l:'Kitkavoima',u:'N',min:0,max:1e5,st:10},{k:'cv',l:'Viskoosi vaimennus',u:'N·s/m',min:0,max:1e6,st:100},
        {k:'x0',l:'Alkuasema',u:'mm',min:0,max:3000,st:10},{k:'pmax',l:'Suurin sallittu paine',u:'bar',min:10,max:700,st:5}],
@@ -554,7 +600,7 @@ function dcvDer(c){return [['Kelan asema',c.st.tg>0?'a (P→A, B→T)':c.st.tg<0
   ['Paineet P / A / B / T',[np(c,'P'),np(c,'A'),np(c,'B'),np(c,'T')].map(p=>nf(BAR(p),0)).join(' / ')+' bar'],
   ['Tehohäviö',nf(lossW(c)/1000,2)+' kW']];}
 function setValve(c,tg){c.st.tg=tg;if(sel&&sel.id===c.id)syncValveBtns(c);}
-function cylFg(c){return c.p.ori==='pysty'?c.p.m*G:0;}
+function cylFg(c){return c.p.ori==='pysty'?c.p.m*G:(c.p.ori==='alas'?-c.p.m*G:0);}
 const cylFact=c=>c.p.Ft==='aktiivi'?c.p.F:0, cylFres=c=>c.p.Fc+(c.p.Ft==='aktiivi'?0:Math.abs(c.p.F));
 function cylFh(c,pA,pB){const[AA,AB]=cylA(c);let F=pA*AA-pB*AB-cylFact(c)-cylFg(c);if(c.type==='scyl')F-=c.p.F0+c.p.k*1000*c.st.x;return F;}
 function cylPre(c){
@@ -592,7 +638,7 @@ function cylDer(c){
   r.push(['Ulosajo pumpun tuotolla',nf(Q/60000/AA*1000,0)+' mm/s']);
   if(c.type==='cyl')r.push(['Sisäänajo pumpun tuotolla',nf(Q/60000/AB*1000,0)+' mm/s']);
   r.push(['Iskutilavuus A-puoli',nf(AA*c.p.L/1000*1000,2)+' L']);
-  if(c.p.ori==='pysty')r.push(['Kuorman paino m·g',nf(c.p.m*G/1000,2)+' kN']);
+  if(c.p.ori==='pysty'||c.p.ori==='alas')r.push([c.p.ori==='alas'?'Kuorman paino m·g (avustaa ulosajoa)':'Kuorman paino m·g',nf(c.p.m*G/1000,2)+' kN']);
   return r;
 }
 function cylHelp(){return `<div class="fld"><span>${T('Tarvittava voima')}</span><span class="inp"><input type="number" data-h="F" value="10" step="0.5"><em>kN</em></span></div>
@@ -866,7 +912,7 @@ function buildInsp(){
   const c=byId[sel.id],t=TY[c.type];
   let h=`<div class="ih"><input id="lblIn" value="${esc(c.label)}" aria-label="${tr('Tunnus','Tag')}" maxlength="10"><span class="tn">${esc(T(t.name(c)))}</span></div>`;
   if(c.type==='dcv43')h+=`<div class="ctl"><span>${tr('Kelan asema','Spool position')}</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="0">0</button><button data-v="-1">b</button></div></div>`;
-  if(c.type==='dcv42')h+=`<div class="ctl"><span>${tr('Kelan asema','Spool position')}</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="-1">${tr('b (lepo)','b (rest)')}</button></div></div>`;
+  if(c.type==='dcv42'||c.type==='dcv32')h+=`<div class="ctl"><span>${tr('Kelan asema','Spool position')}</span><div class="seg3" id="vseg"><button data-v="1">a</button><button data-v="-1">${tr('b (lepo)','b (rest)')}</button></div></div>`;
   if(c.type==='pump')h+=`<div class="ctl"><span>${tr('Sähkömoottori','Electric motor')}</span><button class="btn ${c.st.on?'on':''}" data-act="pump">${c.st.on?tr('Käy, pysäytä','Running, stop'):tr('Pysäytetty, käynnistä','Stopped, start')}</button></div>`;
   if(c.type==='throttle'||c.type==='owfc')h+=`<div class="ctl" style="flex-direction:column;align-items:stretch;gap:4px"><span>${tr('Avaus','Opening')} <b id="openV">${c.p.open} %</b></span><input type="range" class="rng" min="0" max="100" step="1" value="${c.p.open}" id="openR" aria-label="${tr('Avaus','Opening')}"></div>`;
   h+=`<h3>${tr('Mitoitus','Sizing')}</h3>`;
@@ -877,7 +923,7 @@ function buildInsp(){
   if(t.help)h+=`<h3>${tr('Mitoitusapu','Sizing helper')}</h3><div class="help" id="help">${t.help(c)}<button class="btn" data-act="apply" id="applyBtn" style="display:none"></button></div>`;
   h+=`<div class="acts"><button class="btn" data-act="rot">${tr('Kierrä 90°','Rotate 90°')}</button><button class="btn danger" data-act="del">${tr('Poista','Delete')}</button></div>`;
   insp.innerHTML=h;
-  if(c.type==='dcv43'||c.type==='dcv42')syncValveBtns(c);
+  if(c.type==='dcv43'||c.type==='dcv42'||c.type==='dcv32')syncValveBtns(c);
   updDer();if(t.help)updHelp();
 }
 function syncValveBtns(c){const s=$('#vseg');if(!s)return;s.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===c.st.tg));}
@@ -965,6 +1011,9 @@ function fitView(){
 const BASE=(py)=>[
   {id:'c1',type:'tank',x:160,y:py+110,label:'S1'},{id:'c2',type:'pump',x:160,y:py,label:'P1'},
   {id:'c3',type:'prv',x:300,y:py+20,label:'PRV1'},{id:'c4',type:'tank',x:300,y:py+130,label:'S2'}];
+const HBASE=py=>BASE(py).map(c=>c.id==='c2'?{...c,p:{Vg:30}}:c.id==='c3'?{...c,p:{ps:50,Qn:60}}:c);
+const HSV={center:'tandem',Qn:60};
+const HCYL=ori=>({D:60,d:30,L:500,m:1000,ori});
 const BW=[{a:'c2:S',b:'c1:T'},{a:'c2:P',b:'c3:P'},{a:'c3:T',b:'c4:T'}];
 const EX={
  ex1:{comps:[...BASE(480),{id:'c5',type:'gauge',x:230,y:380,label:'PI1'},{id:'c6',type:'dcv43',x:470,y:380,label:'SV1'},
@@ -984,14 +1033,33 @@ const EX={
  ex4:{comps:[...BASE(560).map(c=>c.id==='c3'?{...c,p:{ps:80}}:c),{id:'c6',type:'dcv42',x:470,y:440,label:'SV1'},{id:'c7',type:'tank',x:480,y:560,label:'S3'},
    {id:'c8',type:'scyl',x:470,y:200,rot:270,label:'SYL1'},{id:'c9',type:'throttle',x:460,y:340,rot:90,label:'KV1',p:{open:30}}],
   wires:[...BW,{a:'c2:P',b:'c6:P'},{a:'c6:T',b:'c7:T'},{a:'c6:A',b:'c9:B'},{a:'c9:A',b:'c8:A'}],
-  probes:[{kind:'p',target:'c8:A',dx:40,dy:20},{kind:'v',target:'c8',dx:50,dy:-60},{kind:'F',target:'c8',dx:50,dy:-30}]}
+  probes:[{kind:'p',target:'c8:A',dx:40,dy:20},{kind:'v',target:'c8',dx:50,dy:-60},{kind:'F',target:'c8',dx:50,dy:-30}]},
+ ex5:{comps:[...HBASE(560),{id:'c6',type:'dcv43',x:470,y:440,label:'SV1',p:HSV},{id:'c7',type:'tank',x:480,y:560,label:'S3'},
+   {id:'c8',type:'cyl',x:470,y:180,label:'SYL1',p:HCYL('vaaka')},{id:'c9',type:'dcv32',x:600,y:320,label:'SV2',p:{Qn:150,dpn:5}},
+   {id:'c10',type:'gauge',x:340,y:228,rot:270,label:'PI1'},{id:'c11',type:'gauge',x:700,y:228,rot:90,label:'PI2'}],
+  wires:[...BW,{a:'c2:P',b:'c6:P'},{a:'c6:T',b:'c7:T'},{a:'c6:A',b:'c8:A'},{a:'c6:B',b:'c9:P'},{a:'c9:A',b:'c8:B'},{a:'c9:T',b:'c8:A'},{a:'c10:P',b:'c8:A'},{a:'c11:P',b:'c8:B'}],
+  probes:[{kind:'v',target:'c8',dx:-30,dy:-80},{kind:'p',target:'c8:A',dx:-150,dy:-40},{kind:'p',target:'c8:B',dx:50,dy:-90}]},
+ ex6:{comps:[...HBASE(560),{id:'c6',type:'dcv43',x:470,y:440,label:'SV1',p:HSV},{id:'c7',type:'tank',x:480,y:560,label:'S3'},
+   {id:'c8',type:'cyl',x:470,y:180,label:'SYL1',p:HCYL('pysty')},{id:'c9',type:'motor',x:660,y:320,label:'M1',p:{Vg:20,TL:5}},
+   {id:'c10',type:'gauge',x:340,y:228,rot:270,label:'PI1'}],
+  wires:[...BW,{a:'c2:P',b:'c6:P'},{a:'c6:T',b:'c7:T'},{a:'c6:A',b:'c8:A'},{a:'c6:B',b:'c8:B'},{a:'c9:A',b:'c8:A'},{a:'c9:B',b:'c8:B'},{a:'c10:P',b:'c8:A'}],
+  probes:[{kind:'v',target:'c8',dx:-30,dy:-80},{kind:'v',target:'c9',dx:60,dy:-30},{kind:'p',target:'c8:A',dx:-150,dy:-40}]},
+ ex7:{comps:[...HBASE(640),{id:'c6',type:'dcv43',x:520,y:620,label:'SV1',p:HSV},{id:'c7',type:'tank',x:530,y:740,label:'S3'},
+   {id:'c8',type:'cyl',x:470,y:160,label:'SYL1',p:HCYL('pysty')},{id:'c9',type:'motor',x:880,y:260,label:'M1',p:{Vg:20,TL:5}},
+   {id:'c10',type:'fdiv',x:380,y:440,label:'VJ1',p:{Qn:60}},{id:'c11',type:'fdiv',x:700,y:440,label:'VJ2',p:{Qn:60}},
+   {id:'c12',type:'check',x:270,y:440,rot:90,label:'VV1',p:{Qn:60}},{id:'c13',type:'check',x:490,y:440,rot:90,label:'VV2',p:{Qn:60}},
+   {id:'c14',type:'check',x:590,y:440,rot:90,label:'VV3',p:{Qn:60}},{id:'c15',type:'check',x:810,y:440,rot:90,label:'VV4',p:{Qn:60}}],
+  wires:[...BW,{a:'c2:P',b:'c6:P'},{a:'c6:T',b:'c7:T'},
+   {a:'c6:A',b:'c10:P'},{a:'c12:B',b:'c10:P'},{a:'c13:B',b:'c10:P'},{a:'c10:A',b:'c8:A'},{a:'c12:A',b:'c8:A'},{a:'c10:B',b:'c9:A'},{a:'c13:A',b:'c9:A'},
+   {a:'c6:B',b:'c11:P'},{a:'c14:B',b:'c11:P'},{a:'c15:B',b:'c11:P'},{a:'c11:A',b:'c8:B'},{a:'c14:A',b:'c8:B'},{a:'c11:B',b:'c9:B'},{a:'c15:A',b:'c9:B'}],
+  probes:[{kind:'v',target:'c8',dx:-30,dy:-80},{kind:'v',target:'c9',dx:60,dy:-30},{kind:'p',target:'c10:P',dx:-150,dy:40}]}
 };
 
 /* ---------- palette ---------- */
 const PAL=[
   ['Pumput ja säiliöt',[['pump','Vakiotilavuuspumppu',{kind:'vakio'}],['pump','Painesäädetty pumppu',{kind:'saato'}],['tank','Öljysäiliö',{}]]],
-  ['Suuntaventtiilit',[['dcv43','4/3-suuntaventtiili',{}],['dcv42','4/2-suuntaventtiili',{}]]],
-  ['Paine- ja virtaventtiilit',[['prv','Paineenrajoitusventtiili',{}],['check','Vastaventtiili',{}],['throttle','Kuristusventtiili',{}],['owfc','Vastusventtiili',{}]]],
+  ['Suuntaventtiilit',[['dcv43','4/3-suuntaventtiili',{}],['dcv42','4/2-suuntaventtiili',{}],['dcv32','3/2-suuntaventtiili',{}]]],
+  ['Paine- ja virtaventtiilit',[['prv','Paineenrajoitusventtiili',{}],['check','Vastaventtiili',{}],['throttle','Kuristusventtiili',{}],['owfc','Vastusventtiili',{}],['fdiv','Virranjakoventtiili',{}]]],
   ['Toimilaitteet',[['cyl','Kaksitoiminen sylinteri',{}],['scyl','Yksitoiminen sylinteri',{}],['motor','Hydraulimoottori',{}]]],
   ['Mittarit',[['gauge','Painemittari',{}],['flowm','Virtausmittari',{}]]]
 ];
@@ -1152,7 +1220,7 @@ document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',(
 /* ---------- test & validation API (used by tests/test_validointi.py) ---------- */
 const byLabel=l=>{const c=comps.find(x=>x.label===l);if(!c)throw new Error('Komponenttia ei löydy: '+l);return c;};
 window.HydSim={
-  version:'1.1.1',
+  version:'1.2.0',
   setLang:l=>{setLang(l);return lang;},
   lang:()=>lang,
   warningCodes:()=>{updWarns();return lastWarnCodes.slice();},

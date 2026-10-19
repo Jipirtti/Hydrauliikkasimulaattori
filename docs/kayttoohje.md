@@ -61,7 +61,7 @@ Jos liitäntöihin on vaikea osua, zoomaa lähemmäs hiiren rullalla.
 
 ## Komponentit ja mitoitus
 
-Paletissa on 13 komponenttia. Kun komponentti on valittuna, ominaisuuspaneelin Mitoitus-osassa muutetaan sen parametreja. Lasketut arvot päivittyvät simuloinnin aikana, ja Mitoitusapu laskee käänteisesti tarvittavan koon.
+Paletissa on 15 komponenttia. Kun komponentti on valittuna, ominaisuuspaneelin Mitoitus-osassa muutetaan sen parametreja. Lasketut arvot päivittyvät simuloinnin aikana, ja Mitoitusapu laskee käänteisesti tarvittavan koon.
 
 | Komponentti | Liitännät | Tärkeimmät mitoitusparametrit | Mitoitusapu |
 | --- | --- | --- | --- |
@@ -70,10 +70,12 @@ Paletissa on 13 komponenttia. Kun komponentti on valittuna, ominaisuuspaneelin M
 | Öljysäiliö | T | Tilavuus, öljymäärä alussa | – |
 | 4/3-suuntaventtiili | P, T, A, B | Keskiasento (suljettu, tandem, avoin, kelluva), ohjaus (lukittuva tai jousipalautteinen), Qn ja Δp tietä kohden, vuoto | Painehäviö annetulla virtauksella |
 | 4/2-suuntaventtiili | P, T, A, B | Ohjaus, Qn, Δp, vuoto. Lepoasento b: P→B, A→T | Painehäviö annetulla virtauksella |
+| 3/2-suuntaventtiili | P, A, T | Ohjaus, Qn, Δp, vuoto. Asento a: P→A, T suljettu. Lepoasento b: A→T, P suljettu | Painehäviö annetulla virtauksella |
 | Paineenrajoitusventtiili | P, T | Asetuspaine, Qn, paineen nousu Qn:llä | – |
 | Vastaventtiili | A → B | Avautumispaine, Qn, Δp Qn:llä | – |
 | Kuristusventtiili | A, B | Avaus %, Qn täysin auki, Δp Qn:llä | Avaus % halutusta virtauksesta ja paine-erosta |
 | Vastusventtiili | A, B | Kuristus A→B, vapaa virtaus B→A vastaventtiilin kautta | – |
+| Virranjakoventtiili | P (tulo), A, B (lähdöt) | Jakosuhde A-lähtöön (%), Qn, Δp Qn:llä. Jakaa tulovirran lähtöihin kiinteässä suhteessa kuormapaineista riippumatta. Jos toinen lähtö tukkeutuu, myös toinen pysähtyy. Paluusuunnassa venttiili yhdistää virrat samassa suhteessa. | – |
 | Kaksitoiminen sylinteri | A (mäntäpuoli), B (varsipuoli) | D, d, isku, massa, kuorma ja sen tyyppi, asento, kitka, vaimennus, alkuasema | D voimasta ja paineesta (ehdottaa vakiokokoa D/d), Q halutusta nopeudesta |
 | Yksitoiminen sylinteri | A | D, isku, massa, kuorma, jousen esijännitys ja jousivakio, asento | D voimasta ja paineesta |
 | Hydraulimoottori | A, B | Vg, kuormitusmomentti, hitausmomentti, kitka, ηhm, vuoto | Vg väännöstä ja paine-erosta, Q nopeudesta |
@@ -86,6 +88,7 @@ Kaikilla paineenalaisilla komponenteilla on Suurin sallittu paine. Jos piirin pa
 - *Vastustaa liikettä* toimii kuin kitka. Se jarruttaa sekä ulos- että sisäänajoa.
 - *Vakiovoima* painaa vartta sisäänpäin, kun F on positiivinen (negatiivinen F vetää ulos). Se auttaa sisäänajossa ja voi aiheuttaa ryntäävän kuorman ja kavitaation.
 - *Pysty, ulosajo ylös* lisää painovoiman m·g, joka vastustaa ulosajoa ja laskee kuorman, kun A-puoli avataan säiliöön.
+- *Pysty, ulosajo alas* (männänvarsi alaspäin, riippuva kuorma) kääntää painovoiman suunnan: m·g avustaa ulosajoa ja vastustaa sisäänajoa, joten sisäänajo vaatii rengaspuolelle paineen m·g / (A − a). Ilman jarrutusta kuorma ryntää ulosajossa pumpun tuottoa nopeammin ja A-puoli kavitoi.
 
 Mitoitusavun kaavat:
 
@@ -203,6 +206,9 @@ Esimerkkipiirit ladataan yläpalkin valikosta. Lataus korvaa nykyisen piirin, mu
 | 2. Nopeudensäätö poistopuolelta (meter-out) | Klikkaa SV1:n vasenta kelaa. | Sylinteri ajaa ulos noin 65 mm/s, vaikka vapaa nopeus olisi 123 mm/s. Pumpun ylimääräinen tuotto menee paineenrajoitusventtiilin kautta säiliöön, joten A-puolella on noin 101 bar. B-puolella paine nousee noin 123 bariin, eli yli järjestelmäpaineen, koska rengaspinta on männän pintaa pienempi. Sisäänajo kulkee vastaventtiilin kautta täydellä nopeudella. |
 | 3. Hydraulimoottori ja virtausmittari | Klikkaa SV1:n kelaa a tai b. | Moottori pyörii noin 700 r/min kumpaankin suuntaan, ja A-puolen paine on noin 67–76 bar (20 Nm kuorma). Tandem-keskiasennossa moottori pysähtyy ja pumppu kierrättää öljyn lähes paineettomana säiliöön. |
 | 4. Yksitoiminen pystysylinteri, hallittu lasku | Klikkaa 4/2-venttiilin kelaa päälle ja uudelleen pois. | Nosto noin 190 mm/s noin 15 barin paineella (150 kg kuorma). Laskussa A-puoli avautuu säiliöön ja kuristin rajoittaa laskunopeuden noin 120 mm/s:iin. Ilman kuristinta kuorma putoaisi lähes vapaasti. |
+| 5. Pikaliikekytkentä 3/2-venttiilillä | Pumppu 43,5 L/min, paineenrajoitus 50 bar, sylinteri Ø60/30, 1000 kg vaakasuorassa. SV2 on lepoasennossa (pikaliike): klikkaa SV1:n kelaa a. Vaihda sitten SV2 asentoon a (normaali) ja aja uudelleen. | Pikaliikkeessä rengaspuolen öljy kiertää A-puolelle, ja nopeus on v = Q / a ≈ 1,0 m/s. Normaalisti ulosajo on 256 mm/s ja sisäänajo 341 mm/s. Sisäänajo onnistuu vain SV2:n asennossa a, koska lepoasennossa pääventtiilin B-linja on suljettu. Asenna sylinteri pystyyn (Asento: Pysty, ulosajo ylös): pikaliike ei nosta 1000 kg:n kuormaa, koska voima on vain p·a = 50 bar · 707 mm² ≈ 3,9 kN. Pikaliikkeen nopeus jää teoriasta, jos SV2 on alimitoitettu (kokeile Qn 30 L/min). |
+| 6. Moottori sylinterin rinnalla | Sama pumppu ja sylinteri pystyssä, moottori Vg 20 cm³/r on kytketty A- ja B-linjan väliin. Klikkaa SV1:n kelaa a ja kokeile moottorin kuormitusmomenttia 0, 5 ja 40 Nm. | Virtaus menee pienimmän paineen tietä. 0 Nm: moottori vie koko tuoton (noin 2160 r/min) eikä kuorma nouse. 5 Nm: sylinteri lähtee nousemaan, mutta hidastuu sitä mukaa kuin moottori kiihtyy. 40 Nm: moottori tarvitsisi noin 140 bar, joten se ei pyöri ja sylinteri saa koko tuoton (253 mm/s). |
+| 7. Virranjakoventtiilit ja vastaventtiilit | Kuten esimerkki 6, mutta A- ja B-linjoissa on virranjakoventtiilit (50/50) ja niiden rinnalla paluuvirtauksen vastaventtiilit. Klikkaa SV1:n kelaa a ja pidä se päällä, kunnes sylinteri on päädyssä. | Sylinteri (127 mm/s) ja moottori (noin 1070 r/min) liikkuvat yhtä aikaa, koska kumpikin saa puolet tuotosta kuormapaineista riippumatta. Kun sylinteri on päädyssä, virranjakajan sylinterilähtö tukkeutuu ja myös moottori pysähtyy; paine nousee paineenrajoitusventtiilin avautumispaineeseen. Vastaventtiilit päästävät poistuvan öljyn ohi virranjakajan, jolloin paluuvirtaus ei kulje jakajan läpi. |
 
 ### Harjoitustehtäviä
 
@@ -212,6 +218,10 @@ Esimerkkipiirit ladataan yläpalkin valikosta. Lataus korvaa nykyisen piirin, mu
 4. Vaihda esimerkin 2 kuristus tulopuolelle (A-linjaan) ja vertaa B-puolen painetta poistopuolen kuristukseen.
 5. Poista esimerkistä 4 kuristin ja kytke venttiili suoraan sylinteriin. Seuraa laskunopeutta ja A-puolen painetta laskun aikana.
 6. Vaihda esimerkin 1 pumppu painesäädetyksi (säätöpaine 90 bar). Mitä tapahtuu paineenrajoitusventtiilin virtaukselle sylinterin ollessa päädyssä?
+7. Valitse esimerkin 1 sylinterin asennoksi Pysty, ulosajo alas ja massaksi 1000 kg. Aja sylinteriä molempiin suuntiin. Miksi ulosajo on pumpun tuottoa nopeampi, ja millä paineenrajoituksen asetuksella sylinteri nousee takaisin? Vertaa käsinlaskuun m·g / (A − a).
+8. Poista esimerkin 7 virranjakoventtiilit ja vastaventtiilit ja korvaa ne suorilla letkuilla. Mitä moottorille ja sylinterille tapahtuu nyt, ja miksi tulos eroaa virranjakajan kanssa saadusta?
+
+Kun laadit omia tehtäviä simulaattorille, anna tehtävässä pumpun tuotto, paineenrajoituksen asetus, sylinterin mitat ja isku, venttiilien nimellisvirtaus sekä moottorin kuormitusmomentti. Erityisesti pikaliikkeen nopeus ja rinnakkaisten toimilaitteiden käyttäytyminen riippuvat näistä arvoista.
 
 ## Varoitukset, tallennus ja rajoitukset
 

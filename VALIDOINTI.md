@@ -30,6 +30,12 @@ Odotusarvot ovat esimerkkipiirien oletusparametreilla. Toleranssi on testin hyv�
 | V14 | Painesäädetty pumppu | Esim. 1, pumppu painesäädetyksi, pc 90 bar | p ≈ pc, PRV ei avaudu | 88–93 bar | – | Ei validoitu |
 | V15 | Toistettavuus | Esim. 2 | Kaksi samaa ajoa antaa saman tuloksen | – | 0 | Ei validoitu |
 | V16 | Ylipainevaroitus | Esim. 1, PRV 300 bar | Varoitus, kun p > sylinterin 250 bar | – | – | Ei validoitu |
+| V17 | Riippuva kuorma (ulosajo alas) | Esim. 1, asento alas, 1000 kg, kela b | pB·(A − a) − pA·A = m·g + Fc + cv·v | 10,1 kN | 2 % | Ei validoitu |
+| V18 | Pikaliikkeen nopeus | Esim. 5, isku 2000 mm, kela a | v = Q / a | 1,02 m/s | 3 % | Ei validoitu |
+| V19 | Pikaliikkeen voima | Esim. 5, asento pysty, kela a | F = p·a; kuorma ei nouse, kun p·a < m·g | 3,94 kN | 3 % | Ei validoitu |
+| V20 | Rinnakkaiset toimilaitteet | Esim. 6, moottorin kuorma 0 Nm ja 40 Nm | Kevyt moottori: n = (Q − vuoto)/Vg, sylinteri ei nouse. Raskas moottori: v = Q / A, moottori ei pyöri | 2160 r/min; 0,254 m/s | 3 % | Ei validoitu |
+| V21 | Virranjakoventtiili | Esim. 7, kela a | Q_A = r·Q_P, Q_B = (1 − r)·Q_P, v = Q_A / A | 21,5 + 21,5 L/min; 127 mm/s | 1–3 % | Ei validoitu |
+| V22 | Virranjakajan lähtö tukossa | Esim. 7, kela a, sylinteri päädyssä | Moottori pysähtyy, pumpun tuotto paineenrajoitukselle | 0 r/min | – | Ei validoitu |
 
 ## B. Laadulliset ilmiöt (opettajan validointi simulaattorissa)
 
@@ -45,6 +51,9 @@ Näille ei ole automaattista testiä. Opettaja tarkistaa käyttäytymisen silmä
 | L06 | Moottorin pysäytys tandem-keskiasennossa | Esim. 3, kela a → 0 | Moottori jarruttaa, A- tai B-puolen paine nousee hetkellisesti hitausmomentin vuoksi. | Ei validoitu |
 | L07 | Pumppu ilman imua | Irrota pumpun S-liitäntä | Tuotto loppuu ja varoitus imusta näkyy. | Ei validoitu |
 | L08 | Lepotilan häviöteho | Esim. 1, valitse PRV1 | Häviöteho p·Q/600 ≈ 2,4 kW. | Ei validoitu |
+| L09 | Riippuvan kuorman ryntäys | Esim. 1, asento alas, 1000 kg, kela a | Sylinteri ajaa ulos pumpun tuottoa nopeammin, A-puolelle alipaine ja kavitaatiovaroitus. | Ei validoitu |
+| L10 | Pikaliikeventtiilin lepoasento | Esim. 5, SV2 lepoasennossa, kela b | Sylinteri ei aja sisään, koska pääventtiilin B-linja on suljettu 3/2-venttiilissä. | Ei validoitu |
+| L11 | Virranjakaja paluusuunnassa | Esim. 7, kela b | Paluuöljy kulkee vastaventtiilien kautta; sylinteri ja moottori liikkuvat. | Ei validoitu |
 
 ## C. Validoinnin kirjaaminen
 

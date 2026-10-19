@@ -6,15 +6,16 @@ eikä vaikuta laskentaan. Tunnukset K01–K03.
 import re
 from conftest import INDEX
 
-TYPES = ["tank", "pump", "prv", "check", "throttle", "owfc", "dcv43", "dcv42", "cyl", "scyl", "motor", "gauge", "flowm"]
+TYPES = ["tank", "pump", "prv", "check", "throttle", "owfc", "dcv43", "dcv42", "dcv32", "fdiv", "cyl", "scyl", "motor", "gauge", "flowm"]
 
 
 def _all_components(sim):
     comps = [{"id": f"c{i+1}", "type": t, "x": 100 + i * 150, "y": 200, "rot": 0, "label": f"X{i}",
               "p": {"kind": "saato"} if t == "pump" else ({"ori": "pysty"} if t in ("cyl", "scyl") else {})}
              for i, t in enumerate(TYPES)]
+    cyl, mot = f"c{TYPES.index('cyl') + 1}", f"c{TYPES.index('motor') + 1}"
     probes = [{"kind": k, "target": tg} for k, tg in
-              [("p", "c2:P"), ("q", "c2:P"), ("F", "c9"), ("v", "c9"), ("F", "c11"), ("v", "c11")]]
+              [("p", "c2:P"), ("q", "c2:P"), ("F", cyl), ("v", cyl), ("F", mot), ("v", mot)]]
     sim.call("loadCircuit", {"comps": comps, "wires": [], "probes": probes})
     sim.call("run", 0.2)
 

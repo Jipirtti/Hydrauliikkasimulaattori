@@ -1,5 +1,13 @@
 # Muutosloki
 
+## 1.2.0 – 2026-10-19
+
+- Uudet komponentit: 3/2-suuntaventtiili ja virranjakoventtiili (säädettävä jakosuhde). Paletissa on nyt 15 komponenttia.
+- Sylinterin asentoon lisätty vaihtoehto Pysty, ulosajo alas (männänvarsi alaspäin, riippuva kuorma).
+- Uudet esimerkkipiirit 5–7: pikaliikekytkentä 3/2-venttiilillä, moottori sylinterin rinnalla sekä virranjakoventtiilit ja vastaventtiilit.
+- Vastaventtiilin avautumiskäyrää terävöitetty, jotta suljettu venttiili ei vuoda virranjakajan kaltaisissa silmukoissa.
+- Uudet validointitestit V17–V22 ja laadulliset tarkistukset L09–L11. Käyttöohjeeseen lisätty uudet komponentit, esimerkit ja harjoitustehtävät.
+
 ## 1.1.1 – 2026-10-07
 
 - Oppilaitoksen lyhenne muotoon SEAMK.
