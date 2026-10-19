@@ -1,5 +1,11 @@
 # Muutosloki
 
+## 1.4.0 – 2026-10-19
+
+- Letkun reittiä voi muokata vetämällä letkun osaa. Päät pysyvät kytkettyinä, reitti pysyy suorakulmaisena ja seuraa komponentteja, kun niitä siirretään. Muokattu reitti tallentuu piirin mukana.
+- Kaksoisklikkaus letkuun tai ominaisuuspaneelin Automaattinen reitti -painike palauttaa automaattisen reitin.
+- Uudet käyttöliittymätestit U01–U03 (`tests/test_kaytto.py`).
+
 ## 1.3.0 – 2026-10-19
 
 - Simulointimallin valinta yläpalkissa: **Yksinkertainen** (ihanteelliset komponentit, tulos vastaa käsinlaskua) ja **Kehittynyt** (kitka, vuodot, hyötysuhteet ja venttiilien painehäviöt). Valinta vaihtuu lennosta kuten kieli, muistetaan selaimessa ja voidaan antaa linkissä (`?malli=yksinkertainen`, `?mode=simple`).

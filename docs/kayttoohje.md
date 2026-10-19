@@ -71,9 +71,15 @@ Piiri syntyy kolmessa vaiheessa: komponentit alustalle, letkut liitännästä li
 2. Paina hiiren painike pohjaan liitännän pienen ympyrän päällä. Kursori muuttuu ristiksi. Jos painat rungosta, komponentti lähtee liikkumaan.
 3. Vedä toisen liitännän päälle ja päästä irti. Katkoviiva näyttää kiinnityskohdan, ja noin 14 pikselin etäisyys liitännästä riittää.
 
-Linjan reitti piirtyy automaattisesti suorakulmaisena, eikä siihen voi lisätä taitepisteitä. Reitti muuttuu, kun siirrät tai kierrät komponentteja, joten sijoita komponentit niin, että liitännät osoittavat toisiaan kohti.
+Linjan reitti piirtyy automaattisesti suorakulmaisena. Jos linjat menevät päällekkäin tai reitti on muuten huono, muokkaa sitä vetämällä:
 
-- **Haara (T-liitos):** kytke toinen letku samaan liitäntään. Linjan keskelle ei voi kytkeä.
+1. Paina hiiren painike pohjaan linjan sen osan päällä, jota haluat siirtää. Linja valitaan ja paksunee.
+2. Vedä. Vaakasuora osa siirtyy ylös tai alas, pystysuora osa sivulle, ja viereiset osat venyvät mukana. Sijainti tarttuu 10 pikselin ruudukkoon.
+3. Päästä irti. Linjan päät pysyvät kytkettyinä liitäntöihin, joten kytkentä ja simulointi eivät muutu.
+
+Jos vedät liitäntään asti ulottuvaa osaa, linjaan syntyy uusi kulma, ja pää pysyy liitännässä. Muokattu reitti tallentuu piirin mukana. Kun siirrät komponenttia, muokatun linjan päät seuraavat liitäntöjä ja reitti pysyy suorakulmaisena. Kaksoisklikkaus linjaan tai ominaisuuspaneelin Automaattinen reitti -painike palauttaa automaattisen reitin, ja Kumoa peruu vedon.
+
+- **Haara (T-liitos):** kytke toinen letku samaan liitäntään. Linjan keskelle ei voi kytkeä. Haaran letkut lähtevät samasta liitännästä; vetämällä ne saa kulkemaan erillään.
 - **Tulppa:** kytkemätön liitäntä on tulpattu. Esimerkiksi 4/2-venttiilin B voi jäädä kytkemättä yksitoimisen sylinterin piirissä.
 - **Kytkentätila:** kytketty liitäntä näkyy täytettynä pisteenä, kytkemätön tyhjänä ympyränä.
 - **Linjan poisto:** klikkaa linjaa, jolloin se paksunee, ja paina Delete tai Poista kytkentä.
