@@ -17,6 +17,7 @@ Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. Suunnitt
 - 15 komponenttia: vakiotilavuus- ja painesäädetty pumppu, öljysäiliö, 4/3-, 4/2- ja 3/2-suuntaventtiili, paineenrajoitus-, vasta-, kuristus-, vastus- ja virranjakoventtiili, kaksi- ja yksitoiminen sylinteri, hydraulimoottori, paine- ja virtausmittari.
 - Paine-, virtaus-, voima- ja nopeusanturit, joiden lukemat piirtyvät 10 sekunnin käyriksi.
 - Mitoitusparametrit, lasketut arvot ja käänteinen mitoitusapu jokaiselle komponentille.
+- Letkujen mitoitus: sisähalkaisija ja pituus, virtausnopeus suositukseen verrattuna, Reynoldsin luku ja painehäviö (kehittyneessä mallissa mukana laskennassa), mitoitusapu vakiokokoihin.
 - Aikatason laskenta: öljyn kokoonpuristuvuus, sylinterin massa ja kitka, moottorin hitausmomentti. Painepiikit, kavitaatio ja ryntäävä kuorma näkyvät.
 - Seitsemän esimerkkipiiriä (mm. pikaliike, rinnakkaiset toimilaitteet ja virranjako) ja harjoitustehtävät käyttöohjeessa.
 
@@ -33,10 +34,10 @@ Tekijä: Juho Pirttilahti, Seinäjoen ammattikorkeakoulu (SEAMK), 2026. Suunnitt
 
 Simulaattorin ilmiöt validoidaan kahdella tasolla, ks. [VALIDOINTI.md](VALIDOINTI.md):
 
-- **Automaattisesti:** 30 validointitestiä vertaa simulaattorin tuloksia käsinlaskukaavoihin (esim. v = Q/A, F = p·A, massatase, moottorin vääntö). GitHub Actions ajaa ne jokaisesta muutoksesta ja maanantaisin ajastetusti. Jos ajastettu ajo epäonnistuu, siitä avautuu automaattisesti issue. Raportti näkyy ajon yhteenvedossa.
+- **Automaattisesti:** 34 validointitestiä vertaa simulaattorin tuloksia käsinlaskukaavoihin (esim. v = Q/A, F = p·A, massatase, moottorin vääntö). GitHub Actions ajaa ne jokaisesta muutoksesta ja maanantaisin ajastetusti. Jos ajastettu ajo epäonnistuu, siitä avautuu automaattisesti issue. Raportti näkyy ajon yhteenvedossa.
 - **Opettajan validointi:** jokainen ilmiö tarkistetaan käsinlaskulla, kirjallisuudesta tai laboratoriomittauksella ja kirjataan validoiduksi. Validointikierros avautuu issueksi automaattisesti 15.1. ja 15.8.
 
-Lisäksi neljä kielitestiä (`tests/test_kieli.py`) varmistaa, että englanninkielisessä näkymässä ei ole kääntämättömiä tekstejä, että kielen vaihto ei vaikuta laskentaan ja että kielen ja mallin valitsimet toimivat. Testit M01–M07 (`tests/test_malli.py`) tarkistavat yksinkertaisen mallin käsinlaskua vastaan, ja käyttöliittymätestit U01–U05 (`tests/test_kaytto.py`) letkujen reitin muokkauksen, laatikkovalinnan, ryhmäsiirron sekä kopioinnin ja liittämisen.
+Lisäksi neljä kielitestiä (`tests/test_kieli.py`) varmistaa, että englanninkielisessä näkymässä ei ole kääntämättömiä tekstejä, että kielen vaihto ei vaikuta laskentaan ja että kielen ja mallin valitsimet toimivat. Testit M01–M07 (`tests/test_malli.py`) tarkistavat yksinkertaisen mallin käsinlaskua vastaan, ja käyttöliittymätestit U01–U05 (`tests/test_kaytto.py`) letkujen reitin muokkauksen, laatikkovalinnan, ryhmäsiirron sekä kopioinnin ja liittämisen. Letkujen mitoitus ja painehäviö testataan tiedostossa `tests/test_letku.py` (V23–V26, M08, U06, K05).
 
 Testien ajaminen omalla koneella:
 

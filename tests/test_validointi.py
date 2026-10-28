@@ -36,7 +36,7 @@ def test_V01_paineenrajoitus_rajaa_paineen(sim, check):
     q = sim.call("q", "PRV1", "P")
     # p = ps + Q/Qn · Δp(Qn)   (venttiilin ominaiskäyrä)
     expected = prv["ps"] + q / prv["Qn"] * prv["dpo"]
-    check("V01", "PRV rajaa paineen, p = ps + (Q/Qn)·Δpo", sim.call("p", "P1", "P"), expected, 0.01, "bar")
+    check("V01", "PRV rajaa paineen, p = ps + (Q/Qn)·Δpo", sim.call("p", "PRV1", "P"), expected, 0.01, "bar")
 
 
 def test_V02_pumpun_tuotto_ja_vuoto(sim, check):

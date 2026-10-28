@@ -1,5 +1,13 @@
 # Muutosloki
 
+## 1.6.0 – 2026-10-28
+
+- Letkujen mitoitus: sisähalkaisija, pituus ja linjan tyyppi (automaattinen tunnistus tai valinta). Ominaisuuspaneelissa virtausnopeus, suositusnopeus, Reynoldsin luku, kitkakerroin, painehäviö ja öljytilavuus.
+- Kehittyneessä mallissa letkun painehäviö (laminaari Hagen–Poiseuille, turbulentti Blasius, öljy ISO VG 46) ja öljytilavuus ovat mukana laskennassa. Yksinkertaisessa mallissa letkut ovat häviöttömiä, ja laskennallinen häviö näytetään vertailuksi.
+- Mitoitusapu ehdottaa vakiosisähalkaisijaa suositellun virtausnopeuden perusteella (SAL Hydro), ja varoitus kertoo, jos letkun virtausnopeus ylittää suosituksen.
+- Esimerkkipiirien letkut on mitoitettu suositusten mukaan. Kehittyneen mallin lukuarvot muuttuvat letkuhäviöiden verran (esim. esimerkin 1 ulosajopaine 11,9 → 12,0 bar ja päätypaine 102,8 → 103,1 bar); käyttöohjeen kuvat päivitetty.
+- Testi V01 mittaa nyt paineenrajoitusventtiilin oman liitännän paineen. Uudet testit V23–V26, M08, U06 ja K05 (`tests/test_letku.py`).
+
 ## 1.5.0 – 2026-10-19
 
 - Usean komponentin valinta: Shift+veto tyhjästä kohdasta valitsee laatikolla, Shift+klikkaus lisää tai poistaa valinnasta, Ctrl+A valitsee kaiken ja Esc poistaa valinnan.

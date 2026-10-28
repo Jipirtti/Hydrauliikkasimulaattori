@@ -30,6 +30,7 @@ Yläpalkin valitsimella **Yksinkertainen | Kehittynyt** vaihdetaan simulointimal
 | Suunta-, vasta- ja virranjakoventtiilit | Ei käytännössä painehäviötä eikä vuotoa | Painehäviö Δp = Δpn·(Q/Qn)², vuoto |
 | Sylinteri | Ei kitkaa: p = F / A | Kitka, tartuntakitka ja viskoosi vaimennus |
 | Hydraulimoottori | Ei vuotoa eikä kitkaa: n = Q / Vg, Δp = 20π·T / Vg | Vuoto, hyötysuhde ja viskoosi kitka |
+| Letkut | Ei painehäviötä; virtausnopeus ja laskennallinen painehäviö näytetään vertailuksi | Painehäviö sisähalkaisijan ja pituuden mukaan, letkun öljytilavuus mukana |
 | Ominaisuuspaneeli | Vain perusmitoitus (esim. sylinterin D, d, isku, massa, kuorma) | Kaikki parametrit |
 
 Kuristus- ja vastusventtiilin kuristus toimii molemmissa malleissa samalla tavalla, koska kuristus on niiden tehtävä. Yksinkertaisessa mallissa toimilaitteiden vaimennus vaikuttaa vain nopeuden muutoksiin: se vaimentaa värähtelyt, mutta tasaisen liikkeen paineet ja nopeudet vastaavat perusyhtälöitä. Kiihdytyksen jälkeen paine asettuu noin sekunnissa.
@@ -135,6 +136,51 @@ $$D = \sqrt{\frac{4F}{\pi p}} \qquad V_g = \frac{Q \cdot 1000}{n \cdot \eta_v} \
 
 Yksiköt: D (m), F (N), p (Pa); Vg (cm³/r), Q (L/min), n (r/min); T (Nm), Δp (bar).
 
+## Letkujen mitoitus
+
+Jokaisella letkulla on sisähalkaisija ja pituus. Klikkaa letkua, niin ominaisuuspaneeliin tulevat sen mitoitus, lasketut arvot ja mitoitusapu.
+
+**Mitoitusparametrit**
+
+| Parametri | Oletus | Selitys |
+| --- | --- | --- |
+| Sisähalkaisija di | 12,5 mm | Kenttään voi kirjoittaa minkä tahansa arvon 2–100 mm. Valikossa ovat letkujen vakiosisähalkaisijat 5; 6,3; 8; 10; 12,5; 16; 19; 25; 31,5; 38 ja 51 mm. |
+| Pituus L | 1 m | 0,1–50 m |
+| Linjan tyyppi | Automaattinen | Automaattinen tunnistus: letku pumpun S-liitäntään on imulinja, letku säiliöön tai venttiilin T-liitäntään paluulinja, muut painelinjoja. Tyypin voi valita myös itse, esimerkiksi pikaliikekytkennän T-liitännästä A-linjaan menevä letku on painelinja. |
+
+**Lasketut arvot**
+
+- Paine letkun molemmissa päissä ja virtaus letkussa.
+- Virtausnopeus v = Q / A, jossa A = π/4·di². Arvo näkyy punaisena, jos se ylittää suosituksen.
+- Suositusnopeus linjan tyypin, virtauksen ja paineen mukaan (taulukko alla).
+- Reynoldsin luku Re = v·di / ν ja virtaustapa: laminaarinen (Re ≤ 2300), siirtymäalue tai turbulentti (Re ≥ 4000).
+- Kitkakerroin λ: laminaarisessa virtauksessa λ = 64 / Re, turbulentissa Blasiuksen kaavalla λ = 0,316 · Re^−0,25.
+- Painehäviö Δp = λ · (L / di) · ρ·v² / 2. Laminaarisessa virtauksessa tämä on sama kuin Hagen–Poiseuillen yhtälö Δp = 128·μ·L·Q / (π·di⁴).
+- Öljytilavuus V = π/4·di²·L.
+
+Öljyn arvot ovat ISO VG 46 -öljyn arvot 40 °C:ssa: kinemaattinen viskositeetti ν = 46 mm²/s ja tiheys ρ = 870 kg/m³ (dynaaminen viskositeetti μ = ρ·ν). Siirtymäalueella (Re 2300–4000) kitkakertoimet yhdistetään pehmeästi, jotta laskenta pysyy vakaana. Liittimien, mutkien ja haarojen kertavastuksia ei lasketa.
+
+**Suositellut virtausnopeudet**
+
+| Linja | Ehto | Suositus |
+| --- | --- | --- |
+| Imulinja | – | 0,5–1,5 m/s |
+| Paluulinja | – | 1–3 m/s |
+| Painelinja | Q ≤ 10 L/min, p ≤ 160 bar | 1–2 m/s |
+| Painelinja | Q ≤ 10 L/min, p > 160 bar | 2–3 m/s |
+| Painelinja | Q > 10 L/min, p ≤ 160 bar | 3–5 m/s |
+| Painelinja | Q > 10 L/min, p > 160 bar | 5–7 m/s |
+
+Lähde: SAL Hydro, Technical support – Flow velocity, <https://www.salhydro.fi/en/technical-support/flow-velocity>. Muissa lähteissä raja-arvot voivat poiketa hieman. Esimerkiksi Parker käyttää imulinjalle 1,2 m/s, paluulinjalle 3 m/s ja painelinjalle 7,6 m/s.
+
+Jos virtausnopeus ylittää suosituksen ylärajan, alustalle tulee varoitus, ja varoitus nimeää letkun. Alaraja on taloudellinen raja: sitä hitaampi virtaus tarkoittaa tarpeettoman suurta ja kallista letkua, mutta siitä ei tule varoitusta.
+
+**Mitoitusapu** laskee pienimmän sisähalkaisijan annetulla virtauksella ja paineella: di ≥ √(4Q / (π·v_max)), jossa v_max on suosituksen yläraja. Apu ehdottaa lähintä vakiokokoa, joka täyttää ehdon, ja näyttää sillä saatavan nopeuden. Käytä di = … -painike vaihtaa koon letkuun. Virtauksen oletusarvo on letkun nykyinen virtaus tai, jos letkussa ei virtaa, pumppujen tuotto.
+
+**Mallit:** kehittyneessä mallissa letkun painehäviö ja letkun öljytilavuus ovat mukana laskennassa. Liian pieni letku näkyy siis toimilaitteen paineena, pumpun paineen nousuna ja tarvittaessa hitaampana liikkeenä, ja liian pieni imuletku voi aiheuttaa kavitaation. Yksinkertaisessa mallissa letkuissa ei ole painehäviötä. Virtausnopeus, Reynoldsin luku ja laskennallinen painehäviö näytetään silti vertailuksi.
+
+Esimerkkipiireissä letkut on mitoitettu suositusten mukaan. Esimerkeissä 1–4 (14,5 L/min) imulinja on 19 mm ja muut letkut 12,5 mm. Esimerkeissä 5–7 (43,5 L/min) imulinja on 31,5 mm, painelinjat 16 mm ja paluulinjat 19 mm. Esimerkin 5 pikaliikelinjat ovat 25 mm, koska niiden virtaus on pikaliikkeessä noin 140 L/min. Letkun mitoitus tallentuu piirin mukana ja kopioituu kopioi ja liitä -toiminnossa.
+
 ## Simuloinnin ajaminen ja ohjaus
 
 Simulointi käynnistyy itsestään, kun sivu avataan, ja laskee reaaliajassa. Valitse ensin yläpalkista simulointimalli (Yksinkertainen tai Kehittynyt, ks. edellä). Piiriä voi muokata simuloinnin pyöriessä: uusi kytkentä tulee voimaan heti.
@@ -182,7 +228,7 @@ Käyrä näyttää 10 sekunnin historian ja skaalautuu automaattisesti. Asteikon
 
 ## Esimerkkikaavio: kaksitoiminen sylinteri ja 4/3-venttiili
 
-Tämän kohdan lukuarvot on laskettu kehittyneellä mallilla. Yksinkertaisella mallilla A-puolen paine ulosajossa on 10,2 bar (= 2 kN / 19,6 cm², ei kitkaa) ja päädyssä tasan 100 bar.
+Tämän kohdan lukuarvot on laskettu kehittyneellä mallilla, jossa myös letkujen painehäviöt ovat mukana. Yksinkertaisella mallilla A-puolen paine ulosajossa on 10,2 bar (= 2 kN / 19,6 cm², ei kitkaa) ja päädyssä noin 100 bar.
 
 Esimerkkipiiri 1 on hydrauliikan peruspiiri: pumppu syöttää 14,5 L/min, paineenrajoitusventtiili rajaa paineen 100 bariin, ja 4/3-venttiili ohjaa Ø50/28-sylinteriä, jonka kuormana on 2 kN. Lataa se yläpalkin valikosta Esimerkkipiirit → 1.
 
@@ -206,11 +252,11 @@ Kun SV1 on keskiasennossa, P-liitäntä on suljettu, joten pumpun koko tuotto me
 
 Klikkaa SV1:n vasenta kelaa. Kela muuttuu oranssiksi ja vasen ruutu, jossa nuolet ovat suoraan ylös ja alas, liukuu liitäntöjen kohdalle: P→A ja B→T.
 
-![Esimerkkipiiri 1 ulosajon aikana: sylinteri liikkuu 123 mm/s, A-puolen paine 11,9 bar](kuvat/esim1_ulosajo.png)
+![Esimerkkipiiri 1 ulosajon aikana: sylinteri liikkuu 123 mm/s, A-puolen paine 12,0 bar](kuvat/esim1_ulosajo.png)
 
 Kuvassa näkyy:
 
-1. **Paine laskee kuorman mukaiseksi.** A-puolella on 11,9 bar, koska paine määräytyy kuormasta eikä pumpusta: 2 kN kuorma ja kitka jaettuna männän pinta-alalla 19,6 cm² vastaa noin 11–12 baria. Kaikki letkut ovat sinisiä eli matalassa paineessa.
+1. **Paine laskee kuorman mukaiseksi.** A-puolella on 12,0 bar, koska paine määräytyy kuormasta eikä pumpusta: 2 kN kuorma ja kitka jaettuna männän pinta-alalla 19,6 cm² vastaa noin 11–12 baria. Kaikki letkut ovat sinisiä eli matalassa paineessa.
 2. **Koko tuotto menee sylinteriin.** SV1:n P-liitännän virtaus on 14,5 L/min, ja PRV1 on kiinni (sen lukema palaa asetusarvoon 100 bar).
 3. **Nopeus tulee tuotosta ja pinta-alasta.** v = Q / A = 14,5 L/min / 19,6 cm² ≈ 123 mm/s, sama kuin nopeusanturissa.
 4. **Voima-anturi** näyttää 2,25 kN, eli kuorman ja kitkan summan.
@@ -221,11 +267,11 @@ Kuvassa näkyy:
 
 Kun mäntä saavuttaa 300 mm iskun pään, öljyllä ei ole minne mennä, joten paine nousee PRV1:n avautumispaineeseen.
 
-![Sylinteri iskun päässä: A-puolen paine 102,8 bar, voima 20,19 kN](kuvat/esim1_paaty.png)
+![Sylinteri iskun päässä: A-puolen paine 103,1 bar, voima 20,25 kN](kuvat/esim1_paaty.png)
 
-1. **Paine nousee järjestelmäpaineeseen.** A-puolen paine on 102,8 bar ja letkut ovat oransseja. 100 barin asetuksen päälle tulee 2,8 bar, koska PRV1 tarvitsee paineen nousua läpäistäkseen 14 L/min.
-2. **Voima on suurin mahdollinen.** 102,8 bar × 19,6 cm² = 20,2 kN, sama kuin voima-anturissa. Tämä on sylinterin työntövoima tällä painetasolla.
-3. **Nopeus on nolla ja P-virtaus on 0 L/min.** Koko tuotto kiertää PRV1:n kautta säiliöön S2, mikä näkyy PRV1:n lukemasta (14,2 L/min).
+1. **Paine nousee järjestelmäpaineeseen.** A-puolen paine on 103,1 bar ja letkut ovat oransseja. 100 barin asetuksen päälle tulee 2,8 bar, koska PRV1 tarvitsee paineen nousua läpäistäkseen 14 L/min, ja 0,3 bar pumpun ja PRV1:n välisestä letkusta, jonka kautta koko tuotto nyt kulkee.
+2. **Voima on suurin mahdollinen.** 103,1 bar × 19,6 cm² = 20,2 kN, sama kuin voima-anturissa. Tämä on sylinterin työntövoima tällä painetasolla.
+3. **Nopeus on nolla ja P-virtaus on 0 L/min.** Koko tuotto kiertää PRV1:n kautta säiliöön S2, mikä näkyy PRV1:n lukemasta (14,1 L/min).
 4. **Käyrät** mittauspaneelissa näyttävät porrastuksen: paine pysyy matalana liikkeen ajan ja hyppää ylös pysähdyksessä, samalla kun nopeus putoaa nollaan.
 
 ### Vaihe 4: sisäänajo (kela b)
@@ -249,7 +295,7 @@ Esimerkkipiirit ladataan yläpalkin valikosta. Lataus korvaa nykyisen piirin, mu
 | 4. Yksitoiminen pystysylinteri, hallittu lasku | Klikkaa 4/2-venttiilin kelaa päälle ja uudelleen pois. | Nosto noin 190 mm/s noin 15 barin paineella (150 kg kuorma). Laskussa A-puoli avautuu säiliöön ja kuristin rajoittaa laskunopeuden noin 120 mm/s:iin. Ilman kuristinta kuorma putoaisi lähes vapaasti. |
 | 5. Pikaliikekytkentä 3/2-venttiilillä | Pumppu 43,5 L/min, paineenrajoitus 50 bar, sylinteri Ø60/30, 1000 kg vaakasuorassa. SV2 on lepoasennossa (pikaliike): klikkaa SV1:n kelaa a. Vaihda sitten SV2 asentoon a (normaali) ja aja uudelleen. | Pikaliikkeessä rengaspuolen öljy kiertää A-puolelle, ja nopeus on v = Q / a ≈ 1,0 m/s. Normaalisti ulosajo on 256 mm/s ja sisäänajo 341 mm/s. Sisäänajo onnistuu vain SV2:n asennossa a, koska lepoasennossa pääventtiilin B-linja on suljettu. Asenna sylinteri pystyyn (Asento: Pysty, ulosajo ylös): pikaliike ei nosta 1000 kg:n kuormaa, koska voima on vain p·a = 50 bar · 707 mm² ≈ 3,9 kN. Pikaliikkeen nopeus jää teoriasta, jos SV2 on alimitoitettu (kokeile Qn 30 L/min). |
 | 6. Moottori sylinterin rinnalla | Sama pumppu ja sylinteri pystyssä, moottori Vg 20 cm³/r on kytketty A- ja B-linjan väliin. Klikkaa SV1:n kelaa a ja kokeile moottorin kuormitusmomenttia 0, 5 ja 40 Nm. | Virtaus menee pienimmän paineen tietä. 0 Nm: moottori vie koko tuoton (noin 2160 r/min) eikä kuorma nouse. 5 Nm: sylinteri lähtee nousemaan, mutta hidastuu sitä mukaa kuin moottori kiihtyy. 40 Nm: moottori tarvitsisi noin 140 bar, joten se ei pyöri ja sylinteri saa koko tuoton (253 mm/s). |
-| 7. Virranjakoventtiilit ja vastaventtiilit | Kuten esimerkki 6, mutta A- ja B-linjoissa on virranjakoventtiilit (50/50) ja niiden rinnalla paluuvirtauksen vastaventtiilit. Klikkaa SV1:n kelaa a ja pidä se päällä, kunnes sylinteri on päädyssä. | Sylinteri (127 mm/s) ja moottori (noin 1070 r/min) liikkuvat yhtä aikaa, koska kumpikin saa puolet tuotosta kuormapaineista riippumatta. Kun sylinteri on päädyssä, virranjakajan sylinterilähtö tukkeutuu ja myös moottori pysähtyy; paine nousee paineenrajoitusventtiilin avautumispaineeseen. Vastaventtiilit päästävät poistuvan öljyn ohi virranjakajan, jolloin paluuvirtaus ei kulje jakajan läpi. |
+| 7. Virranjakoventtiilit ja vastaventtiilit | Kuten esimerkki 6, mutta A- ja B-linjoissa on virranjakoventtiilit (50/50) ja niiden rinnalla paluuvirtauksen vastaventtiilit. Klikkaa SV1:n kelaa a ja pidä se päällä, kunnes sylinteri on päädyssä. | Sylinteri (127 mm/s) ja moottori (noin 1060 r/min) liikkuvat yhtä aikaa, koska kumpikin saa puolet tuotosta kuormapaineista riippumatta. Kun sylinteri on päädyssä, virranjakajan sylinterilähtö tukkeutuu ja myös moottori pysähtyy; paine nousee paineenrajoitusventtiilin avautumispaineeseen. Vastaventtiilit päästävät poistuvan öljyn ohi virranjakajan, jolloin paluuvirtaus ei kulje jakajan läpi. |
 
 Yksinkertaisen mallin arvot samoissa esimerkeissä (vastaavat käsinlaskua):
 
@@ -275,6 +321,8 @@ Suluissa on malli, jolla tehtävä on tarkoitettu tehtäväksi.
 8. (Yksinkertainen) Poista esimerkin 7 virranjakoventtiilit ja vastaventtiilit ja korvaa ne suorilla letkuilla. Mitä moottorille ja sylinterille tapahtuu nyt, ja miksi tulos eroaa virranjakajan kanssa saadusta?
 9. (Molemmat) Aja esimerkki 1 ulos ensin yksinkertaisella ja sitten kehittyneellä mallilla. Kirjaa molemmista A-puolen paine liikkeen aikana, nopeus ja paine päädyssä. Mistä häviöistä erot syntyvät? Laske kehittyneen mallin hydraulinen hyötysuhde liikkeen aikana (hyödyllinen teho F·v jaettuna pumpun teholla p·Q).
 10. (Molemmat) Aja esimerkki 5 pikaliikkeellä molemmilla malleilla. Miksi kehittyneessä mallissa nopeus jää teoreettisesta, ja mitä tapahtuu, kun SV2:n nimellisvirtaus pienennetään 30 L/min:iin?
+11. (Kehittynyt) Vaihda esimerkissä 1 letkun SV1.A–SYL1.A sisähalkaisijaksi 6,3 mm ja pituudeksi 10 m. Laske ulosajon aikana käsin letkun virtausnopeus, Reynoldsin luku ja painehäviö ja vertaa lukemiin. Miten muutos näkyy pumpun paineessa ja sylinterin A-puolen paineessa? Mitoita letku sitten mitoitusavulla.
+12. (Kehittynyt) Vaihda esimerkissä 5 pikaliikelinjojen (SV1.A–SYL1.A, SV2.A–SYL1.B ja SV2.T–SYL1.A) sisähalkaisijaksi 12,5 mm. Mitä tapahtuu pikaliikkeen nopeudelle ja paineille, ja missä letkussa virtaus on turbulenttista?
 
 Kun laadit omia tehtäviä simulaattorille, anna tehtävässä pumpun tuotto, paineenrajoituksen asetus, sylinterin mitat ja isku, venttiilien nimellisvirtaus sekä moottorin kuormitusmomentti. Erityisesti pikaliikkeen nopeus ja rinnakkaisten toimilaitteiden käyttäytyminen riippuvat näistä arvoista.
 
@@ -300,7 +348,7 @@ Piiri, mitoitus ja anturit tallentuvat automaattisesti selaimen muistiin, ja ne 
 
 ### Mallin rajoitukset
 
-Paineet ratkaistaan 1 ms aika-askeleella implisiittisesti öljyn kokoonpuristuvuudesta (tehollinen puristuvuusmoduuli 1,2 GPa) ja kuristusyhtälöstä Q = Cd·A·√(2Δp/ρ). Sylinterissä on massa, kitka, tartuntakitka ja vasteet, moottorissa hitausmomentti ja kuormitusmomentti. Mallissa ei ole letkujen painehäviöitä, lämpenemistä, viskositeetin muutosta, venttiilien ohjausdynamiikkaa eikä silmukoissa (rinnakkaisissa letkuissa) letkukohtaista virtausta.
+Paineet ratkaistaan 1 ms aika-askeleella implisiittisesti öljyn kokoonpuristuvuudesta (tehollinen puristuvuusmoduuli 1,2 GPa) ja kuristusyhtälöstä Q = Cd·A·√(2Δp/ρ). Sylinterissä on massa, kitka, tartuntakitka ja vasteet, moottorissa hitausmomentti ja kuormitusmomentti. Kehittyneessä mallissa letkujen painehäviö lasketaan sisähalkaisijasta ja pituudesta (ks. Letkujen mitoitus). Mallissa ei ole liittimien, mutkien ja haarojen kertavastuksia, letkun joustoa, lämpenemistä, viskositeetin muutosta lämpötilan mukana eikä venttiilien ohjausdynamiikkaa. Yksinkertaisessa mallissa rinnakkaisten letkujen muodostamissa silmukoissa letkukohtaista virtausta ei voi määrittää.
 
 ### Pikanäppäimet
 

@@ -37,6 +37,17 @@ Odotusarvot ovat esimerkkipiirien oletusparametreilla. Toleranssi on testin hyv�
 | V21 | Virranjakoventtiili | Esim. 7, kela a | Q_A = r·Q_P, Q_B = (1 − r)·Q_P, v = Q_A / A | 21,5 + 21,5 L/min; 127 mm/s | 1–3 % | Ei validoitu |
 | V22 | Virranjakajan lähtö tukossa | Esim. 7, kela a, sylinteri päädyssä | Moottori pysähtyy, pumpun tuotto paineenrajoitukselle | 0 r/min | – | Ei validoitu |
 
+## A1. Letkut (automaattinen testi `tests/test_letku.py` + opettajan validointi)
+
+Öljy ISO VG 46, ν = 46 mm²/s, ρ = 870 kg/m³. Testit laskevat odotusarvot itsenäisesti näistä arvoista.
+
+| ID | Ilmiö | Piiri ja toimenpide | Käsinlaskukaava | Odotettu (oletus) | Tol. | Opettajan validointi |
+| --- | --- | --- | --- | --- | --- | --- |
+| V23 | Laminaari letkuhäviö | Esim. 1, letku SV1.A–SYL1.A 6,3 mm / 10 m, kela a | Δp = 128·μ·L·Q / (π·d⁴) | 24,8 bar (Re ≈ 1050) | 2 % | Ei validoitu |
+| V24 | Turbulentti letkuhäviö | Esim. 5 (isku 2000 mm), letku SV2.A–SYL1.B 12,5 mm / 1 m, pikaliike | λ = 0,316·Re^−0,25, Δp = λ·(L/d)·ρv²/2 | 4,1 bar (Re > 4500) | 2 % | Ei validoitu |
+| V25 | Letkun virtausnopeus ja varoitus | Esim. 1, kela a; letku 6,3 mm | v = v_syl·A / (π/4·di²); varoitus, kun v > suositus | 1,96 m/s | 1 % | Ei validoitu |
+| V26 | Linjatyypit ja tilavuus | Esim. 1 | Imu-, paluu- ja painelinjan tunnistus; V = π/4·di²·L | 0,123 L | 0,1 % | Ei validoitu |
+
 ## A2. Yksinkertainen malli (automaattinen testi `tests/test_malli.py` + opettajan validointi)
 
 Yksinkertaisessa mallissa häviöt on jätetty pois, joten tulos vastaa perusyhtälöä ilman häviötermejä.
@@ -49,6 +60,7 @@ Yksinkertaisessa mallissa häviöt on jätetty pois, joten tulos vastaa perusyht
 | M04 | Ihanteellinen moottori | Esim. 3, kela a | n = Q/Vg, Δp = 20π·T/Vg | 725 r/min, 62,8 bar | 1 % | Ei validoitu |
 | M05 | Pikaliike ja virranjako | Esim. 5 (isku 2000 mm) ja 7, kela a | v = Q/a; n = (Q/2)/Vg | 1,03 m/s; 1088 r/min | 1 % | Ei validoitu |
 | M06 | Pystykuorman nostopaine | Esim. 6, moottori 40 Nm, kela a | p = m·g/A | 34,7 bar | 1 % | Ei validoitu |
+| M08 | Ei letkuhäviöitä yksinkertaisessa mallissa | Esim. 1, letku SV1.A–SYL1.A 6,3 mm / 10 m | Paine-ero letkun päiden välillä 0; laskennallinen häviö näytetään | 0 bar | – | Ei validoitu |
 | M07 | Mallin vaihto säilyttää parametrit | Esim. 1, kitka 333 N kehittyneessä | Yksinkertaisessa 0 N, takaisin vaihdettaessa 333 N | – | – | Ei validoitu |
 
 ## B. Laadulliset ilmiöt (opettajan validointi simulaattorissa)
@@ -81,4 +93,4 @@ Menetelmävaihtoehdot:
 
 ## D. Mallin rajaukset
 
-Seuraavia ilmiöitä malli ei kuvaa, joten niitä ei validoida: letkujen ja liittimien painehäviöt, lämpeneminen ja viskositeetin muutos, venttiilien ohjausdynamiikka (karan liike on lineaarinen ramppi), sylinterin päätyvaimennus, ilman liukeneminen öljyyn ja letkukohtainen virtaus rinnakkaisissa silmukoissa.
+Seuraavia ilmiöitä malli ei kuvaa, joten niitä ei validoida: liittimien, mutkien ja haarojen kertavastukset, letkun jousto, lämpeneminen ja viskositeetin muutos, venttiilien ohjausdynamiikka (karan liike on lineaarinen ramppi), sylinterin päätyvaimennus, ilman liukeneminen öljyyn ja letkukohtainen virtaus rinnakkaisissa silmukoissa.
