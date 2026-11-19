@@ -1,5 +1,9 @@
 # Muutosloki
 
+## Julkaisematon
+
+- Palautekanava: yläpalkin *Palaute*-painike avaa lomakkeen (fysiikka / virhe / kehitysehdotus), joka avaa valmiiksi täytetyn GitHub-issuen repon lomakepohjalla. Mukaan liitetään automaattisesti piiri (Tallenna / lataa -muoto), versio, malli, kieli, selain ja varoitukset. Jos piiri ei mahdu linkkiin, se kopioidaan leikepöydälle. Varareitit ilman GitHub-tiliä: Kopioi raportti ja Lähetä sähköpostilla. Lomakkeen ollessa auki simulaattorin pikanäppäimet eivät toimi. Uudet testit P01–P07 (`tests/test_palaute.py`).
+
 ## 1.6.0 – 2026-10-28
 
 - Letkujen mitoitus: sisähalkaisija, pituus ja linjan tyyppi (automaattinen tunnistus tai valinta). Ominaisuuspaneelissa virtausnopeus, suositusnopeus, Reynoldsin luku, kitkakerroin, painehäviö ja öljytilavuus.

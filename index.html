@@ -1483,5 +1483,254 @@ updWarns();
 requestAnimationFrame(loop);
 })();
 </script>
+<script>
+/* ---------- Palautekanava (SimPalaute) ----------
+ * Yhteinen palautemoduuli SEAMKin opetussimulaattoreille. Juho Pirttilahti, SEAMK 2026, CC BY 4.0.
+ * Lisää yläpalkkiin Palaute-painikkeen. Lomake liittää mukaan simulaattorin version, mallin, kielen,
+ * selaimen, varoitukset ja piirin (Tallenna / lataa -muoto) ja avaa valmiiksi täytetyn GitHub-issuen
+ * repon lomakepohjalla (.github/ISSUE_TEMPLATE/1-fysiikka.yml, 2-virhe.yml, 3-ehdotus.yml).
+ * Ilman GitHub-tiliä: Kopioi raportti tai Lähetä sähköpostilla.
+ * Käyttö: SimPalaute.init({repo:'omistaja/repo', nimi:{fi:'…',en:'…'}, api:()=>window.XxxSim, email:'…'})
+ * api-olion odotetaan tarjoavan: version (arvo tai funktio), lang(), mode(), serialize(), warnings().
+ */
+(function(){
+'use strict';
+const URL_MAX=6000;      // GitHubin issues/new-linkin pituuskatto (varmuusmarginaalilla); pidempi piiri kopioidaan leikepöydälle
+const MAILTO_MAX=1800;   // osa sähköpostiohjelmista katkaisee pidemmät mailto-linkit
+
+const TX={
+  btn:{fi:'Palaute',en:'Feedback'},
+  btnTitle:{fi:'Ilmoita virheestä, fysiikkahavainnosta tai kehitysideasta',en:'Report a bug, a physics observation or an idea'},
+  h:{fi:'Palaute simulaattorista',en:'Simulator feedback'},
+  intro:{fi:'Palaute tallentuu simulaattorin GitHub-repoon issueksi, ja opettaja käy jokaisen läpi korjausehdotuksena.',
+         en:'Feedback is stored as an issue in the simulator\'s GitHub repository, and the teacher reviews each one as a proposed fix.'},
+  type:{fi:'Palautteen tyyppi',en:'Feedback type'},
+  t_fysiikka:{fi:'Fysiikka ei vastaa odotusta',en:'Physics does not match expectation'},
+  t_virhe:{fi:'Virhe käyttöliittymässä tai toiminnossa',en:'Bug in the interface or a function'},
+  t_ehdotus:{fi:'Kehitysehdotus',en:'Improvement idea'},
+  title:{fi:'Otsikko',en:'Title'},
+  titlePh:{fi:'Lyhyt kuvaus yhdellä rivillä',en:'Short one-line summary'},
+  a_fysiikka:{fi:'Ilmiö ja tilanne: mitä teit ja mitä tapahtui?',en:'Phenomenon and situation: what did you do and what happened?'},
+  a_virhe:{fi:'Mitä tapahtui?',en:'What happened?'},
+  a_ehdotus:{fi:'Mikä on tarve? Mitä opiskelija tai opettaja ei nyt pysty tekemään?',en:'What is the need? What can a student or teacher not do now?'},
+  b_fysiikka:{fi:'Odotettu tulos ja perustelu (kaava, laskelma, lähde tai mittaus)',en:'Expected result and justification (formula, calculation, source or measurement)'},
+  b_virhe:{fi:'Miten virheen saa toistettua?',en:'How can the bug be reproduced?'},
+  b_ehdotus:{fi:'Ehdotettu ratkaisu (valinnainen)',en:'Proposed solution (optional)'},
+  tunnus:{fi:'Validointitunnus (valinnainen, esim. V05)',en:'Validation ID (optional, e.g. V05)'},
+  piiri:{fi:'Liitä nykyinen piiri (suositus: virhe voidaan toistaa täsmälleen)',en:'Attach the current circuit (recommended: the issue can be reproduced exactly)'},
+  privacy:{fi:'Issuet ovat julkisia. Älä kirjoita henkilötietoja. GitHubissa avaaminen vaatii GitHub-tilin; ilman tiliä käytä Kopioi raportti- tai sähköpostipainiketta.',
+           en:'Issues are public. Do not include personal data. Opening on GitHub requires a GitHub account; without one, use Copy report or the e-mail button.'},
+  open:{fi:'Avaa GitHubissa',en:'Open on GitHub'},
+  copy:{fi:'Kopioi raportti',en:'Copy report'},
+  mail:{fi:'Lähetä sähköpostilla',en:'Send by e-mail'},
+  cancel:{fi:'Peruuta',en:'Cancel'},
+  req:{fi:'Täytä vähintään kentät: ',en:'Please fill in at least: '},
+  copied:{fi:'Raportti kopioitu leikepöydälle.',en:'Report copied to the clipboard.'},
+  copyFail:{fi:'Kopiointi ei onnistunut. Valitse teksti alta ja kopioi se itse.',en:'Copy failed. Select the text below and copy it yourself.'},
+  opened:{fi:'GitHub avautui uuteen välilehteen. Tarkista kentät ja paina Create / Submit new issue.',en:'GitHub opened in a new tab. Check the fields and press Create / Submit new issue.'},
+  bigCirc:{fi:'Piiri ei mahtunut linkkiin, joten se kopioitiin leikepöydälle. Liitä se GitHubissa kenttään "Piiri JSON-muodossa" (Ctrl+V).',
+           en:'The circuit did not fit in the link, so it was copied to the clipboard. Paste it on GitHub into the field "Piiri JSON-muodossa" (Ctrl+V).'},
+  bigCircPh:{fi:'(Piiri ei mahtunut linkkiin. Se on leikepöydällä: liitä se tähän Ctrl+V.)',en:'(The circuit did not fit in the link. It is on the clipboard: paste it here with Ctrl+V.)'},
+  bigAll:{fi:'Raportti oli liian pitkä linkkiin, joten koko raportti kopioitiin leikepöydälle. Liitä se GitHubin ensimmäiseen kenttään.',
+          en:'The report was too long for the link, so the whole report was copied to the clipboard. Paste it into the first field on GitHub.'},
+  bigAllPh:{fi:'(Raportti on leikepöydällä: liitä se tähän Ctrl+V.)',en:'(The report is on the clipboard: paste it here with Ctrl+V.)'},
+  mailNote:{fi:'Raportti kopioitiin myös leikepöydälle. Jos viestin teksti jäi vajaaksi, liitä raportti viestiin.',en:'The report was also copied to the clipboard. If the message text is incomplete, paste the report into it.'},
+  mailShort:{fi:'Raportti on leikepöydällä: liitä se tähän viestiin (Ctrl+V).',en:'The report is on the clipboard: paste it into this message (Ctrl+V).'}
+};
+// GitHub-lomakepohjat ovat suomeksi; nämä otsikot ja kenttätunnukset vastaavat niitä.
+const KIND={
+  fysiikka:{template:'1-fysiikka.yml',prefix:'[Fysiikka] ',a:'ilmio',b:'odotus',bReq:true,piiri:'piiri'},
+  virhe:{template:'2-virhe.yml',prefix:'[Virhe] ',a:'kuvaus',b:'toisto',bReq:false,piiri:'piiri'},
+  ehdotus:{template:'3-ehdotus.yml',prefix:'[Ehdotus] ',a:'tarve',b:'ratkaisu',bReq:false,piiri:null}
+};
+
+let C=null,root=null,btn=null,els={};
+const L=()=>{try{const l=C.api()&&C.api().lang();return l==='en'?'en':'fi';}catch(e){return 'fi';}};
+const t=k=>TX[k][L()];
+const safe=(f,d)=>{try{const v=f();return v===undefined?d:v;}catch(e){return d;}};
+
+function info(){
+  const a=C.api()||{};
+  const ver=safe(()=>typeof a.version==='function'?a.version():a.version,'?');
+  const w=safe(()=>a.warnings(),[]);
+  return {
+    nimi:C.nimi.fi, ver:String(ver),
+    malli:String(safe(()=>a.mode(),'?')), kieli:L(),
+    ua:navigator.userAgent, nakyma:innerWidth+'×'+innerHeight,
+    varoitukset:Array.isArray(w)&&w.length?w.join(' | '):'ei',
+    piiri:safe(()=>a.serialize(),'')
+  };
+}
+function techBlock(i){
+  return '\n\n---\nTekniset tiedot (liitetty automaattisesti):\n'+
+    '- Simulaattori: '+i.nimi+' '+i.ver+'\n- Malli: '+i.malli+', kieli: '+i.kieli+'\n'+
+    '- Selain: '+i.ua+'\n- Näkymä: '+i.nakyma+'\n- Varoitukset: '+i.varoitukset+'\n- Sivu: '+location.href.split('#')[0];
+}
+function values(){
+  return {kind:root.querySelector('input[name=spl-kind]:checked').value,
+    title:els.title.value.trim(), a:els.a.value.trim(), b:els.b.value.trim(),
+    tunnus:els.tunnus.value.trim(), liitaPiiri:els.piiri.checked};
+}
+function validate(v){
+  const miss=[];
+  if(!v.a)miss.push(TX['a_'+v.kind][L()]);
+  if(KIND[v.kind].bReq&&!v.b)miss.push(TX['b_'+v.kind][L()]);
+  if(miss.length){status(t('req')+miss.join('; '),true);(!v.a?els.a:els.b).focus();return false;}
+  return true;
+}
+function issueTitle(v){
+  const s=v.title||v.a.split('\n')[0];
+  return KIND[v.kind].prefix+(s.length>90?s.slice(0,87)+'…':s);
+}
+function report(v,i){
+  let r='# '+issueTitle(v)+'\n\nTyyppi: '+TX['t_'+v.kind].fi+'\n';
+  if(v.kind==='fysiikka'&&v.tunnus)r+='Validointitunnus: '+v.tunnus+'\n';
+  r+='\n## '+TX['a_'+v.kind].fi+'\n'+v.a+'\n';
+  if(v.b)r+='\n## '+TX['b_'+v.kind].fi+'\n'+v.b+'\n';
+  r+=techBlock(i).replace(/^\n\n---\n/,'\n');
+  if(v.liitaPiiri&&i.piiri)r+='\n\n## Piiri JSON-muodossa\n```json\n'+i.piiri+'\n```\n';
+  return r;
+}
+function buildUrl(fields){
+  const q=Object.entries(fields).filter(([,x])=>x!=null&&x!=='').map(([n,x])=>encodeURIComponent(n)+'='+encodeURIComponent(x)).join('&');
+  return 'https://github.com/'+C.repo+'/issues/new?'+q;
+}
+/* Palauttaa {url, clip, note}: clip = leikepöydälle kopioitava teksti, jos jotain ei mahtunut linkkiin. */
+function issueLink(v,i){
+  const k=KIND[v.kind],tech=techBlock(i);
+  const f={template:k.template,title:issueTitle(v)};
+  f[k.a]=v.a+tech; if(v.b)f[k.b]=v.b;
+  if(v.kind==='fysiikka'&&v.tunnus)f.tunnus=v.tunnus;
+  if(v.kind==='virhe')f.selain=i.ua+' · '+i.nimi+' '+i.ver;
+  const circ=v.liitaPiiri&&k.piiri&&i.piiri?i.piiri:'';
+  if(circ)f[k.piiri]=circ;
+  let url=buildUrl(f);
+  if(url.length<=URL_MAX)return {url,clip:null,note:null};
+  if(circ){f[k.piiri]=TX.bigCircPh.fi;url=buildUrl(f);if(url.length<=URL_MAX)return {url,clip:circ,note:t('bigCirc')};}
+  const g={template:k.template,title:issueTitle(v)};g[k.a]=TX.bigAllPh.fi;
+  return {url:buildUrl(g),clip:report(v,i),note:t('bigAll')};
+}
+function copyText(s){
+  // Kutsutaan klikkauksen käsittelijästä, jotta selain sallii leikepöydän käytön.
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=s;ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(ta);ta.select();
+    let ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();return ok;};
+  if(navigator.clipboard&&window.isSecureContext){
+    return navigator.clipboard.writeText(s).then(()=>true,()=>fallback());
+  }
+  return Promise.resolve(fallback());
+}
+function status(msg,err,manual){
+  els.status.textContent=msg;els.status.style.color=err?'var(--warn,#C0392B)':'';
+  els.manual.hidden=!manual;if(manual){els.manual.value=manual;}
+}
+function onOpenGithub(){
+  const v=values();if(!validate(v))return;
+  const i=info(),r=issueLink(v,i);
+  if(r.clip)copyText(r.clip).then(ok=>{if(!ok)status(r.note+' '+t('copyFail'),true,r.clip);});
+  window.open(r.url,'_blank','noopener');
+  // noopener-ikkunalla window.open palauttaa usein null myös onnistuessaan, joten estoa ei voi luotettavasti tunnistaa.
+  status((r.note?r.note+' ':'')+t('opened'));
+  els.link.href=r.url;els.link.hidden=false;
+  root.dataset.lastUrl=r.url; // testejä varten
+}
+function onCopy(){
+  const v=values();if(!validate(v))return;
+  const r=report(v,info());
+  copyText(r).then(ok=>ok?status(t('copied')):status(t('copyFail'),true,r));
+}
+function onMail(){
+  const v=values();if(!validate(v))return;
+  const r=report(v,info());
+  copyText(r);
+  const subj=encodeURIComponent(C.nimi.fi+': '+issueTitle(v));
+  let body=encodeURIComponent(r);
+  if(body.length>MAILTO_MAX)body=encodeURIComponent(t('mailShort'));
+  root.dataset.lastMail='mailto:'+C.email+'?subject='+subj+'&body='+body;
+  location.href=root.dataset.lastMail;
+  status(t('mailNote'));
+}
+function relabel(){
+  if(!root)return;
+  const l=L();
+  root.querySelectorAll('[data-spl]').forEach(el=>{const k=el.dataset.spl;el.textContent=TX[k][l];});
+  root.querySelectorAll('[data-spl-ph]').forEach(el=>{el.placeholder=TX[el.dataset.splPh][l];});
+  const kind=root.querySelector('input[name=spl-kind]:checked').value;
+  els.aLbl.textContent=TX['a_'+kind][l];els.bLbl.textContent=TX['b_'+kind][l];
+  els.tunnusRow.hidden=kind!=='fysiikka';
+  els.piiriRow.hidden=!KIND[kind].piiri;
+  root.querySelector('.mbox').setAttribute('aria-label',TX.h[l]);
+}
+function open(){relabel();status('');els.link.hidden=true;root.classList.add('open');els.title.focus();}
+function close(){root.classList.remove('open');btn.focus();}
+
+function build(){
+  btn=document.createElement('button');
+  btn.type='button';btn.className='btn';btn.id='palauteBtn';
+  btn.dataset.en=TX.btn.en;btn.dataset.fi=TX.btn.fi;btn.dataset.enTitle=TX.btnTitle.en;btn.dataset.fiTitle=TX.btnTitle.fi;
+  btn.textContent=t('btn');btn.title=t('btnTitle');
+  btn.addEventListener('click',open);
+  const grps=document.querySelectorAll(C.paikka+' .grp');
+  (grps.length?grps[grps.length-1]:document.querySelector(C.paikka)||document.body).appendChild(btn);
+
+  root=document.createElement('div');
+  root.className='modal';root.id='palauteModal';
+  root.innerHTML=
+   '<div class="mbox" role="dialog" aria-modal="true" style="max-width:640px">'+
+    '<h2 data-spl="h"></h2><p data-spl="intro"></p>'+
+    '<fieldset style="border:0;padding:0;margin:8px 0"><legend style="font-weight:600;margin-bottom:4px" data-spl="type"></legend>'+
+     ['fysiikka','virhe','ehdotus'].map((k,n)=>'<label style="display:block;margin:2px 0"><input type="radio" name="spl-kind" value="'+k+'"'+(n===1?' checked':'')+'> <span data-spl="t_'+k+'"></span></label>').join('')+
+    '</fieldset>'+
+    '<label style="display:block;font-weight:600;margin-top:8px"><span data-spl="title"></span><input id="splTitle" type="text" maxlength="120" data-spl-ph="titlePh" style="display:block;width:100%;box-sizing:border-box;margin-top:3px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);font:inherit;font-weight:400"></label>'+
+    '<label style="display:block;font-weight:600;margin-top:8px"><span id="splALbl"></span><textarea id="splA" style="height:90px;font-family:inherit;font-size:14px;margin-top:3px;box-sizing:border-box"></textarea></label>'+
+    '<label style="display:block;font-weight:600;margin-top:8px"><span id="splBLbl"></span><textarea id="splB" style="height:80px;font-family:inherit;font-size:14px;margin-top:3px;box-sizing:border-box"></textarea></label>'+
+    '<label id="splTunnusRow" style="display:block;font-weight:600;margin-top:8px"><span data-spl="tunnus"></span><input id="splTunnus" type="text" maxlength="20" style="display:block;width:10em;margin-top:3px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);font:inherit;font-weight:400"></label>'+
+    '<label id="splPiiriRow" style="display:block;margin-top:10px"><input id="splPiiri" type="checkbox" checked> <span data-spl="piiri"></span></label>'+
+    '<p class="mnote" data-spl="privacy" style="margin-top:10px"></p>'+
+    '<p id="splStatus" role="status" aria-live="polite" style="min-height:1.2em;margin:6px 0 0;font-size:14px"></p>'+
+    '<a id="splLink" target="_blank" rel="noopener" hidden style="font-size:13px;word-break:break-all">GitHub</a>'+
+    '<textarea id="splManual" readonly hidden style="height:120px"></textarea>'+
+    '<div class="mrow">'+
+     '<button type="button" class="btn pri" id="splOpen" data-spl="open" style="min-width:0"></button>'+
+     '<button type="button" class="btn" id="splCopy" data-spl="copy"></button>'+
+     (C.email?'<button type="button" class="btn" id="splMail" data-spl="mail"></button>':'')+
+     '<button type="button" class="btn" id="splCancel" data-spl="cancel"></button>'+
+    '</div></div>';
+  document.body.appendChild(root);
+  const $=s=>root.querySelector(s);
+  els={title:$('#splTitle'),a:$('#splA'),b:$('#splB'),aLbl:$('#splALbl'),bLbl:$('#splBLbl'),
+       tunnus:$('#splTunnus'),tunnusRow:$('#splTunnusRow'),piiri:$('#splPiiri'),piiriRow:$('#splPiiriRow'),
+       status:$('#splStatus'),link:$('#splLink'),manual:$('#splManual')};
+  root.querySelectorAll('input[name=spl-kind]').forEach(r=>r.addEventListener('change',relabel));
+  $('#splOpen').addEventListener('click',onOpenGithub);
+  $('#splCopy').addEventListener('click',onCopy);
+  if(C.email)$('#splMail').addEventListener('click',onMail);
+  $('#splCancel').addEventListener('click',close);
+  root.addEventListener('pointerdown',e=>{if(e.target===root)close();});
+  // Estetään simulaattorin pikanäppäimet (Delete, R, Ctrl+Z …) lomakkeen ollessa auki.
+  window.addEventListener('keydown',e=>{
+    if(!root.classList.contains('open'))return;
+    e.stopPropagation();
+    if(e.key==='Escape'){e.preventDefault();close();}
+  },true);
+  // Kielen vaihto kesken lomakkeen: päivitetään tekstit (simulaattori vaihtaa kielen samassa klikkauksessa).
+  document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-lang]'))setTimeout(relabel,0);});
+}
+
+window.SimPalaute={
+  init(cfg){
+    if(C)return;
+    if(!cfg||!cfg.repo||!cfg.api||!cfg.nimi)throw new Error('SimPalaute.init: repo, nimi ja api vaaditaan');
+    C=Object.assign({paikka:'header.bar',email:''},cfg);
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();
+  },
+  open:()=>open(),
+  // Testirajapinta: rakentaa linkin ja raportin lomakkeen nykyisistä arvoista avaamatta mitään.
+  _preview:()=>{const v=values(),i=info();return {link:issueLink(v,i),report:report(v,i),valid:!!v.a&&(!KIND[v.kind].bReq||!!v.b)};},
+  _limits:{URL_MAX,MAILTO_MAX}
+};
+})();
+SimPalaute.init({repo:'Jipirtti/Hydrauliikkasimulaattori',nimi:{fi:'Hydrauliikkasimulaattori',en:'Hydraulics Simulator'},api:()=>window.HydSim,email:'juho.pirttilahti@seamk.fi'});
+</script>
 </body>
 </html>

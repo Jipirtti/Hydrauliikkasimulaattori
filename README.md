@@ -51,6 +51,7 @@ python -m pytest tests -v
 
 Palaute on tervetullutta, ja sitä käytetään simulaattorin parantamiseen:
 
+- **Suoraan simulaattorista:** yläpalkin *Palaute*-painike avaa lomakkeen, joka liittää mukaan piirin, version, mallin, kielen, selaimen ja varoitukset ja avaa valmiiksi täytetyn issuen oikealla mallilla (vaatii GitHub-tilin). Ilman tiliä palautteen voi kopioida tai lähettää sähköpostilla. Issuet ovat julkisia.
 - **Fysiikka ei vastaa odotusta:** avaa issue mallilla *Fysiikka ei vastaa odotusta* ja liitä piiri JSON-muodossa (simulaattorin Tallenna / lataa).
 - **Virhe käyttöliittymässä:** mallilla *Virheilmoitus*.
 - **Ideat ja kysymykset:** Discussions-osio tai malli *Kehitysehdotus*.
