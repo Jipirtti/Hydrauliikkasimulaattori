@@ -326,6 +326,16 @@ Suluissa on malli, jolla tehtävä on tarkoitettu tehtäväksi.
 
 Kun laadit omia tehtäviä simulaattorille, anna tehtävässä pumpun tuotto, paineenrajoituksen asetus, sylinterin mitat ja isku, venttiilien nimellisvirtaus sekä moottorin kuormitusmomentti. Erityisesti pikaliikkeen nopeus ja rinnakkaisten toimilaitteiden käyttäytyminen riippuvat näistä arvoista.
 
+## Kaavion kopiointi kuvana
+
+Jokaisen kaavion kulmassa on painike **Kopioi kuva**. Se kopioi kaavion leikepöydälle PNG-kuvana, jonka voi liittää suoraan raporttiin, diaan tai viestiin (Ctrl+V).
+
+- Kuva piirretään aina vaalealla taustalla, vaikka simulaattori olisi tummassa teemassa, ja kaksinkertaisella tarkkuudella.
+- Kuvassa ovat kaavion otsikko, kaavio, selite ja lähdemerkintä (simulaattorin nimi, Juho Pirttilahti, SEAMK, CC BY 4.0, verkko-osoite ja päivämäärä).
+- Painikkeet ovat piirtoalueen oikeassa yläkulmassa (hydraulikaavio ja paineen väriasteikko) ja Mittaukset-otsikon rivillä (kaikki anturikäyrät lukemineen yhtenä kuvana).
+- Hydraulikaaviosta kopioituu koko piiri zoomauksesta ja näkymän rajauksesta riippumatta. Valintakehykset ja taustaruudukko jäävät pois.
+- Jos selain ei salli kopiointia leikepöydälle, kuva avautuu ikkunaan. Sieltä sen voi kopioida hiiren oikealla painikkeella (puhelimessa painamalla pitkään) tai tallentaa PNG-tiedostona.
+
 ## Varoitukset, tallennus ja rajoitukset
 
 ### Varoitukset ja vianetsintä

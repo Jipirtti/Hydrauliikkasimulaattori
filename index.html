@@ -1438,7 +1438,7 @@ document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',(
 /* ---------- test & validation API (used by tests/test_validointi.py) ---------- */
 const wireByLabels=(a,b)=>{const k=x=>{const[l,pn]=x.split('.');return byLabel(l).id+':'+pn;};const ka=k(a),kb=k(b);const w=wires.find(w=>(w.a===ka&&w.b===kb)||(w.a===kb&&w.b===ka));if(!w)throw new Error('Letkua ei löydy: '+a+'–'+b);return w;};
 const byLabel=l=>{const c=comps.find(x=>x.label===l);if(!c)throw new Error('Komponenttia ei löydy: '+l);return c;};
-window.HydSim={
+window.HydSim={redraw:()=>{drawScope();},
   version:'1.6.0',
   setLang:l=>{setLang(l);return lang;},
   lang:()=>lang,
@@ -1731,6 +1731,195 @@ window.SimPalaute={
 };
 })();
 SimPalaute.init({repo:'Jipirtti/Hydrauliikkasimulaattori',nimi:{fi:'Hydrauliikkasimulaattori',en:'Hydraulics Simulator'},api:()=>window.HydSim,email:'juho.pirttilahti@seamk.fi'});
+</script>
+<script>
+/* ---------- Kaavion kopiointi kuvana (SimKuva) ----------
+   Yhteinen moduuli Juho Pirttilahden (SEAMK) opetussimulaattoreille. Sama koodi kaikissa simulaattoreissa;
+   simulaattorikohtaiset kaaviot, otsikot, selitteet ja painikkeiden paikat annetaan init-kutsussa.
+   Jokaisen kaavion kulmaan tulee painike "Kopioi kuva". Kuva piirretään aina vaalealla teemalla ja
+   kaksinkertaisella tarkkuudella. Kuvaan tulevat otsikko, kaavio, selite ja lähdemerkintä.
+   Kuva kopioidaan leikepöydälle (PNG). Jos selain ei salli kopiointia, kuva näytetään ikkunassa,
+   josta sen voi kopioida tai tallentaa.
+   Käyttö: SimKuva.init({nimi:{fi,en}, repo:'Jipirtti/X', api:()=>window.XSim, redraw:()=>..., kaaviot:[...]})
+   kaavio: {id, kohde:'#cv' | ()=>[elementit] | ()=>[{el, nimi, arvo, vari}],
+            asettelu:'pino'|'rivit', otsikko:'#h4' | ()=>teksti, selite:'#leg' | ()=>[elementit] | null,
+            paikka:{sel:'#h4', tapa:'otsikko'|'lisaa'|'kulma'}, svg:{rajaa:['#lWires',...], piilota:['#lSel',...]},
+            nakyy:()=>bool} */
+(function(){
+'use strict';
+const T={btn:{fi:'Kopioi kuva',en:'Copy image'},
+  title:{fi:'Kopioi kaavio kuvana leikepöydälle (otsikko, selite ja lähdemerkintä mukana)',en:'Copy the chart to the clipboard as an image (with title, legend and source note)'},
+  ok:{fi:'Kuva kopioitu leikepöydälle',en:'Image copied to the clipboard'},
+  busy:{fi:'Kopioidaan…',en:'Copying…'},
+  fbH:{fi:'Kopioi kuva',en:'Copy the image'},
+  fbP:{fi:'Selain ei sallinut kuvan kopiointia leikepöydälle. Napsauta kuvaa hiiren oikealla painikkeella (puhelimessa paina pitkään) ja valitse Kopioi kuva, tai tallenna kuva alla olevasta linkistä.',
+       en:'The browser did not allow copying the image to the clipboard. Right-click the image (long-press on a phone) and choose Copy image, or save it with the link below.'},
+  save:{fi:'Tallenna PNG-kuvana',en:'Save as PNG'},close:{fi:'Sulje',en:'Close'},
+  err:{fi:'Kuvan muodostaminen epäonnistui: ',en:'Creating the image failed: '},
+  empty:{fi:'Kaaviossa ei ole vielä mitään kopioitavaa.',en:'The chart has nothing to copy yet.'}};
+let C=null,lastErr=null;
+const lang=()=>{try{const l=C&&C.api&&C.api()&&C.api().lang&&C.api().lang();if(l==='fi'||l==='en')return l;}catch(e){}return (document.documentElement.lang||'fi').slice(0,2)==='en'?'en':'fi';};
+const t=k=>T[k][lang()];
+const one=s=>typeof s==='function'?s():typeof s==='string'?document.querySelector(s):s;
+/* 'auto': lähin kaavion edellä oleva otsikko (h3/h4) samassa kortissa */
+function autoHead(o){let el=one(typeof o.kohde==='function'?null:o.kohde);while(el&&!(el.classList&&el.classList.contains('card'))){let p=el.previousElementSibling;
+    while(p){if(/^H[34]$/.test(p.tagName))return p;const h=p.querySelector&&[...p.querySelectorAll('h3,h4')].pop();if(h&&!p.contains(one(o.kohde)))return h;p=p.previousElementSibling;}
+    el=el.parentElement;}
+  return el?el.querySelector('h3,h4'):null;}
+const SVGP=['fill','fill-opacity','fill-rule','stroke','stroke-width','stroke-opacity','stroke-dasharray','stroke-dashoffset','stroke-linecap','stroke-linejoin','stroke-miterlimit',
+  'opacity','visibility','display','font-family','font-size','font-weight','font-style','text-anchor','dominant-baseline','alignment-baseline','letter-spacing','paint-order','color','vector-effect','marker-start','marker-mid','marker-end'];
+
+/* ---- vaalea teema ja kaksinkertainen tarkkuus piirron ajaksi (synkronisesti, ei välähdä näytöllä) ---- */
+function withLight(fn){const root=document.documentElement,had=root.hasAttribute('data-theme'),old=root.getAttribute('data-theme');
+  const desc=Object.getOwnPropertyDescriptor(window,'devicePixelRatio'),dpr=Math.max(2,window.devicePixelRatio||1);let over=false;
+  root.setAttribute('data-theme','light');
+  try{Object.defineProperty(window,'devicePixelRatio',{configurable:true,get:()=>dpr});over=true;}catch(e){}
+  try{if(C.redraw)C.redraw();return fn(dpr);}
+  finally{if(had)root.setAttribute('data-theme',old);else root.removeAttribute('data-theme');
+    if(over){try{if(desc)Object.defineProperty(window,'devicePixelRatio',desc);else delete window.devicePixelRatio;}catch(e){}}
+    try{if(C.redraw)C.redraw();}catch(e){}}}
+
+/* ---- SVG: tyylit upotetaan, sisältö rajataan, valinnat ja ruudukko jätetään pois ---- */
+function svgSnap(svg,o){o=o||{};const live=[svg,...svg.querySelectorAll('*')];const cl=svg.cloneNode(true);const cps=[cl,...cl.querySelectorAll('*')];
+  live.forEach((el,i)=>{const cs=getComputedStyle(el),c=cps[i];if(!c||!c.style)return;let s='';for(const p of SVGP){const v=cs.getPropertyValue(p);if(v)s+=p+':'+v+';';}c.setAttribute('style',s);c.removeAttribute('class');});
+  let bb=null;
+  if(o.rajaa){for(const sel of o.rajaa){const el=svg.querySelector(sel);if(!el)continue;let b;try{b=el.getBBox();}catch(e){continue;}if(!b||(!b.width&&!b.height))continue;
+      bb=bb?{x:Math.min(bb.x,b.x),y:Math.min(bb.y,b.y),x2:Math.max(bb.x2,b.x+b.width),y2:Math.max(bb.y2,b.y+b.height)}:{x:b.x,y:b.y,x2:b.x+b.width,y2:b.y+b.height};}}
+  (o.piilota||[]).forEach(sel=>cl.querySelectorAll(sel).forEach(e=>e.remove()));
+  let vb,w,h;
+  if(bb){const p=o.marginaali??16;vb=[bb.x-p,bb.y-p,bb.x2-bb.x+2*p,bb.y2-bb.y+2*p];const g=o.maailma?cl.querySelector(o.maailma):null;if(g)g.removeAttribute('transform');}
+  else{const r=svg.getBoundingClientRect(),v=svg.viewBox&&svg.viewBox.baseVal;vb=v&&v.width?[v.x,v.y,v.width,v.height]:[0,0,r.width,r.height];}
+  w=vb[2];h=vb[3];cl.setAttribute('viewBox',vb.join(' '));cl.setAttribute('width',w);cl.setAttribute('height',h);cl.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  cl.removeAttribute('style');
+  return{svg:new XMLSerializer().serializeToString(cl),w,h};}
+function svgImg(s,scale){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(new Error('SVG'));
+  im.width=s.w*scale;im.height=s.h*scale;im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s.svg);});}
+
+/* ---- selite: elementtipuu muutetaan väripaloiksi ja teksteiksi ---- */
+function legendTokens(roots){const out=[];
+  const sw=el=>{const cs=getComputedStyle(el),r=el.getBoundingClientRect();if(!r.width&&!r.height)return null;
+    const cols=(cs.backgroundImage||'').match(/rgba?\([^)]+\)|#[0-9a-fA-F]{3,8}/g);
+    if(cols&&cols.length>1)return{t:'grad',cols,w:Math.min(120,r.width||60),h:Math.max(6,Math.min(12,r.height||8))};
+    const bg=cs.backgroundColor,bs=cs.borderTopStyle,bc=cs.borderTopColor,bl=cs.borderLeftWidth;
+    if(bs==='dashed'||bs==='dotted')return{t:'dash',col:bc,w:Math.max(14,r.width),dot:bs==='dotted'};
+    if(bg&&!/rgba\(0, 0, 0, 0\)|transparent/.test(bg))return{t:'box',col:bg,w:Math.max(4,Math.min(40,r.width)),h:Math.max(3,Math.min(14,r.height)),round:parseFloat(cs.borderTopLeftRadius)||0};
+    if(parseFloat(bl)>=3)return{t:'box',col:cs.borderLeftColor,w:4,h:14};return null;};
+  const walk=(n,grp)=>{if(n.nodeType===3){const s=n.textContent.replace(/\s+/g,' ').trim();if(s){const cs=getComputedStyle(n.parentElement);grp.push({t:'txt',s,col:cs.color,b:parseInt(cs.fontWeight,10)>=600});}return;}
+    if(n.nodeType!==1)return;const cs=getComputedStyle(n);if(cs.display==='none'||cs.visibility==='hidden'||n.hasAttribute('data-skv-ohita'))return;
+    if(n.tagName==='SELECT'){const o=n.options[n.selectedIndex];if(o)grp.push({t:'txt',s:o.text.trim(),col:cs.color});return;}
+    if(n.tagName==='INPUT'){if(n.type!=='checkbox'&&n.type!=='radio'&&n.value)grp.push({t:'txt',s:n.value,col:cs.color});return;}
+    if(/^(BUTTON|SCRIPT|STYLE|CANVAS|SVG|svg)$/.test(n.tagName))return;
+    if(!n.childNodes.length||![...n.childNodes].some(c=>c.nodeType===1||(c.nodeType===3&&c.textContent.trim()))){const s=sw(n);if(s)grp.push(s);
+      if(n.childNodes.length===0)return;}
+    else{const s=(cs.borderLeftStyle!=='none'&&parseFloat(cs.borderLeftWidth)>=3)?{t:'box',col:cs.borderLeftColor,w:4,h:14}:null;if(s)grp.push(s);}
+    n.childNodes.forEach(c=>walk(c,grp));};
+  for(const r of roots){if(!r)continue;const kids=[...r.children].filter(c=>getComputedStyle(c).display!=='none');
+    if(kids.length>1){kids.forEach(k=>{const g=[];walk(k,g);if(g.length)out.push(g);});}else{const g=[];walk(r,g);if(g.length)out.push(g);}}
+  return out;}
+
+/* ---- kuvan kokoaminen ---- */
+const FONT='"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+function textOf(x){if(!x)return'';if(typeof x==='function')return String(x()||'');const el=one(x);if(!el)return'';
+  const c=el.cloneNode(true);c.querySelectorAll('.skv-btn').forEach(b=>b.remove());return c.textContent.replace(/\s+/g,' ').trim();}
+function capture(k){const o=C.kaaviot.find(x=>x.id===k);if(!o)throw new Error('kaavio '+k);
+  return withLight(dpr=>{const items=[];let raw=typeof o.kohde==='function'?o.kohde():[one(o.kohde)];raw=(raw||[]).filter(Boolean);
+    for(const it of raw){const el=it.el||it;let img=null,w,h,svg=null;
+      if(el.tagName==='CANVAS'){const r=el.getBoundingClientRect();w=r.width;h=r.height;if(!w||!h)continue;const c=document.createElement('canvas');c.width=el.width;c.height=el.height;c.getContext('2d').drawImage(el,0,0);img=c;}
+      else if(el.tagName.toLowerCase()==='svg'){svg=svgSnap(el,o.svg);w=svg.w;h=svg.h;}
+      else continue;
+      items.push({img,svg,w,h,nimi:it.nimi||'',arvo:it.arvo||'',vari:it.vari||''});}
+    const legend=o.selite?legendTokens(typeof o.selite==='function'?o.selite():[one(o.selite)]):[];
+    if(!items.length)throw new Error(t('empty'));
+    return{o,items,legend,title:textOf(o.otsikko==='auto'?autoHead(o):o.otsikko),dpr};});}
+async function compose(cap){const S=cap.dpr,PAD=16,FOOT=11.5,TIT=17,LEG=13;const rows=cap.o.asettelu==='rivit';const LW=rows?190:0;
+  for(const it of cap.items)if(it.svg){const sc=Math.min(S,5000/Math.max(it.w,it.h));it.img=await svgImg(it.svg,sc);it.sc=sc;}
+  const d=new Date(),ds=lang()==='en'?d.toISOString().slice(0,10):d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear();
+  const nimi=C.nimi[lang()]||C.nimi.fi,url=C.repo?'jipirtti.github.io/'+C.repo.split('/')[1]+'/':'';
+  const foot=`${nimi} · Juho Pirttilahti, SEAMK · CC BY 4.0${url?' · '+url:''} · ${ds}`;
+  const m=document.createElement('canvas').getContext('2d');m.font=FOOT+'px '+FONT;const footW=m.measureText(foot).width;
+  m.font='600 '+TIT+'px '+FONT;const titW=cap.title?m.measureText(cap.title).width:0;
+  const chartW=Math.max(260,...cap.items.map(i=>i.w+LW));const W=Math.ceil(Math.max(chartW,footW+4,titW+4,360)+2*PAD);
+  const lay=[];let x=0,y=0,lh=LEG+8;const maxW=W-2*PAD;
+  for(const g of cap.legend){let gw=0;const seg=g.map(tk=>{let w;if(tk.t==='txt'){m.font=(tk.b?'600 ':'')+LEG+'px '+FONT;w=m.measureText(tk.s).width;}else w=tk.w;gw+=w+5;return w;});gw-=5;
+    if(x>0&&x+gw>maxW){x=0;y+=lh;}let xx=x;g.forEach((tk,i)=>{lay.push({tk,x:xx,y,w:seg[i]});xx+=seg[i]+5;});x=xx-5+14;}
+  const legH=cap.legend.length?y+lh:0;
+  const titleH=cap.title?TIT+12:0;const NH=17,itemsH=cap.items.reduce((a,i)=>a+i.h+(!rows&&i.nimi?NH+3:0)+(rows?8:(cap.items.length>1?10:0)),0);
+  const H=Math.ceil(PAD+titleH+itemsH+(legH?legH+8:0)+FOOT+14+PAD);
+  const cv=document.createElement('canvas');cv.width=Math.round(W*S);cv.height=Math.round(H*S);const g=cv.getContext('2d');g.scale(S,S);
+  g.fillStyle='#FFFFFF';g.fillRect(0,0,W,H);g.textBaseline='alphabetic';
+  let cy=PAD;
+  if(cap.title){g.fillStyle='#17212B';g.font='600 '+TIT+'px '+FONT;g.fillText(cap.title,PAD,cy+TIT);cy+=titleH;}
+  for(const it of cap.items){let cx=PAD;
+    if(rows){if(it.vari){g.fillStyle=it.vari;g.fillRect(PAD,cy+2,4,it.h-4);}g.fillStyle='#56636F';g.font='13px '+FONT;g.fillText(it.nimi,PAD+12,cy+16);
+      g.fillStyle='#17212B';g.font='600 18px '+FONT;g.fillText(it.arvo,PAD+12,cy+38);cx=PAD+LW;}
+    if(!rows&&it.nimi){g.fillStyle='#17212B';g.font='600 13px '+FONT;g.fillText(it.nimi,PAD,cy+13);cy+=NH+3;}
+    g.drawImage(it.img,cx,cy,it.w,it.h);cy+=it.h+(rows?8:(cap.items.length>1?10:0));}
+  if(legH){cy+=8;for(const l of lay){const tk=l.tk,ly=cy+l.y,mid=ly+lh/2-1;
+      if(tk.t==='txt'){g.fillStyle=tk.col||'#56636F';g.font=(tk.b?'600 ':'')+LEG+'px '+FONT;g.fillText(tk.s,PAD+l.x,ly+LEG+1);}
+      else if(tk.t==='grad'){const gr=g.createLinearGradient(PAD+l.x,0,PAD+l.x+tk.w,0);tk.cols.forEach((c,i)=>gr.addColorStop(i/(tk.cols.length-1),c));g.fillStyle=gr;g.fillRect(PAD+l.x,mid-tk.h/2,tk.w,tk.h);}
+      else if(tk.t==='dash'){g.save();g.strokeStyle=tk.col;g.lineWidth=2;g.setLineDash(tk.dot?[2,3]:[5,3]);g.beginPath();g.moveTo(PAD+l.x,mid);g.lineTo(PAD+l.x+tk.w,mid);g.stroke();g.restore();}
+      else{g.fillStyle=tk.col;g.fillRect(PAD+l.x,mid-tk.h/2,tk.w,tk.h);}}
+    cy+=legH;}
+  g.fillStyle='#56636F';g.font=FOOT+'px '+FONT;g.fillText(foot,PAD,H-PAD+2);
+  return cv;}
+async function render(k){return compose(capture(k));}
+const toBlob=cv=>new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('PNG')),'image/png'));
+
+/* ---- painikkeet, ilmoitus ja varaikkuna ---- */
+function css(){if(document.getElementById('skv-css'))return;const s=document.createElement('style');s.id='skv-css';
+  s.textContent=`.skv-btn{font:inherit;font-size:13px;line-height:1.2;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:3px 9px;min-height:28px;cursor:pointer;white-space:nowrap;flex:none}
+.skv-btn:hover{border-color:var(--muted)}.skv-btn:focus-visible{outline:3px solid var(--sel,#1E5DBA);outline-offset:1px}.skv-btn[disabled]{opacity:.6;cursor:progress}
+.skv-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px}.skv-head>h4,.skv-head>h3,.skv-head>strong{margin:0}
+.skv-head{margin:0 0 4px}.skv-lisaa{margin-left:auto}
+.skv-kulma{position:absolute;top:10px;right:10px;z-index:6;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.skv-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:300;background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none}
+.skv-modal{position:fixed;inset:0;z-index:250;background:rgba(10,16,22,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.skv-box{background:var(--paper);color:var(--ink);border-radius:12px;max-width:min(1000px,96vw);max-height:92vh;overflow:auto;padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.skv-box img{display:block;max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;margin:8px 0;background:#fff}
+.skv-box h2{margin:0 0 6px;font-size:19px}.skv-box p{margin:4px 0;font-size:14px}.skv-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center}
+.skv-row a{color:var(--sel,#1E5DBA)}`;document.head.appendChild(s);}
+function toast(msg){const d=document.createElement('div');d.className='skv-toast';d.setAttribute('role','status');d.setAttribute('aria-live','polite');d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2600);}
+function fallback(cv,k,err){const url=cv.toDataURL('image/png');const m=document.createElement('div');m.className='skv-modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.id='skvModal';
+  const fn=(C.nimi.fi||'kaavio').toLowerCase().replace(/[^a-z0-9äö]+/g,'-')+'-'+k+'.png';
+  m.innerHTML=`<div class="skv-box"><h2></h2><p></p><img alt=""><div class="skv-row"><a download></a><button type="button" class="skv-btn"></button></div></div>`;
+  m.querySelector('h2').textContent=t('fbH');m.querySelector('p').textContent=t('fbP');const im=m.querySelector('img');im.src=url;im.alt=t('fbH');
+  const a=m.querySelector('a');a.href=url;a.download=fn;a.textContent=t('save');const b=m.querySelector('button');b.textContent=t('close');
+  const close=()=>{m.remove();document.removeEventListener('keydown',esc,true);};const esc=e=>{if(e.key==='Escape'){e.stopPropagation();close();}};
+  b.addEventListener('click',close);m.addEventListener('click',e=>{if(e.target===m)close();});document.addEventListener('keydown',esc,true);document.body.appendChild(m);b.focus();
+  if(err)lastErr=String(err&&err.message||err);}
+async function copy(k,btn){if(btn){btn.disabled=true;btn.textContent=t('busy');}
+  let cvP;try{cvP=compose(capture(k));}catch(e){if(btn){btn.disabled=false;btn.textContent=t('btn');}toast(e.message===t('empty')?t('empty'):t('err')+(e.message||e));return false;}
+  let ok=false;
+  try{if(!navigator.clipboard||!window.ClipboardItem)throw new Error('ClipboardItem');
+    await navigator.clipboard.write([new ClipboardItem({'image/png':cvP.then(toBlob)})]);ok=true;toast(t('ok'));}
+  catch(e){try{fallback(await cvP,k,e);}catch(e2){toast(t('err')+(e2.message||e2));}}
+  finally{if(btn){btn.disabled=false;btn.textContent=t('btn');}}
+  return ok;}
+function place(o){const p=o.paikka||{sel:'auto'};const host=p.sel==='auto'?autoHead(o):one(p.sel);if(!host)return null;let b=host.querySelector(':scope > .skv-btn[data-skv="'+o.id+'"]')||document.querySelector('.skv-btn[data-skv="'+o.id+'"]');
+  if(b)return b;b=document.createElement('button');b.type='button';b.className='skv-btn';b.dataset.skv=o.id;
+  if(p.tapa==='kulma'){if(getComputedStyle(host).position==='static')host.style.position='relative';b.classList.add('skv-kulma');host.appendChild(b);}
+  else if(p.tapa==='lisaa'){b.classList.add('skv-lisaa');host.appendChild(b);}
+  else{const par=host.parentElement;if(par.classList.contains('chead')||par.classList.contains('skv-head'))par.appendChild(b);
+    else{const w=document.createElement('div');w.className='skv-head';par.insertBefore(w,host);w.appendChild(host);w.appendChild(b);}}
+  b.addEventListener('click',()=>copy(o.id,b));return b;}
+function relabel(){document.querySelectorAll('.skv-btn[data-skv]').forEach(b=>{if(!b.disabled&&b.textContent!==t('btn'))b.textContent=t('btn');if(b.title!==t('title')){b.title=t('title');b.setAttribute('aria-label',t('title'));}});}
+function placeAll(){for(const o of C.kaaviot)place(o);relabel();}
+window.SimKuva={
+  init(cfg){C=cfg;css();placeAll();
+    new MutationObserver(()=>relabel()).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+    document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-lang]'))setTimeout(relabel,0);});
+    let q=0;new MutationObserver(()=>{if(q)return;q=requestAnimationFrame(()=>{q=0;for(const o of C.kaaviot){if(!document.querySelector('.skv-btn[data-skv="'+o.id+'"]'))place(o);}relabel();});})
+      .observe(document.body,{childList:true,subtree:true});},
+  render,copy,ids:()=>C?C.kaaviot.map(o=>o.id):[],lastError:()=>lastErr};
+})();
+
+SimKuva.init({nimi:{fi:'Hydrauliikkasimulaattori',en:'Hydraulics Simulator'},repo:'Jipirtti/Hydrauliikkasimulaattori',api:()=>window.HydSim,redraw:()=>window.HydSim.redraw(),
+  kaaviot:[
+    {id:'piiri',kohde:'#cv',otsikko:()=>(window.HydSim&&window.HydSim.lang&&window.HydSim.lang()==='en')?'Hydraulic circuit diagram':'Hydraulikaavio',selite:'#stage .legendp',paikka:{sel:'#stage',tapa:'kulma'},
+     svg:{rajaa:['#lWires','#lComps','#lPorts','#lLabels','#lProbes'],piilota:['#lSel','#tmpWire','#gridRect'],maailma:'#world'}},
+    {id:'mittaukset',asettelu:'rivit',otsikko:'.scope .sh strong',selite:null,paikka:{sel:'.scope .sh',tapa:'lisaa'},
+     kohde:()=>[...document.querySelectorAll('#probeRows .prow')].map(r=>{const pl=r.querySelector('.pl'),v=pl&&pl.querySelector('[data-val]');
+       return{el:r.querySelector('canvas'),nimi:pl&&pl.firstChild?pl.firstChild.textContent.trim():'',arvo:v?v.textContent:'',vari:pl?getComputedStyle(pl).borderLeftColor:''};})}]});
 </script>
 </body>
 </html>

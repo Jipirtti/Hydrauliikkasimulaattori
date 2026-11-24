@@ -2,6 +2,7 @@
 
 ## Julkaisematon
 
+- Kopioi kuva -painike jokaiseen kaavioon: kaavio leikepöydälle PNG-kuvana vaalealla taustalla ja kaksinkertaisella tarkkuudella, otsikon, selitteen ja lähdemerkinnän kanssa. Jos selain estää kopioinnin, kuva avautuu ikkunaan tallennettavaksi. Yhteinen SimKuva-moduuli kaikissa simulaattoreissa. Testit KV01–KV04.
 - Palautekanava: yläpalkin *Palaute*-painike avaa lomakkeen (fysiikka / virhe / kehitysehdotus), joka avaa valmiiksi täytetyn GitHub-issuen repon lomakepohjalla. Mukaan liitetään automaattisesti piiri (Tallenna / lataa -muoto), versio, malli, kieli, selain ja varoitukset. Jos piiri ei mahdu linkkiin, se kopioidaan leikepöydälle. Varareitit ilman GitHub-tiliä: Kopioi raportti ja Lähetä sähköpostilla. Lomakkeen ollessa auki simulaattorin pikanäppäimet eivät toimi. Uudet testit P01–P07 (`tests/test_palaute.py`).
 
 ## 1.6.0 – 2026-10-28
