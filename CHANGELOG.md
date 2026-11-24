@@ -2,6 +2,8 @@
 
 ## Julkaisematon
 
+- Saksankielinen käyttöliittymä (FI | EN | DE -valitsin, `?lang=de`, selaimen kieli de). Termit tarkistettu saksalaisista standardeista ja alan termistöstä. Kielitestit tarkistavat, ettei saksankielisessä näkymässä ole kääntämättömiä rivejä.
+- Käyttöohje englanniksi (`docs/user-manual.md`) ja saksaksi (`docs/bedienungsanleitung.md`) omilla kuvakaappauksilla (`docs/kuvat/en/`, `docs/kuvat/de/`). `tools/rakenna_ohje.py` rakentaa kaikki kolme HTML-sivua, ja simulaattorin Käyttöohje-linkki avaa valitun kielen ohjeen.
 - Kopioi kuva -painike jokaiseen kaavioon: kaavio leikepöydälle PNG-kuvana vaalealla taustalla ja kaksinkertaisella tarkkuudella, otsikon, selitteen ja lähdemerkinnän kanssa. Jos selain estää kopioinnin, kuva avautuu ikkunaan tallennettavaksi. Yhteinen SimKuva-moduuli kaikissa simulaattoreissa. Testit KV01–KV04.
 - Palautekanava: yläpalkin *Palaute*-painike avaa lomakkeen (fysiikka / virhe / kehitysehdotus), joka avaa valmiiksi täytetyn GitHub-issuen repon lomakepohjalla. Mukaan liitetään automaattisesti piiri (Tallenna / lataa -muoto), versio, malli, kieli, selain ja varoitukset. Jos piiri ei mahdu linkkiin, se kopioidaan leikepöydälle. Varareitit ilman GitHub-tiliä: Kopioi raportti ja Lähetä sähköpostilla. Lomakkeen ollessa auki simulaattorin pikanäppäimet eivät toimi. Uudet testit P01–P07 (`tests/test_palaute.py`).
 

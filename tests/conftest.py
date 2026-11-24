@@ -45,6 +45,7 @@ def sim(browser):
 
     s = Sim()
     s.errors = errors
+    s.page = page
     yield s
     assert not errors, f"JavaScript-virheitä: {errors}"
     assert not s.call("numericError"), "Simulaattori ilmoitti numeerisesta virheestä"
