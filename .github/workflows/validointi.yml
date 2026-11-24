@@ -60,3 +60,46 @@ jobs:
               owner: context.repo.owner, repo: context.repo.repo, title, labels: ['validointi', 'fysiikka'],
               body: `Viikoittainen validointiajo epäonnistui.\n\nAjo ja raportti: ${run}\n\nTarkista, mikä ilmiö (V-tunnus) poikkesi käsinlaskusta, ja korjaa joko simulaattori tai testi. Fysiikan muutos vaatii opettajan validoinnin, ks. VALIDOINTI.md.`
             });
+
+  # Julkaisu GitHub Pagesiin samassa ajossa, vain main-haarasta ja vain jos validointi meni läpi.
+  # Sivusto kootaan ja ladataan omassa työssään ja julkaistaan erillisessä työssä (GitHubin dokumentoima malli).
+  kokoa:
+    needs: validointi
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Rakenna käyttöohjeen HTML-sivu
+        run: |
+          pip install markdown
+          python tools/rakenna_ohje.py
+      - name: Kokoa sivusto
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r docs _site/docs
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  julkaise:
+    needs: kokoa
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - id: deployment
+        uses: actions/deploy-pages@v4

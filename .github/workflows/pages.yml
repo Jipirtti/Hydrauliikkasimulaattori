@@ -1,11 +1,8 @@
-# Julkaisee simulaattorin GitHub Pagesiin, kun validointi on mennyt läpi main-haarassa.
+# Käsin käynnistettävä julkaisu GitHub Pagesiin (Actions → Julkaisu → Run workflow).
+# Tavallinen julkaisu tehdään Validointi-työnkulun julkaise-työssä jokaisesta main-haaran muutoksesta, kun testit menevät läpi.
 name: Julkaisu
 
 on:
-  workflow_run:
-    workflows: ["Validointi"]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -19,7 +16,6 @@ concurrency:
 
 jobs:
   julkaise:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -39,7 +35,7 @@ jobs:
           cp index.html _site/
           cp -r docs _site/docs
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
       - id: deployment
