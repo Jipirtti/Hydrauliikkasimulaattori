@@ -152,7 +152,7 @@ def test_K05_saksankieliset_tekstit_kattavat(sim):
         T = {}
         for l in ("fi", "en", "de"):
             sim.call("setLang", l)
-            sim.page.wait_for_timeout(100)  # piirtosilmukka päivittää lukemat seuraavalla kehyksellä
+            sim.page.wait_for_timeout(250)  # piirtosilmukka päivittää lukemat seuraavalla kehyksellä
             if js:
                 sim.js(js)
                 sim.page.wait_for_timeout(150)

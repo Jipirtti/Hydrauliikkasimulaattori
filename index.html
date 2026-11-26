@@ -1917,7 +1917,7 @@ function css(){if(document.getElementById('skv-css'))return;const s=document.cre
 .skv-row a{color:var(--sel,#1E5DBA)}`;document.head.appendChild(s);}
 function toast(msg){const d=document.createElement('div');d.className='skv-toast';d.setAttribute('role','status');d.setAttribute('aria-live','polite');d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2600);}
 function fallback(cv,k,err){const url=cv.toDataURL('image/png');const m=document.createElement('div');m.className='skv-modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.id='skvModal';
-  const fn=(C.nimi.fi||'kaavio').toLowerCase().replace(/[^a-z0-9äö]+/g,'-')+'-'+k+'.png';
+  const fn=(C.nimi[lang()]||C.nimi.en||C.nimi.fi||'kaavio').toLowerCase().replace(/[^a-z0-9äöü]+/g,'-')+'-'+k+'.png';
   m.innerHTML=`<div class="skv-box"><h2></h2><p></p><img alt=""><div class="skv-row"><a download></a><button type="button" class="skv-btn"></button></div></div>`;
   m.querySelector('h2').textContent=t('fbH');m.querySelector('p').textContent=t('fbP');const im=m.querySelector('img');im.src=url;im.alt=t('fbH');
   const a=m.querySelector('a');a.href=url;a.download=fn;a.textContent=t('save');const b=m.querySelector('button');b.textContent=t('close');
@@ -1952,7 +1952,7 @@ window.SimKuva={
 
 SimKuva.init({nimi:{fi:'Hydrauliikkasimulaattori',en:'Hydraulics Simulator',de:'Hydraulik-Simulator'},repo:'Jipirtti/Hydrauliikkasimulaattori',api:()=>window.HydSim,redraw:()=>window.HydSim.redraw(),
   kaaviot:[
-    {id:'piiri',kohde:'#cv',otsikko:()=>(window.HydSim&&window.HydSim.lang&&window.HydSim.lang()==='en')?'Hydraulic circuit diagram':'Hydraulikaavio',selite:'#stage .legendp',paikka:{sel:'#stage',tapa:'kulma'},
+    {id:'piiri',kohde:'#cv',otsikko:()=>({fi:'Hydraulikaavio',en:'Hydraulic circuit diagram',de:'Hydraulikschaltplan'})[(window.HydSim&&window.HydSim.lang&&window.HydSim.lang())||'fi']||'Hydraulic circuit diagram',selite:'#stage .legendp',paikka:{sel:'#stage',tapa:'kulma'},
      svg:{rajaa:['#lWires','#lComps','#lPorts','#lLabels','#lProbes'],piilota:['#lSel','#tmpWire','#gridRect'],maailma:'#world'}},
     {id:'mittaukset',asettelu:'rivit',otsikko:'.scope .sh strong',selite:null,paikka:{sel:'.scope .sh',tapa:'lisaa'},
      kohde:()=>[...document.querySelectorAll('#probeRows .prow')].map(r=>{const pl=r.querySelector('.pl'),v=pl&&pl.querySelector('[data-val]');
